@@ -1,13 +1,16 @@
 package com.xenocrm.memory.entity;
 
-import com.xenocrm.memory.enums.LearningType;
+import com.xenocrm.memory.enums.MemoryLearningType;
+import com.xenocrm.memory.enums.TimeOfDay;
 import com.xenocrm.variant.enums.MessageChannel;
+import io.hypersistence.utils.hibernate.type.array.UUIDArrayType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,11 +21,6 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * OrgMemoryEntryEntity — JPA entity mapping to the `org_memory_entries` table.
- * Layer: Domain Entity
- * Purpose: A persistent knowledge base storing generalized insights extracted from past campaigns.
- */
 @Entity
 @Table(name = "org_memory_entries")
 @Data
@@ -37,32 +35,49 @@ public class OrgMemoryEntryEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "segment_tag", length = 100)
-    private String segmentTag; // nullable — generalized tag, e.g. "coffee_buyers"
+    @Column(name = "segment_tag")
+    private String segmentTag;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "channel", columnDefinition = "message_channel")
-    private MessageChannel channel; // nullable
+    private MessageChannel channel;
+
+    @Column(name = "day_of_week")
+    private Integer dayOfWeek;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "time_of_day")
+    private TimeOfDay timeOfDay;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "learning_type", nullable = false)
-    private LearningType learningType; // 'copy_style', 'send_time', 'offer_type'
+    private MemoryLearningType learningType;
 
     @Column(name = "learning_summary", columnDefinition = "TEXT", nullable = false)
     private String learningSummary;
 
-    @Column(name = "confidence", precision = 4, scale = 3)
-    private BigDecimal confidence; // 0.000 to 1.000
+    @Column(name = "confidence")
+    private BigDecimal confidence;
+
+    @Type(UUIDArrayType.class)
+    @Column(name = "source_campaign_ids", columnDefinition = "uuid[]")
+    private UUID[] sourceCampaignIds;
 
     @Column(name = "evidence_count")
-    private Integer evidenceCount; // DEFAULT 1
+    private int evidenceCount;
 
-    @Column(name = "avg_lift", precision = 5, scale = 4)
-    private BigDecimal avgLift; // e.g., 0.22 means 22% improvement
+    @Column(name = "avg_lift")
+    private BigDecimal avgLift;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "winning_copy_signals", columnDefinition = "jsonb")
     private Map<String, Object> winningCopySignals;
+
+    @Column(name = "is_active")
+    private boolean isActive;
+
+    @Column(name = "expires_at")
+    private OffsetDateTime expiresAt;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

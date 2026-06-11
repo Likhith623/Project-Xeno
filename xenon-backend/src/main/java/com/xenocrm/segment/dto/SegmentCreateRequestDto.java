@@ -1,14 +1,15 @@
 package com.xenocrm.segment.dto;
 
+import com.xenocrm.segment.enums.SegmentType;
+import com.xenocrm.segment.enums.SegmentStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * SegmentCreateRequestDto — DTO for creating a new segment.
- */
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,13 +21,17 @@ public class SegmentCreateRequestDto {
 
     private String description;
 
-    @NotBlank
-    private String queryDsl;
+    private SegmentType type;
 
-    @NotBlank
-    private String compiledSql;
+    private SegmentStatus status;
 
-    private String[] tags;
+    private String filterSql;
 
-    private Boolean isDynamic;
+    private Map<String, Object> filterJson;
+
+    private Boolean isPinned;
+
+    private Boolean createdByAgent;
+
+    private String agentGoal;
 }

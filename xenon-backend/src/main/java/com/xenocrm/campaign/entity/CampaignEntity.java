@@ -1,27 +1,20 @@
 package com.xenocrm.campaign.entity;
 
 import com.xenocrm.campaign.enums.CampaignStatus;
-import com.xenocrm.segment.entity.SegmentEntity;
-import io.hypersistence.utils.hibernate.type.array.StringArrayType;
+import com.xenocrm.segment.entity.AudienceSegmentEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Type;
-import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.Map;
 import java.util.UUID;
 
-/**
- * CampaignEntity — JPA entity mapping to the `campaigns` table.
- */
 @Entity
 @Table(name = "campaigns")
 @Data
@@ -42,13 +35,16 @@ public class CampaignEntity {
     @Column(name = "description")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "segment_id", nullable = false)
-    private SegmentEntity segment;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status")
     private CampaignStatus status;
+
+    @Column(columnDefinition = "TEXT")
+    private String goal;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "segment_id")
+    private AudienceSegmentEntity targetSegment;
 
     @Column(name = "scheduled_at")
     private OffsetDateTime scheduledAt;
@@ -59,26 +55,54 @@ public class CampaignEntity {
     @Column(name = "completed_at")
     private OffsetDateTime completedAt;
 
-    @Type(StringArrayType.class)
-    @Column(name = "channels", columnDefinition = "text[]")
-    private String[] channels;
+    @Column(name = "timezone")
+    private String timezone;
 
-    @Type(StringArrayType.class)
-    @Column(name = "tags", columnDefinition = "text[]")
-    private String[] tags;
+    @Column(name = "max_send_count")
+    private Integer maxSendCount;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "utm_params", columnDefinition = "jsonb")
-    private Map<String, Object> utmParams;
+    @Column(name = "opt_out_rate_threshold", precision = 5, scale = 4)
+    private BigDecimal optOutRateThreshold;
+
+    @Column(name = "created_by_agent")
+    private boolean createdByAgent;
+
+    @Column(name = "agent_session_id")
+    private String agentSessionId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_campaign_id")
+    private CampaignEntity parentCampaign;
+
+    @Column(name = "total_sent")
+    private int totalSent;
+
+    @Column(name = "total_delivered")
+    private int totalDelivered;
+
+    @Column(name = "total_failed")
+    private int totalFailed;
+
+    @Column(name = "total_opened")
+    private int totalOpened;
+
+    @Column(name = "total_read")
+    private int totalRead;
+
+    @Column(name = "total_clicked")
+    private int totalClicked;
+
+    @Column(name = "total_converted")
+    private int totalConverted;
+
+    @Column(name = "revenue_attributed", precision = 14, scale = 2)
+    private BigDecimal revenueAttributed;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
-
-    @OneToOne(mappedBy = "campaign", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private CampaignMetricsEntity metrics;
 }

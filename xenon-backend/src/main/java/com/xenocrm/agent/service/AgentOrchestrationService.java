@@ -32,9 +32,12 @@ public class AgentOrchestrationService {
 
         if (sessionId == null) {
             session = AgentSessionEntity.builder()
-                    .status(AgentSessionStatus.ACTIVE)
-                    .messageHistory(new ArrayList<>())
-                    .contextSnapshot(new HashMap<>())
+                    .goal(requestDto.getPrompt())
+                    .status(AgentSessionStatus.RUNNING)
+                    .modelUsed("gemini-2.5-pro")
+                    .conversationLog(new ArrayList<>())
+                    .plan(new HashMap<>())
+                    .startedAt(OffsetDateTime.now())
                     .build();
             session = sessionRepository.save(session);
         } else {
@@ -50,7 +53,7 @@ public class AgentOrchestrationService {
         return AgentChatResponseDto.builder()
                 .sessionId(session.getId())
                 .textReply("This is a mock reply from the Sovereign Agent.")
-                .actionTaken(AgentDecisionType.GENERAL_QUERY)
+                .actionTaken(AgentDecisionType.segment_query)
                 .build();
     }
 }

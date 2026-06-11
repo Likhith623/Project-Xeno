@@ -1,6 +1,6 @@
 package com.xenocrm.memory.enums;
 
-public enum LearningType {
+public enum MemoryLearningType {
     COPY_STYLE,
     SEND_TIME,
     OFFER_TYPE,

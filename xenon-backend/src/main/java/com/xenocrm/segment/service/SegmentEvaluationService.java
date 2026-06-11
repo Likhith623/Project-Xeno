@@ -3,7 +3,9 @@ package com.xenocrm.segment.service;
 import com.xenocrm.exception.ResourceNotFoundException;
 import com.xenocrm.segment.dto.SegmentCreateRequestDto;
 import com.xenocrm.segment.dto.SegmentResponseDto;
-import com.xenocrm.segment.entity.SegmentEntity;
+import com.xenocrm.segment.entity.AudienceSegmentEntity;
+import com.xenocrm.segment.enums.SegmentStatus;
+import com.xenocrm.segment.enums.SegmentType;
 import com.xenocrm.segment.mapper.SegmentMapper;
 import com.xenocrm.segment.repository.SegmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,24 +33,23 @@ public class SegmentEvaluationService {
     public SegmentResponseDto createSegment(SegmentCreateRequestDto request) {
         log.debug("Creating new segment: {}", request.getName());
 
-        SegmentEntity segment = segmentMapper.toEntity(request);
+        AudienceSegmentEntity segment = segmentMapper.toEntity(request);
         
-        if (request.getIsDynamic() != null) {
-            segment.setDynamic(request.getIsDynamic());
-        } else {
-            segment.setDynamic(true);
+        if (segment.getType() == null) {
+            segment.setType(SegmentType.DYNAMIC);
+        }
+        if (segment.getStatus() == null) {
+            segment.setStatus(SegmentStatus.DRAFT);
         }
 
-        if (segment.getTags() == null) segment.setTags(new String[0]);
-
-        SegmentEntity savedSegment = segmentRepository.save(segment);
+        AudienceSegmentEntity savedSegment = segmentRepository.save(segment);
         return segmentMapper.toResponseDto(savedSegment);
     }
 
     @Transactional(readOnly = true)
     public SegmentResponseDto getSegmentById(UUID id) {
-        SegmentEntity segment = segmentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Segment", "id", id));
+        AudienceSegmentEntity segment = segmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("AudienceSegment", "id", id));
         return segmentMapper.toResponseDto(segment);
     }
 
@@ -58,14 +59,12 @@ public class SegmentEvaluationService {
         log.debug("Evaluating segment async: {}", id);
 
         return CompletableFuture.supplyAsync(() -> {
-            SegmentEntity segment = segmentRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Segment", "id", id));
+            AudienceSegmentEntity segment = segmentRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("AudienceSegment", "id", id));
 
-            // Simulating evaluation logic where we'd execute the compiledSql
-            // and update the customer_segments mapping table
             int simulatedCount = (int) (Math.random() * 1000);
             
-            segment.setLastEvaluatedCount(simulatedCount);
+            segment.setCustomerCount(simulatedCount);
             segment.setLastEvaluatedAt(OffsetDateTime.now());
             
             segmentRepository.save(segment);

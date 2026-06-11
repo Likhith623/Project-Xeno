@@ -1,9 +1,13 @@
 package com.xenocrm.agent.enums;
 
 public enum AgentDecisionType {
-    CREATED_SEGMENT,
-    CREATED_CAMPAIGN,
-    TRIGGERED_SIMULATION,
-    PAUSED_CAMPAIGN,
-    GENERAL_QUERY
+    segment_query,
+    variant_generation,
+    channel_selection,
+    schedule_decision,
+    send_command,
+    abort,
+    memory_lookup,
+    simulation_trigger,
+    correction_trigger
 }

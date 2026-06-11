@@ -35,22 +35,28 @@ public class SimulationResultEntity {
     @JoinColumn(name = "variant_id")
     private MessageVariantEntity variant;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "persona_id")
     private SimulationPersonaEntity persona;
 
-    @Column(name = "simulated_impressions", nullable = false)
-    private Integer simulatedImpressions;
+    @Column(name = "simulated_sends", nullable = false)
+    private int simulatedSends;
 
     @Column(name = "simulated_opens", nullable = false)
-    private Integer simulatedOpens;
+    private int simulatedOpens;
 
     @Column(name = "simulated_clicks", nullable = false)
-    private Integer simulatedClicks;
+    private int simulatedClicks;
 
     @Column(name = "simulated_conversions", nullable = false)
-    private Integer simulatedConversions;
+    private int simulatedConversions;
 
-    @Column(name = "expected_revenue", precision = 12, scale = 2)
-    private BigDecimal expectedRevenue;
+    @Column(name = "simulated_revenue", precision = 12, scale = 2)
+    private BigDecimal simulatedRevenue;
+
+    @Column(name = "open_rate", insertable = false, updatable = false)
+    private BigDecimal openRate;
+
+    @Column(name = "ctr", insertable = false, updatable = false)
+    private BigDecimal ctr;
 }

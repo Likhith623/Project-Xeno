@@ -5,7 +5,7 @@ import com.xenocrm.campaign.repository.CampaignRepository;
 import com.xenocrm.exception.ResourceNotFoundException;
 import com.xenocrm.variant.dto.VariantCreateRequestDto;
 import com.xenocrm.variant.dto.VariantResponseDto;
-import com.xenocrm.variant.entity.VariantEntity;
+import com.xenocrm.variant.entity.MessageVariantEntity;
 import com.xenocrm.variant.mapper.VariantMapper;
 import com.xenocrm.variant.repository.VariantRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,22 +37,14 @@ public class VariantService {
         CampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
                 .orElseThrow(() -> new ResourceNotFoundException("Campaign", "id", request.getCampaignId()));
 
-        VariantEntity variant = variantMapper.toEntity(request);
+        MessageVariantEntity variant = variantMapper.toEntity(request);
         variant.setCampaign(campaign);
 
-        if (request.getLanguage() == null) {
-            variant.setLanguage("en");
-        }
-        if (request.getIsControl() != null) {
-            variant.setControl(request.getIsControl());
-        } else {
-            variant.setControl(false);
-        }
+        variant.setMabAlpha(BigDecimal.ONE);
+        variant.setMabBeta(BigDecimal.ONE);
+        variant.setMabIsActive(true);
 
-        variant.setAlpha(1.0);
-        variant.setBeta(1.0);
-
-        VariantEntity savedVariant = variantRepository.save(variant);
+        MessageVariantEntity savedVariant = variantRepository.save(variant);
         return variantMapper.toResponseDto(savedVariant);
     }
 

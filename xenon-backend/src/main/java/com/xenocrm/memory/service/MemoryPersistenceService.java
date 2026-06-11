@@ -1,7 +1,7 @@
 package com.xenocrm.memory.service;
 
 import com.xenocrm.memory.entity.OrgMemoryEntryEntity;
-import com.xenocrm.memory.enums.LearningType;
+import com.xenocrm.memory.enums.MemoryLearningType;
 import com.xenocrm.memory.repository.OrgMemoryRepository;
 import com.xenocrm.variant.enums.MessageChannel;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class MemoryPersistenceService {
     private final OrgMemoryRepository memoryRepository;
 
     @Transactional
-    public OrgMemoryEntryEntity recordLearning(String segmentTag, MessageChannel channel, LearningType type, 
+    public OrgMemoryEntryEntity recordLearning(String segmentTag, MessageChannel channel, MemoryLearningType type, 
                                                String summary, BigDecimal confidence, BigDecimal avgLift, 
                                                Map<String, Object> signals) {
         
@@ -35,6 +35,7 @@ public class MemoryPersistenceService {
                 .evidenceCount(1)
                 .avgLift(avgLift)
                 .winningCopySignals(signals)
+                .isActive(true)
                 .build();
 
         return memoryRepository.save(entry);

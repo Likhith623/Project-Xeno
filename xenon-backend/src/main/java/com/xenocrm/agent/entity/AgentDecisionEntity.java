@@ -15,9 +15,6 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * AgentDecisionEntity — JPA entity mapping to the `agent_decisions` table.
- */
 @Entity
 @Table(name = "agent_decisions")
 @Data
@@ -36,16 +33,23 @@ public class AgentDecisionEntity {
     @JoinColumn(name = "session_id")
     private AgentSessionEntity session;
 
+    @Column(name = "step_number", nullable = false)
+    private int stepNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "decision_type", nullable = false)
     private AgentDecisionType decisionType;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "parameters", columnDefinition = "jsonb")
-    private Map<String, Object> parameters; // Arguments passed to the tool
+    @Column(name = "input_context", columnDefinition = "jsonb")
+    private Map<String, Object> inputContext;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "output_action", columnDefinition = "jsonb")
+    private Map<String, Object> outputAction;
 
     @Column(name = "reasoning", columnDefinition = "TEXT")
-    private String reasoning; // Verbatim explanation from the LLM
+    private String reasoning;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

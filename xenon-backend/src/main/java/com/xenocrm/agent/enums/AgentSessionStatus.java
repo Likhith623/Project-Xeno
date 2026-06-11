@@ -1,7 +1,8 @@
 package com.xenocrm.agent.enums;
 
 public enum AgentSessionStatus {
-    ACTIVE,
+    RUNNING,
     COMPLETED,
-    FAILED
+    FAILED,
+    PAUSED
 }
