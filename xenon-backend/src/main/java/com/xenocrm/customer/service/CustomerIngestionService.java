@@ -70,4 +70,13 @@ public class CustomerIngestionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
         return customerMapper.toResponseDto(customer);
     }
+
+    @Transactional
+    public void deleteCustomer(UUID id) {
+        log.debug("Deleting customer with id: {}", id);
+        if (!customerRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Customer", "id", id);
+        }
+        customerRepository.deleteById(id);
+    }
 }

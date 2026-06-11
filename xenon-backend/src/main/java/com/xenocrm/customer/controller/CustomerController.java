@@ -59,4 +59,11 @@ public class CustomerController {
         Customer360ResponseDto responseDto = customerMetricsComputationService.getCustomer360(id);
         return ResponseEntity.ok(ResponseWrapper.success(responseDto));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a customer")
+    public ResponseEntity<ResponseWrapper<Void>> deleteCustomer(@PathVariable UUID id) {
+        customerIngestionService.deleteCustomer(id);
+        return ResponseEntity.ok(ResponseWrapper.success(null));
+    }
 }
