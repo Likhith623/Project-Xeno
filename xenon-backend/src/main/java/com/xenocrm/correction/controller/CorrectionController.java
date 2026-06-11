@@ -26,19 +26,18 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Self-Correction Engine", description = "Endpoints for AI campaign self-corrections")
 public class CorrectionController {
 
-    private final CorrectionEventRepository correctionEventRepository;
-    private final CorrectionEventMapper correctionEventMapper;
+    private final com.xenocrm.correction.service.CorrectionRetrievalService correctionRetrievalService;
 
     @GetMapping
     @Operation(summary = "Get all correction events")
     public ResponseEntity<ResponseWrapper<Page<CorrectionEventResponseDto>>> getCorrections(
             @PageableDefault(size = 20) Pageable pageable) {
         
-        Page<CorrectionEventEntity> events = correctionEventRepository.findAll(pageable);
+        Page<CorrectionEventResponseDto> dtos = correctionRetrievalService.getCorrections(pageable);
         return ResponseEntity.ok(ResponseWrapper.success(
-                events.map(correctionEventMapper::toResponseDto),
+                dtos,
                 "Retrieved correction events",
-                PaginationMetadata.from(events)
+                PaginationMetadata.from(dtos)
         ));
     }
 }

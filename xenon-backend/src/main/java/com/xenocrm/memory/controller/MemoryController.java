@@ -26,19 +26,18 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Organizational Memory", description = "Endpoints for AI knowledge base")
 public class MemoryController {
 
-    private final OrgMemoryEntryRepository memoryRepository;
-    private final OrgMemoryMapper memoryMapper;
+    private final com.xenocrm.memory.service.MemoryRetrievalService memoryService;
 
     @GetMapping
     @Operation(summary = "Get all organizational memory entries")
     public ResponseEntity<ResponseWrapper<Page<OrgMemoryEntryDto>>> getAllMemories(
             @PageableDefault(size = 20) Pageable pageable) {
         
-        Page<OrgMemoryEntryEntity> memories = memoryRepository.findAll(pageable);
+        Page<OrgMemoryEntryDto> memoriesDto = memoryService.getAllMemories(pageable);
         return ResponseEntity.ok(ResponseWrapper.success(
-                memories.map(memoryMapper::toDto),
+                memoriesDto,
                 "Retrieved organizational memory",
-                PaginationMetadata.from(memories)
+                PaginationMetadata.from(memoriesDto)
         ));
     }
 }

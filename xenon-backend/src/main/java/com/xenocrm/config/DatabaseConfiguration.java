@@ -8,7 +8,17 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  * Layer: Configuration
  * Purpose: Enables JPA auditing.
  */
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.auditing.DateTimeProvider;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+
 @Configuration
-@EnableJpaAuditing
+@EnableJpaAuditing(dateTimeProviderRef = "auditingDateTimeProvider")
 public class DatabaseConfiguration {
+
+    @Bean(name = "auditingDateTimeProvider")
+    public DateTimeProvider dateTimeProvider() {
+        return () -> Optional.of(OffsetDateTime.now());
+    }
 }

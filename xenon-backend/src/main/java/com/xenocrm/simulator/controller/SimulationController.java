@@ -38,8 +38,7 @@ public class SimulationController {
     @GetMapping("/{id}")
     @Operation(summary = "Get simulation run result")
     public ResponseEntity<ResponseWrapper<SimulationRunResultDto>> getSimulationRun(@PathVariable UUID id) {
-        SimulationRunEntity run = simulationRunRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Simulation run not found"));
-        return ResponseEntity.ok(ResponseWrapper.success(simulationMapper.toResultDto(run), "Retrieved simulation run"));
+        SimulationRunResultDto resultDto = orchestrationService.getSimulationRun(id);
+        return ResponseEntity.ok(ResponseWrapper.success(resultDto, "Retrieved simulation run"));
     }
 }

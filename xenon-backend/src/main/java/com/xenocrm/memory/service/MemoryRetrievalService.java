@@ -17,6 +17,11 @@ import java.util.stream.Collectors;
 public class MemoryRetrievalService {
 
     private final OrgMemoryEntryRepository memoryRepository;
+    private final com.xenocrm.memory.mapper.OrgMemoryMapper memoryMapper;
+
+    public org.springframework.data.domain.Page<com.xenocrm.memory.dto.OrgMemoryEntryDto> getAllMemories(org.springframework.data.domain.Pageable pageable) {
+        return memoryRepository.findAll(pageable).map(memoryMapper::toDto);
+    }
 
     public String buildContextPromptForSegment(String segmentTag) {
         List<OrgMemoryEntryEntity> memories = memoryRepository.findAllBySegmentTagAndIsActiveTrue(segmentTag);

@@ -25,6 +25,14 @@ public class AudienceSimulationOrchestrationService {
     private final CampaignRepository campaignRepository;
     private final MonteCarloSimulationEngine monteCarloSimulationEngine;
 
+    private final com.xenocrm.simulator.mapper.SimulationMapper simulationMapper;
+
+    public com.xenocrm.simulator.dto.SimulationRunResultDto getSimulationRun(java.util.UUID id) {
+        SimulationRunEntity run = simulationRunRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Simulation run not found"));
+        return simulationMapper.toResultDto(run);
+    }
+
     public SimulationRunEntity triggerSimulation(SimulationRunRequestDto requestDto) {
         CampaignEntity campaign = campaignRepository.findById(requestDto.getCampaignId())
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
