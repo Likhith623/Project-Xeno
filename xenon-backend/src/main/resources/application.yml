@@ -3,9 +3,9 @@ spring:
     name: xeno-crm-backend
 
   datasource:
-    url: jdbc:postgresql://db.${SUPABASE_PROJECT_ID}.supabase.co:5432/postgres
-    username: postgres
-    password: ${SUPABASE_DB_PASSWORD}
+    url: jdbc:postgresql://db.fkuqrsthtqcymejapuqy.supabase.co:5432/postgres?sslmode=require&prepareThreshold=0
+    username: postgres.fkuqrsthtqcymejapuqy
+    password: Likhith@123
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -17,7 +17,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -25,6 +25,7 @@ spring:
         jdbc.batch_size: 50
         order_inserts: true
         order_updates: true
+        temp.use_jdbc_metadata_defaults: false
 
   flyway:
     enabled: true
@@ -39,7 +40,7 @@ server:
 
 # Gemini LLM
 gemini:
-  api-key: ${gemini.api-key}
+  api-key: AQ.Ab8RN6KD9rE2Mbz9aR8LSLtbNEOGQwIivMJB3EmfB2qYLkzv3Q
   model: gemini-2.5-pro
   endpoint: https://generativelanguage.googleapis.com/v1beta/models
   max-output-tokens: 2000
@@ -54,7 +55,7 @@ channel:
 
 # Security
 security:
-  api-key: ${CRM_API_KEY}
+  api-key: likhit@178926a
 
 # Async thread pool
 async:

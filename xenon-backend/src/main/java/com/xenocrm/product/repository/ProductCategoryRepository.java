@@ -12,5 +12,5 @@ import java.util.UUID;
  */
 @Repository
 public interface ProductCategoryRepository extends JpaRepository<ProductCategoryEntity, UUID> {
-    Optional<ProductCategoryEntity> findByExternalId(String externalId);
+    Optional<ProductCategoryEntity> findBySlug(String slug);
 }
