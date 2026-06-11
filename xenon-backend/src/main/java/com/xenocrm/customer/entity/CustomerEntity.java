@@ -55,6 +55,7 @@ public class CustomerEntity {
     @Column(name = "name", nullable = false)
     private String name;                        // Full name -- required
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
     private CustomerGender gender;              // CHECK IN (male,female,other,unknown) DEFAULT unknown
 
@@ -78,6 +79,7 @@ public class CustomerEntity {
     @Column(name = "custom_attributes", columnDefinition = "jsonb")
     private Map<String, Object> customAttributes; // JSONB -- brand-specific metadata
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "preferred_channel")
     private PreferredChannel preferredChannel;  // CHECK IN (email,whatsapp,sms,rcs)
 

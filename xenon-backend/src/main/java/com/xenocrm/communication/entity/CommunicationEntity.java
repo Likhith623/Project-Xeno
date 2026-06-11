@@ -50,6 +50,7 @@ public class CommunicationEntity {
     private MessageChannel channel;
 
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private CommunicationStatus status;
 

@@ -43,6 +43,7 @@ public class CorrectionEventEntity {
     private CampaignEntity campaign;
 
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "trigger_type", nullable = false)
     private CorrectionTriggerType triggerType;
 
@@ -56,6 +57,7 @@ public class CorrectionEventEntity {
     private Integer cohortSize;
 
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "action_taken", nullable = false)
     private CorrectionActionType actionTaken;
 
@@ -79,6 +81,7 @@ public class CorrectionEventEntity {
     private String aiReasoning; // LLM explanation stored verbatim for audit
 
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "correction_outcome")
     private CorrectionOutcome correctionOutcome; // nullable — filled in after correction runs
 

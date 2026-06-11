@@ -40,6 +40,7 @@ public class CampaignEntity {
     @Column(name = "description")
     private String description;                 // nullable
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private CampaignStatus status;              // draft/simulating/scheduled/running/paused/completed/cancelled/failed
 

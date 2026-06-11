@@ -37,6 +37,7 @@ public class AgentDecisionEntity {
     private int stepNumber;
 
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "decision_type", nullable = false)
     private AgentDecisionType decisionType;
 

@@ -46,10 +46,12 @@ public class OrgMemoryEntryEntity {
     private Integer dayOfWeek;
 
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "time_of_day")
     private TimeOfDay timeOfDay;
 
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "learning_type", nullable = false)
     private MemoryLearningType learningType;
 

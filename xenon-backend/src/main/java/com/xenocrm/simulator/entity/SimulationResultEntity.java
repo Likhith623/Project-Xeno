@@ -28,7 +28,7 @@ public class SimulationResultEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "run_id")
+    @JoinColumn(name = "simulation_id")
     private SimulationRunEntity run;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

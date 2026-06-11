@@ -45,6 +45,7 @@ public class OrderEntity {
     @Column(name = "order_number", unique = true)
     private String orderNumber;                 // UNIQUE, nullable
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private OrderStatus status;                 // pending/confirmed/shipped/delivered/cancelled/returned
 
