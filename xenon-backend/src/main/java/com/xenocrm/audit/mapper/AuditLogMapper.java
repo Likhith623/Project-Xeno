@@ -1,17 +1,15 @@
 package com.xenocrm.audit.mapper;
 
-import com.xenocrm.audit.dto.AuditLogDto;
+import com.xenocrm.audit.dto.AuditLogResponseDto;
 import com.xenocrm.audit.entity.AuditLogEntity;
 import org.mapstruct.Mapper;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.ReportingPolicy;
 
 /**
- * AuditLogMapper — MapStruct mapper for Audit domain.
+ * AuditLogMapper — Maps between AuditLogEntity and AuditLogResponseDto.
  */
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface AuditLogMapper {
-
-    AuditLogEntity toEntity(AuditLogDto dto);
-
-    AuditLogDto toDto(AuditLogEntity entity);
+    AuditLogResponseDto toResponseDto(AuditLogEntity entity);
 }
