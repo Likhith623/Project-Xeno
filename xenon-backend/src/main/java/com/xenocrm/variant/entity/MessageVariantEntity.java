@@ -40,6 +40,7 @@ public class MessageVariantEntity {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @org.hibernate.annotations.Type(io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType.class)
     @Column(name = "channel", columnDefinition = "message_channel")
     private MessageChannel channel;
 
