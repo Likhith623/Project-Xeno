@@ -18,6 +18,7 @@ public class ResponseWrapper<T> {
     
     private boolean success;
     private T data;
+    private String message;
     private String errorCode;
     private String errorMessage;
     private PaginationMetadata pagination;
@@ -29,10 +30,27 @@ public class ResponseWrapper<T> {
                 .build();
     }
 
+    public static <T> ResponseWrapper<T> success(T data, String message) {
+        return ResponseWrapper.<T>builder()
+                .success(true)
+                .data(data)
+                .message(message)
+                .build();
+    }
+
     public static <T> ResponseWrapper<T> success(T data, PaginationMetadata pagination) {
         return ResponseWrapper.<T>builder()
                 .success(true)
                 .data(data)
+                .pagination(pagination)
+                .build();
+    }
+
+    public static <T> ResponseWrapper<T> success(T data, String message, PaginationMetadata pagination) {
+        return ResponseWrapper.<T>builder()
+                .success(true)
+                .data(data)
+                .message(message)
                 .pagination(pagination)
                 .build();
     }

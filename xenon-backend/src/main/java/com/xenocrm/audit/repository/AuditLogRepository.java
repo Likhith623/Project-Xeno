@@ -4,22 +4,17 @@ import com.xenocrm.audit.entity.AuditLogEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.UUID;
 
 /**
- * AuditLogRepository — Repository for the `audit_logs` table.
+ * AuditLogRepository -- JPA repository for AuditLogEntity.
+ * Layer: Repository
  */
-@Repository
 public interface AuditLogRepository extends JpaRepository<AuditLogEntity, Long> {
-
-    /** Finds audit logs for a specific entity. */
+    /** Finds all audit logs for a specific entity type and ID, paginated. */
     Page<AuditLogEntity> findAllByEntityTypeAndEntityId(String entityType, Long entityId, Pageable pageable);
-
-    /** Finds audit logs for a specific trace ID. */
+    /** Finds all audit logs belonging to a request trace ID, paginated. */
     Page<AuditLogEntity> findAllByTraceId(UUID traceId, Pageable pageable);
-
-    /** Finds audit logs performed by a specific actor. */
+    /** Finds all audit logs by actor (API key hash, agent session ID, etc.), paginated. */
     Page<AuditLogEntity> findAllByActorId(String actorId, Pageable pageable);
 }

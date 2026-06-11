@@ -28,6 +28,6 @@ public class ChannelCallbackController {
     @Operation(summary = "Receive channel callback webhook")
     public ResponseEntity<ResponseWrapper<Void>> receiveCallback(@Valid @RequestBody ChannelCallbackPayloadDto payloadDto) {
         callbackProcessingService.processCallback(payloadDto);
-        return ResponseEntity.ok(ResponseWrapper.success(null, "Callback received and processed successfully"));
+        return ResponseEntity.ok(ResponseWrapper.<Void>success(null, "Callback received and processed successfully"));
     }
 }

@@ -7,11 +7,17 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+/**
+ * ProductMapper -- MapStruct mapper for Product domain.
+ * Layer: Mapper
+ */
+@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ProductMapper {
+    /** Converts a create request DTO to a ProductEntity (category set in service). */
     @Mapping(target = "category", ignore = true)
     ProductEntity toEntity(ProductCreateRequestDto dto);
-    
-    @Mapping(target = "categoryId", source = "category.id")
+    /** Converts a ProductEntity to a standard response DTO. */
+    @Mapping(target = "categoryId",   source = "category.id")
+    @Mapping(target = "categoryName", source = "category.name")
     ProductResponseDto toResponseDto(ProductEntity entity);
 }

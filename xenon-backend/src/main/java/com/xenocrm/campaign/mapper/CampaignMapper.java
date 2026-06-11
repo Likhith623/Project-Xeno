@@ -8,15 +8,18 @@ import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
 /**
- * CampaignMapper — MapStruct mapper for Campaign domain.
+ * CampaignMapper -- MapStruct mapper for Campaign domain.
+ * Layer: Mapper
  */
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CampaignMapper {
-
-    @Mapping(target = "targetSegment", ignore = true) // Handled in service
+    /** Converts a create request DTO to a CampaignEntity (segment/parent set in service). */
+    @Mapping(target = "targetSegment", ignore = true)
+    @Mapping(target = "parentCampaign", ignore = true)
     CampaignEntity toEntity(CampaignCreateRequestDto dto);
-
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "segmentId", source = "targetSegment.id")
+    /** Converts a CampaignEntity to a standard response DTO. */
+    @Mapping(target = "segmentId",        source = "targetSegment.id")
+    @Mapping(target = "segmentName",      source = "targetSegment.name")
+    @Mapping(target = "parentCampaignId", source = "parentCampaign.id")
     CampaignResponseDto toResponseDto(CampaignEntity campaign);
 }

@@ -46,7 +46,6 @@ public class CommunicationEntity {
     private CustomerEntity customer;
 
     @Enumerated(EnumType.STRING)
-    @org.hibernate.annotations.Type(io.hypersistence.utils.hibernate.type.basic.PostgreSQLEnumType.class)
     @Column(name = "channel", columnDefinition = "message_channel")
     private MessageChannel channel;
 

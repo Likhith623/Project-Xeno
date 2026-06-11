@@ -33,7 +33,7 @@ public class CampaignExecutionService {
             CampaignEntity campaign = campaignRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Campaign", "id", id));
 
-            campaign.setStatus(CampaignStatus.ACTIVE);
+            campaign.setStatus(CampaignStatus.RUNNING);
             campaign.setStartedAt(OffsetDateTime.now());
             campaignRepository.save(campaign);
 

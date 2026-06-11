@@ -40,7 +40,7 @@ public class CustomerService {
         CustomerMetricsEntity metrics = new CustomerMetricsEntity();
         metrics.setCustomer(savedCustomer);
         metrics.setCustomerId(savedCustomer.getId());
-        metrics.setUpdatedAt(OffsetDateTime.now());
+        metrics.setLastComputedAt(OffsetDateTime.now());
         customerMetricsRepository.save(metrics);
 
         return customerMapper.toResponseDto(savedCustomer);

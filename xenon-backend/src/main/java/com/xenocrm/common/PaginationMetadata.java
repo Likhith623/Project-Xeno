@@ -20,4 +20,14 @@ public class PaginationMetadata {
     private long totalElements;
     private int totalPages;
     private boolean isLast;
+
+    public static PaginationMetadata from(org.springframework.data.domain.Page<?> page) {
+        return PaginationMetadata.builder()
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .isLast(page.isLast())
+                .build();
+    }
 }

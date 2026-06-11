@@ -1,13 +1,10 @@
 package com.xenocrm.agent.enums;
 
+/**
+ * AgentDecisionType -- Domain enum for decision_type IN agent_decisions.
+ * Layer: Domain Enum
+ * Converter: AgentDecisionTypeConverter translates to/from lowercase for PostgreSQL CHECK constraints.
+ */
 public enum AgentDecisionType {
-    segment_query,
-    variant_generation,
-    channel_selection,
-    schedule_decision,
-    send_command,
-    abort,
-    memory_lookup,
-    simulation_trigger,
-    correction_trigger
+    SEGMENT_QUERY, VARIANT_GENERATION, CHANNEL_SELECTION, SCHEDULE_DECISION, SEND_COMMAND, ABORT, MEMORY_LOOKUP, SIMULATION_TRIGGER, CORRECTION_TRIGGER
 }

@@ -3,10 +3,10 @@ package com.xenocrm.variant.service;
 import com.xenocrm.campaign.entity.CampaignEntity;
 import com.xenocrm.campaign.repository.CampaignRepository;
 import com.xenocrm.exception.ResourceNotFoundException;
-import com.xenocrm.variant.dto.VariantCreateRequestDto;
-import com.xenocrm.variant.dto.VariantResponseDto;
+import com.xenocrm.variant.dto.MessageVariantCreateRequestDto;
+import com.xenocrm.variant.dto.MessageVariantResponseDto;
 import com.xenocrm.variant.entity.MessageVariantEntity;
-import com.xenocrm.variant.mapper.VariantMapper;
+import com.xenocrm.variant.mapper.MessageVariantMapper;
 import com.xenocrm.variant.repository.MessageVariantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +28,10 @@ public class VariantService {
 
     private final MessageVariantRepository variantRepository;
     private final CampaignRepository campaignRepository;
-    private final VariantMapper variantMapper;
+    private final MessageVariantMapper variantMapper;
 
     @Transactional
-    public VariantResponseDto createVariant(VariantCreateRequestDto request) {
+    public MessageVariantResponseDto createVariant(MessageVariantCreateRequestDto request) {
         log.debug("Creating new variant: {}", request.getName());
 
         CampaignEntity campaign = campaignRepository.findById(request.getCampaignId())
@@ -49,12 +49,12 @@ public class VariantService {
     }
 
     @Transactional(readOnly = true)
-    public List<VariantResponseDto> getVariantsByCampaignId(UUID campaignId) {
+    public List<MessageVariantResponseDto> getVariantsByCampaignId(UUID campaignId) {
         if (!campaignRepository.existsById(campaignId)) {
             throw new ResourceNotFoundException("Campaign", "id", campaignId);
         }
 
-        return variantRepository.findByCampaignId(campaignId).stream()
+        return variantRepository.findAllByCampaignId(campaignId).stream()
                 .map(variantMapper::toResponseDto)
                 .collect(Collectors.toList());
     }

@@ -1,12 +1,10 @@
 package com.xenocrm.campaign.enums;
 
 /**
- * CampaignStatus — Enum representing the status of a campaign.
+ * CampaignStatus -- Domain enum for status IN campaigns.
+ * Layer: Domain Enum
+ * Converter: CampaignStatusConverter translates to/from lowercase for PostgreSQL CHECK constraints.
  */
 public enum CampaignStatus {
-    DRAFT,
-    SCHEDULED,
-    ACTIVE,
-    PAUSED,
-    COMPLETED
+    DRAFT, SIMULATING, SCHEDULED, RUNNING, PAUSED, COMPLETED, CANCELLED, FAILED
 }

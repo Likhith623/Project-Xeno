@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 
 /**
  * CommunicationController — Exposes communication endpoints.
@@ -26,15 +27,15 @@ public class CommunicationController {
 
     @GetMapping("/campaign/{campaignId}")
     @Operation(summary = "Get communications for a campaign")
-    public ResponseEntity<ResponseWrapper<List<CommunicationResponseDto>>> getByCampaign(@PathVariable UUID campaignId) {
-        List<CommunicationResponseDto> communications = communicationService.getCommunicationsByCampaignId(campaignId);
+    public ResponseEntity<ResponseWrapper<List<CommunicationResponseDto>>> getByCampaign(@PathVariable UUID campaignId, Pageable pageable) {
+        List<CommunicationResponseDto> communications = communicationService.getCommunicationsByCampaignId(campaignId, pageable);
         return ResponseEntity.ok(ResponseWrapper.success(communications));
     }
 
     @GetMapping("/customer/{customerId}")
     @Operation(summary = "Get communications for a customer")
-    public ResponseEntity<ResponseWrapper<List<CommunicationResponseDto>>> getByCustomer(@PathVariable UUID customerId) {
-        List<CommunicationResponseDto> communications = communicationService.getCommunicationsByCustomerId(customerId);
+    public ResponseEntity<ResponseWrapper<List<CommunicationResponseDto>>> getByCustomer(@PathVariable UUID customerId, Pageable pageable) {
+        List<CommunicationResponseDto> communications = communicationService.getCommunicationsByCustomerId(customerId, pageable);
         return ResponseEntity.ok(ResponseWrapper.success(communications));
     }
 

@@ -2,11 +2,14 @@ package com.xenocrm.agent.repository;
 
 import com.xenocrm.agent.entity.AgentDecisionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import java.util.List;
 import java.util.UUID;
 
-@Repository
+/**
+ * AgentDecisionRepository -- JPA repository for AgentDecisionEntity.
+ * Layer: Repository
+ */
 public interface AgentDecisionRepository extends JpaRepository<AgentDecisionEntity, UUID> {
-    java.util.List<AgentDecisionEntity> findAllBySessionIdOrderByStepNumberAsc(UUID sessionId);
+    /** Finds all decisions for a session in chronological step order. */
+    List<AgentDecisionEntity> findAllBySessionIdOrderByStepNumberAsc(UUID sessionId);
 }

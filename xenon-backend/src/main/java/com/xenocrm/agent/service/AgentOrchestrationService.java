@@ -54,7 +54,7 @@ public class AgentOrchestrationService {
         return AgentChatResponseDto.builder()
                 .sessionId(session.getId())
                 .textReply(llmResponse)
-                .actionTaken(AgentDecisionType.segment_query)
+                .actionTaken(AgentDecisionType.SEGMENT_QUERY)
                 .build();
     }
 }

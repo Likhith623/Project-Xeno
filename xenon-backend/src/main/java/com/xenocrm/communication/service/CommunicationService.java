@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Pageable;
 
 /**
  * CommunicationService — Handles retrieval of communication logs.
@@ -26,15 +27,15 @@ public class CommunicationService {
     private final CommunicationMapper communicationMapper;
 
     @Transactional(readOnly = true)
-    public List<CommunicationResponseDto> getCommunicationsByCampaignId(UUID campaignId) {
-        return communicationRepository.findByCampaignId(campaignId).stream()
+    public List<CommunicationResponseDto> getCommunicationsByCampaignId(UUID campaignId, Pageable pageable) {
+        return communicationRepository.findAllByCampaignId(campaignId, pageable).stream()
                 .map(communicationMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public List<CommunicationResponseDto> getCommunicationsByCustomerId(UUID customerId) {
-        return communicationRepository.findByCustomerId(customerId).stream()
+    public List<CommunicationResponseDto> getCommunicationsByCustomerId(UUID customerId, Pageable pageable) {
+        return communicationRepository.findAllByCustomerId(customerId, pageable).stream()
                 .map(communicationMapper::toResponseDto)
                 .collect(Collectors.toList());
     }

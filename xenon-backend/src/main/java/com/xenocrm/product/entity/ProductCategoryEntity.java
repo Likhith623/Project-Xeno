@@ -5,16 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
- * ProductCategoryEntity — JPA entity mapping to the `product_categories` table.
+ * ProductCategoryEntity -- JPA entity mapping to the `product_categories` table.
  * Layer: Domain Entity
+ * Purpose: Taxonomy tree for product classification (e.g. electronics > phones > flagship).
  */
 @Entity
 @Table(name = "product_categories")
@@ -22,7 +19,6 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 public class ProductCategoryEntity {
 
     @Id
@@ -30,24 +26,16 @@ public class ProductCategoryEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "external_id", unique = true)
-    private String externalId;
-
     @Column(name = "name", nullable = false)
-    private String name;
+    private String name;                        // NOT NULL -- category display name
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "slug", unique = true, nullable = false)
+    private String slug;                        // UNIQUE NOT NULL -- URL-safe identifier
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_category_id")
-    private ProductCategoryEntity parentCategory;
+    @JoinColumn(name = "parent_id")
+    private ProductCategoryEntity parentCategory; // nullable -- parent in the category tree
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
+    @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY)
+    private List<ProductCategoryEntity> childCategories; // sub-categories
 }

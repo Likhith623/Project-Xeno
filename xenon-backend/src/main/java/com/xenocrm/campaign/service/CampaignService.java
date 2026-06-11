@@ -8,7 +8,7 @@ import com.xenocrm.campaign.mapper.CampaignMapper;
 import com.xenocrm.campaign.repository.CampaignRepository;
 import com.xenocrm.exception.ResourceNotFoundException;
 import com.xenocrm.segment.entity.AudienceSegmentEntity;
-import com.xenocrm.segment.repository.SegmentRepository;
+import com.xenocrm.segment.repository.AudienceSegmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ import java.util.UUID;
 public class CampaignService {
 
     private final CampaignRepository campaignRepository;
-    private final SegmentRepository segmentRepository;
+    private final AudienceSegmentRepository segmentRepository;
     private final CampaignMapper campaignMapper;
 
     @Transactional

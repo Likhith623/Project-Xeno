@@ -1,12 +1,16 @@
 package com.xenocrm.agent.repository;
 
 import com.xenocrm.agent.entity.AgentSessionEntity;
+import com.xenocrm.agent.enums.AgentSessionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import java.util.List;
 import java.util.UUID;
 
-@Repository
+/**
+ * AgentSessionRepository -- JPA repository for AgentSessionEntity.
+ * Layer: Repository
+ */
 public interface AgentSessionRepository extends JpaRepository<AgentSessionEntity, UUID> {
-    java.util.List<AgentSessionEntity> findAllByStatus(com.xenocrm.agent.enums.AgentSessionStatus status);
+    /** Finds all sessions with the given status (e.g. all RUNNING sessions). */
+    List<AgentSessionEntity> findAllByStatus(AgentSessionStatus status);
 }

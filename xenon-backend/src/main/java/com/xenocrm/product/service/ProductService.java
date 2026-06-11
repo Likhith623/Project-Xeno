@@ -38,4 +38,11 @@ public class ProductService {
         ProductEntity savedProduct = productRepository.save(product);
         return productMapper.toResponseDto(savedProduct);
     }
+
+    @Transactional(readOnly = true)
+    public ProductResponseDto getProductById(UUID id) {
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
+        return productMapper.toResponseDto(product);
+    }
 }

@@ -1,8 +1,8 @@
 package com.xenocrm.variant.controller;
 
 import com.xenocrm.common.ResponseWrapper;
-import com.xenocrm.variant.dto.VariantCreateRequestDto;
-import com.xenocrm.variant.dto.VariantResponseDto;
+import com.xenocrm.variant.dto.MessageVariantCreateRequestDto;
+import com.xenocrm.variant.dto.MessageVariantResponseDto;
 import com.xenocrm.variant.service.VariantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,15 +28,15 @@ public class VariantController {
 
     @PostMapping
     @Operation(summary = "Create a new variant for a campaign")
-    public ResponseEntity<ResponseWrapper<VariantResponseDto>> createVariant(@Valid @RequestBody VariantCreateRequestDto request) {
-        VariantResponseDto responseDto = variantService.createVariant(request);
+    public ResponseEntity<ResponseWrapper<MessageVariantResponseDto>> createVariant(@Valid @RequestBody MessageVariantCreateRequestDto request) {
+        MessageVariantResponseDto responseDto = variantService.createVariant(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDto));
     }
 
     @GetMapping("/campaign/{campaignId}")
     @Operation(summary = "Get all variants for a campaign")
-    public ResponseEntity<ResponseWrapper<List<VariantResponseDto>>> getVariantsByCampaign(@PathVariable UUID campaignId) {
-        List<VariantResponseDto> responseDtos = variantService.getVariantsByCampaignId(campaignId);
+    public ResponseEntity<ResponseWrapper<List<MessageVariantResponseDto>>> getVariantsByCampaign(@PathVariable UUID campaignId) {
+        List<MessageVariantResponseDto> responseDtos = variantService.getVariantsByCampaignId(campaignId);
         return ResponseEntity.ok(ResponseWrapper.success(responseDtos));
     }
 }

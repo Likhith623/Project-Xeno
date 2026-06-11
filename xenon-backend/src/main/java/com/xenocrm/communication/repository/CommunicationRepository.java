@@ -1,22 +1,36 @@
 package com.xenocrm.communication.repository;
 
 import com.xenocrm.communication.entity.CommunicationEntity;
+import com.xenocrm.communication.enums.CommunicationStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
- * CommunicationRepository — Spring Data JPA repository for communication logs.
+ * CommunicationRepository -- JPA repository for CommunicationEntity.
+ * Layer: Repository
+ * Contains all query methods needed to manage the delivery state machine.
  */
-@Repository
 public interface CommunicationRepository extends JpaRepository<CommunicationEntity, UUID> {
-    org.springframework.data.domain.Page<CommunicationEntity> findAllByCampaignId(UUID campaignId, org.springframework.data.domain.Pageable pageable);
-    org.springframework.data.domain.Page<CommunicationEntity> findAllByCustomerId(UUID customerId, org.springframework.data.domain.Pageable pageable);
-    java.util.Optional<CommunicationEntity> findByChannelMessageId(String channelMessageId);
-    long countByCampaignIdAndStatus(UUID campaignId, com.xenocrm.communication.enums.CommunicationStatus status);
 
-    @org.springframework.data.jpa.repository.Query("SELECT COUNT(c) FROM CommunicationEntity c WHERE c.campaign.id = :campaignId AND c.status = com.xenocrm.communication.enums.CommunicationStatus.UNSUBSCRIBED")
-    long countUnsubscribedByCampaignId(@org.springframework.data.repository.query.Param("campaignId") UUID campaignId);
+    /** Returns all communications for a campaign, paginated. */
+    Page<CommunicationEntity> findAllByCampaignId(UUID campaignId, Pageable pageable);
+
+    /** Returns all communications sent to a specific customer, paginated. */
+    Page<CommunicationEntity> findAllByCustomerId(UUID customerId, Pageable pageable);
+
+    /** Finds a communication by the external channel message ID (used for callback matching). */
+    Optional<CommunicationEntity> findByChannelMessageId(String channelMessageId);
+
+    /** Counts communications for a campaign with a specific delivery status. */
+    long countByCampaignIdAndStatus(UUID campaignId, CommunicationStatus status);
+
+    /** Counts all unsubscribed communications for a campaign (used for opt-out rate calculation). */
+    @Query("SELECT COUNT(c) FROM CommunicationEntity c WHERE c.campaign.id = :campaignId AND c.status = com.xenocrm.communication.enums.CommunicationStatus.UNSUBSCRIBED")
+    long countUnsubscribedByCampaignId(@Param("campaignId") UUID campaignId);
 }

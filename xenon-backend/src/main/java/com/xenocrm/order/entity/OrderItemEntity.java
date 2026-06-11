@@ -6,15 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * OrderItemEntity — JPA entity mapping to the `order_items` table.
+ * OrderItemEntity -- JPA entity mapping to the `order_items` table.
+ * Layer: Domain Entity
+ * Purpose: One row per line item inside an order.
  */
 @Entity
 @Table(name = "order_items")
@@ -22,7 +20,6 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
 public class OrderItemEntity {
 
     @Id
@@ -32,19 +29,27 @@ public class OrderItemEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
-    private OrderEntity order;
+    private OrderEntity order;                  // FK to orders.id NOT NULL ON DELETE CASCADE
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "product_id", nullable = false)
-    private ProductEntity product;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private ProductEntity product;              // FK to products.id -- nullable
+
+    @Column(name = "product_sku")
+    private String productSku;                  // denormalised for resilience -- nullable
+
+    @Column(name = "product_name", nullable = false)
+    private String productName;                 // NOT NULL
 
     @Column(name = "quantity", nullable = false)
-    private Integer quantity; // CHECK (quantity > 0)
+    private int quantity;                       // CHECK > 0
 
-    @Column(name = "price_at_time", precision = 12, scale = 2, nullable = false)
-    private BigDecimal priceAtTime;
+    @Column(name = "unit_price", precision = 12, scale = 2, nullable = false)
+    private BigDecimal unitPrice;               // NUMERIC(12,2) CHECK >= 0
 
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private OffsetDateTime createdAt;
+    @Column(name = "discount_amount", precision = 12, scale = 2)
+    private BigDecimal discountAmount;          // DEFAULT 0
+
+    @Column(name = "line_total", insertable = false, updatable = false)
+    private BigDecimal lineTotal;               // GENERATED ALWAYS AS STORED: (unit_price - discount_amount)*quantity
 }

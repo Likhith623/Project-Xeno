@@ -40,4 +40,11 @@ public class OrderService {
         OrderEntity savedOrder = orderRepository.save(order);
         return orderMapper.toResponseDto(savedOrder);
     }
+
+    @Transactional(readOnly = true)
+    public OrderResponseDto getOrderById(UUID id) {
+        OrderEntity order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+        return orderMapper.toResponseDto(order);
+    }
 }

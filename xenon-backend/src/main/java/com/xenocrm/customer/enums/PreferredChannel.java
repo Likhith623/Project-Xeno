@@ -1,13 +1,10 @@
 package com.xenocrm.customer.enums;
 
 /**
- * PreferredChannel — Enum representing preferred communication channels.
+ * PreferredChannel -- Domain enum for preferred_channel IN (email,whatsapp,sms,rcs).
  * Layer: Domain Enum
- * Purpose: Matches the 'preferred_channel' check constraint in the database.
+ * Converter: PreferredChannelConverter translates to/from lowercase for PostgreSQL CHECK constraints.
  */
 public enum PreferredChannel {
-    EMAIL,
-    WHATSAPP,
-    SMS,
-    RCS
+    EMAIL, WHATSAPP, SMS, RCS
 }

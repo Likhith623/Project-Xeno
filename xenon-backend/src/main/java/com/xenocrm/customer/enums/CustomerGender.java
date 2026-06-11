@@ -1,13 +1,10 @@
 package com.xenocrm.customer.enums;
 
 /**
- * CustomerGender — Enum representing customer gender.
+ * CustomerGender -- Domain enum for gender IN (male,female,other,unknown).
  * Layer: Domain Enum
- * Purpose: Matches the 'gender' check constraint in the database.
+ * Converter: CustomerGenderConverter translates to/from lowercase for PostgreSQL CHECK constraints.
  */
 public enum CustomerGender {
-    MALE,
-    feMALE,
-    OTHER,
-    UNKNOWN
+    MALE, FEMALE, OTHER, UNKNOWN
 }

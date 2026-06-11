@@ -2,34 +2,53 @@ package com.xenocrm.customer.dto;
 
 import com.xenocrm.customer.enums.CustomerGender;
 import com.xenocrm.customer.enums.PreferredChannel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
-@Data
+/** Customer360ResponseDto -- 360 view: customer identity + computed metrics. Layer: DTO */
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Customer360ResponseDto {
     private UUID id;
-    private String phone;
+    private String externalId;
     private String email;
+    private String phone;
+    private String whatsappNumber;
     private String name;
     private CustomerGender gender;
     private LocalDate dateOfBirth;
     private String city;
+    private String state;
     private String country;
-    private String[] optOutChannels;
+    private String[] tags;
     private Map<String, Object> customAttributes;
     private PreferredChannel preferredChannel;
+    private String[] optOutChannels;
+    private boolean isGloballyOptedOut;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
-    
-    private Integer totalOrders;
-    private BigDecimal totalSpent;
-    private OffsetDateTime lastOrderDate;
-    private BigDecimal aov;
-    private BigDecimal purchaseFrequency;
+    // Metrics from customer_metrics
+    private Integer recencyDays;
+    private Integer frequency;
+    private BigDecimal monetaryTotal;
+    private BigDecimal monetaryAvgOrder;
+    private BigDecimal rfmScore;
+    private Integer totalOrdersLast30d;
+    private Integer totalOrdersLast90d;
+    private BigDecimal avgDaysBetweenOrders;
+    private UUID favouriteCategoryId;
+    private String favouriteChannel;
+    private BigDecimal clvPredicted;
     private BigDecimal churnProbability;
-    private BigDecimal predictedLtv;
+    private BigDecimal emailOpenRate;
+    private BigDecimal emailClickRate;
+    private BigDecimal whatsappReadRate;
+    private BigDecimal smsClickRate;
+    private OffsetDateTime lastComputedAt;
 }
