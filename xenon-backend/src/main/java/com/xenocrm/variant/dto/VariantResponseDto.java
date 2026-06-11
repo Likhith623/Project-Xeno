@@ -1,6 +1,6 @@
 package com.xenocrm.variant.dto;
 
-import com.xenocrm.variant.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

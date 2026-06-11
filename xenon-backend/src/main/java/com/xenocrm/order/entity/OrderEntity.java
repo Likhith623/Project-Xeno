@@ -47,7 +47,7 @@ public class OrderEntity {
     @Column(name = "currency", nullable = false)
     private String currency; // DEFAULT 'INR'
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status", nullable = false)
     private OrderStatus status; // DEFAULT 'completed'
 

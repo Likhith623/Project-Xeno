@@ -5,7 +5,9 @@ package com.xenocrm.order.enums;
  */
 public enum OrderStatus {
     PENDING,
-    COMPLETED,
+    CONFIRMED,
+    SHIPPED,
+    DELIVERED,
     CANCELLED,
-    REFUNDED
+    RETURNED
 }

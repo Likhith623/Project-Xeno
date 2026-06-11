@@ -37,11 +37,11 @@ public class AudienceSegmentEntity {
     @Column(name = "description")
     private String description;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "type")
     private SegmentType type; // 'static','dynamic','ai_generated' DEFAULT 'dynamic'
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status")
     private SegmentStatus status; // 'draft','building','ready','archived' DEFAULT 'draft'
 

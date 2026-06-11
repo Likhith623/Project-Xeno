@@ -1,7 +1,7 @@
 package com.xenocrm.variant.entity;
 
 import com.xenocrm.campaign.entity.CampaignEntity;
-import com.xenocrm.variant.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

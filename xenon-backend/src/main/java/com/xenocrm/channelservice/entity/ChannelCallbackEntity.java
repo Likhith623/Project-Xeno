@@ -44,7 +44,7 @@ public class ChannelCallbackEntity {
     @Column(name = "channel_message_id")
     private String channelMessageId; // Used to match communication if FK is null
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "event_type", nullable = false)
     private ChannelCallbackEventType eventType; // NOT NULL
 
@@ -59,7 +59,7 @@ public class ChannelCallbackEntity {
     @Column(name = "processed_at")
     private OffsetDateTime processedAt; // Set by Postgres trigger fn_apply_callback
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "processing_status")
     private CallbackProcessingStatus processingStatus; // DEFAULT 'pending'
 

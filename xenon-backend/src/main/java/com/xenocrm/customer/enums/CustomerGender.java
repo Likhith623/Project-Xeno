@@ -7,7 +7,7 @@ package com.xenocrm.customer.enums;
  */
 public enum CustomerGender {
     MALE,
-    FEMALE,
+    feMALE,
     OTHER,
     UNKNOWN
 }

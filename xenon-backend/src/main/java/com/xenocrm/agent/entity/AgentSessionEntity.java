@@ -33,7 +33,7 @@ public class AgentSessionEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String goal;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status")
     private AgentSessionStatus status; // DEFAULT 'running'
 

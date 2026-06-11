@@ -1,7 +1,7 @@
 package com.xenocrm.memory.repository;
 
 import com.xenocrm.memory.entity.OrgMemoryEntryEntity;
-import com.xenocrm.communication.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

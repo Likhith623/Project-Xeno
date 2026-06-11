@@ -2,7 +2,7 @@ package com.xenocrm.memory.entity;
 
 import com.xenocrm.memory.enums.MemoryLearningType;
 import com.xenocrm.memory.enums.TimeOfDay;
-import com.xenocrm.variant.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import io.hypersistence.utils.hibernate.type.array.UUIDArrayType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -46,11 +46,11 @@ public class OrgMemoryEntryEntity {
     @Column(name = "day_of_week")
     private Integer dayOfWeek;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "time_of_day")
     private TimeOfDay timeOfDay;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "learning_type", nullable = false)
     private MemoryLearningType learningType;
 

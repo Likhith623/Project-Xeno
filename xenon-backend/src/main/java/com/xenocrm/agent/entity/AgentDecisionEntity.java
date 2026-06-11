@@ -36,7 +36,7 @@ public class AgentDecisionEntity {
     @Column(name = "step_number", nullable = false)
     private int stepNumber;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "decision_type", nullable = false)
     private AgentDecisionType decisionType;
 

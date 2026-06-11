@@ -5,7 +5,7 @@ import com.xenocrm.communication.enums.CommunicationStatus;
 import com.xenocrm.customer.entity.CustomerEntity;
 import com.xenocrm.order.entity.OrderEntity;
 import com.xenocrm.variant.entity.MessageVariantEntity;
-import com.xenocrm.variant.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,7 +50,7 @@ public class CommunicationEntity {
     @Column(name = "channel", columnDefinition = "message_channel")
     private MessageChannel channel;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status")
     private CommunicationStatus status;
 

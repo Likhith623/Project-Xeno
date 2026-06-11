@@ -3,7 +3,7 @@ package com.xenocrm.correction.dto;
 import com.xenocrm.correction.enums.CorrectionActionType;
 import com.xenocrm.correction.enums.CorrectionOutcome;
 import com.xenocrm.correction.enums.CorrectionTriggerType;
-import com.xenocrm.variant.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import lombok.Data;
 
 import java.math.BigDecimal;

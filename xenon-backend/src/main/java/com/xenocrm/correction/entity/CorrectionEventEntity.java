@@ -5,7 +5,7 @@ import com.xenocrm.correction.enums.CorrectionActionType;
 import com.xenocrm.correction.enums.CorrectionOutcome;
 import com.xenocrm.correction.enums.CorrectionTriggerType;
 import com.xenocrm.variant.entity.MessageVariantEntity;
-import com.xenocrm.variant.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,7 +42,7 @@ public class CorrectionEventEntity {
     @JoinColumn(name = "campaign_id")
     private CampaignEntity campaign;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "trigger_type", nullable = false)
     private CorrectionTriggerType triggerType;
 
@@ -55,7 +55,7 @@ public class CorrectionEventEntity {
     @Column(name = "cohort_size")
     private Integer cohortSize;
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "action_taken", nullable = false)
     private CorrectionActionType actionTaken;
 
@@ -78,7 +78,7 @@ public class CorrectionEventEntity {
     @Column(name = "ai_reasoning", columnDefinition = "TEXT")
     private String aiReasoning; // LLM explanation stored verbatim for audit
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "correction_outcome")
     private CorrectionOutcome correctionOutcome; // nullable — filled in after correction runs
 

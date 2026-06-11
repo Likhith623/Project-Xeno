@@ -2,7 +2,7 @@ package com.xenocrm.memory.dto;
 
 import com.xenocrm.memory.enums.MemoryLearningType;
 import com.xenocrm.memory.enums.TimeOfDay;
-import com.xenocrm.variant.enums.MessageChannel;
+import com.xenocrm.channelservice.enums.MessageChannel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
