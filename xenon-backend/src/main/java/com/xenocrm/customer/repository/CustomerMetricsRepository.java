@@ -12,4 +12,7 @@ import java.util.UUID;
  */
 @Repository
 public interface CustomerMetricsRepository extends JpaRepository<CustomerMetricsEntity, UUID> {
+    java.util.Optional<CustomerMetricsEntity> findByCustomerId(UUID customerId);
+    java.util.List<CustomerMetricsEntity> findAllByRfmScoreGreaterThanEqual(java.math.BigDecimal minimumRfmScore);
+    java.util.List<CustomerMetricsEntity> findAllByChurnProbabilityGreaterThan(java.math.BigDecimal threshold);
 }

@@ -5,7 +5,7 @@ import com.xenocrm.common.ResponseWrapper;
 import com.xenocrm.memory.dto.OrgMemoryEntryDto;
 import com.xenocrm.memory.entity.OrgMemoryEntryEntity;
 import com.xenocrm.memory.mapper.OrgMemoryMapper;
-import com.xenocrm.memory.repository.OrgMemoryRepository;
+import com.xenocrm.memory.repository.OrgMemoryEntryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Organizational Memory", description = "Endpoints for AI knowledge base")
 public class MemoryController {
 
-    private final OrgMemoryRepository memoryRepository;
+    private final OrgMemoryEntryRepository memoryRepository;
     private final OrgMemoryMapper memoryMapper;
 
     @GetMapping

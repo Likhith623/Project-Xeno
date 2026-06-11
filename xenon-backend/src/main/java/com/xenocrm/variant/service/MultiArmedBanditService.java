@@ -1,7 +1,7 @@
 package com.xenocrm.variant.service;
 
-import com.xenocrm.variant.entity.VariantEntity;
-import com.xenocrm.variant.repository.VariantRepository;
+import com.xenocrm.variant.entity.MessageVariantEntity;
+import com.xenocrm.variant.repository.MessageVariantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.distribution.BetaDistribution;
@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 /**
  * MultiArmedBanditService — Implements Thompson Sampling for variant selection.
@@ -19,14 +20,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MultiArmedBanditService {
 
-    private final VariantRepository variantRepository;
+    private final MessageVariantRepository variantRepository;
 
     /**
      * Selects the best variant for a campaign using Thompson Sampling.
      */
     @Transactional(readOnly = true)
-    public VariantEntity selectBestVariant(UUID campaignId) {
-        List<VariantEntity> variants = variantRepository.findByCampaignId(campaignId);
+    public MessageVariantEntity selectBestVariant(UUID campaignId) {
+        List<MessageVariantEntity> variants = variantRepository.findAllByCampaignId(campaignId);
         
         if (variants.isEmpty()) {
             throw new IllegalStateException("No variants found for campaign " + campaignId);
@@ -36,12 +37,14 @@ public class MultiArmedBanditService {
             return variants.get(0);
         }
 
-        VariantEntity bestVariant = null;
+        MessageVariantEntity bestVariant = null;
         double maxSample = -1.0;
 
-        for (VariantEntity variant : variants) {
+        for (MessageVariantEntity variant : variants) {
             // Thompson sampling uses Beta distribution
-            BetaDistribution betaDistribution = new BetaDistribution(variant.getAlpha(), variant.getBeta());
+            double alpha = variant.getMabAlpha() != null ? variant.getMabAlpha().doubleValue() : 1.0;
+            double beta = variant.getMabBeta() != null ? variant.getMabBeta().doubleValue() : 1.0;
+            BetaDistribution betaDistribution = new BetaDistribution(alpha, beta);
             double sample = betaDistribution.sample();
             
             log.trace("Variant {} sampled value: {}", variant.getId(), sample);
@@ -62,11 +65,10 @@ public class MultiArmedBanditService {
     public void recordFeedback(UUID variantId, boolean success) {
         variantRepository.findById(variantId).ifPresent(variant -> {
             if (success) {
-                variant.setAlpha(variant.getAlpha() + 1.0);
+                variantRepository.incrementMabAlpha(variantId);
             } else {
-                variant.setBeta(variant.getBeta() + 1.0);
+                variantRepository.incrementMabBeta(variantId);
             }
-            variantRepository.save(variant);
         });
     }
 }

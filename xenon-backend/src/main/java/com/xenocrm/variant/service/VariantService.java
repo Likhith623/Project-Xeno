@@ -7,7 +7,7 @@ import com.xenocrm.variant.dto.VariantCreateRequestDto;
 import com.xenocrm.variant.dto.VariantResponseDto;
 import com.xenocrm.variant.entity.MessageVariantEntity;
 import com.xenocrm.variant.mapper.VariantMapper;
-import com.xenocrm.variant.repository.VariantRepository;
+import com.xenocrm.variant.repository.MessageVariantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class VariantService {
 
-    private final VariantRepository variantRepository;
+    private final MessageVariantRepository variantRepository;
     private final CampaignRepository campaignRepository;
     private final VariantMapper variantMapper;
 

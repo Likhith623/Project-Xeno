@@ -1,6 +1,7 @@
 package com.xenocrm.agent.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xenocrm.exception.ExternalServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -8,11 +9,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * AgentLlmGatewayService — The ONLY gateway to the LLM (Gemini).
- * Layer: Service
+ * AgentLlmGatewayService — The ONLY class that calls the Gemini REST API.
+ * Layer: Service (LLM Infrastructure)
+ * All other services that need LLM output must call this service.
+ * Direct Gemini calls anywhere else are forbidden.
+ *
+ * Gemini endpoint format:
+ *   POST {gemini.endpoint}/{gemini.model}:generateContent?key={gemini.api-key}
+ *
+ * Request body:
+ *   { "contents": [{ "role": "user", "parts": [{ "text": "..." }] }],
+ *     "generationConfig": { "temperature": 0.3, "maxOutputTokens": 2000 } }
+ *
+ * Response parsing:
+ *   response.candidates[0].content.parts[0].text
  */
 @Service
 @RequiredArgsConstructor
@@ -30,30 +44,81 @@ public class AgentLlmGatewayService {
     @Value("${gemini.model}")
     private String geminiModel;
 
-    public <T> T callGemini(String prompt, Class<T> responseType) {
-        log.info("Calling Gemini API with model: {}", geminiModel);
+    @Value("${gemini.max-output-tokens:2000}")
+    private int maxOutputTokens;
 
-        String uri = String.format("/%s:generateContent?key=%s", geminiModel, geminiApiKey);
+    @Value("${gemini.temperature:0.3}")
+    private double temperature;
 
-        Map<String, Object> requestBody = Map.of(
-            "contents", Map.of(
-                "parts", Map.of("text", prompt)
+    /**
+     * Sends a text prompt to Gemini and returns the raw text response.
+     *
+     * @param prompt the complete prompt string to send
+     * @return the LLM's text response
+     * @throws ExternalServiceException if Gemini returns an error or the response cannot be parsed
+     */
+    public String callGemini(String prompt) {
+        // Build request body as a Map (Jackson will serialize it)
+        Map<String,Object> requestBody = Map.of(
+            "contents", List.of(
+                Map.of("role", "user",
+                       "parts", List.of(Map.of("text", prompt)))
+            ),
+            "generationConfig", Map.of(
+                "temperature", temperature,
+                "maxOutputTokens", maxOutputTokens
             )
         );
 
-        try {
-            String jsonResponse = geminiRestClient.post()
-                    .uri(uri)
-                    .body(requestBody)
-                    .retrieve()
-                    .body(String.class);
+        // Call Gemini: POST /models/{model}:generateContent?key={apiKey}
+        String endpoint = "/" + geminiModel + ":generateContent?key=" + geminiApiKey;
 
-            // Stub: In reality, parse the response from Gemini structure -> JSON string -> Object
-            // Here we just return a new instance for the stub since we don't have a real Gemini response parsing setup
-            return responseType.getDeclaredConstructor().newInstance();
+        try {
+            Map<?,?> responseBody = geminiRestClient.post()
+                .uri(endpoint)
+                .body(requestBody)
+                .retrieve()
+                .body(Map.class);
+
+            // Parse: response.candidates[0].content.parts[0].text
+            List<?> candidates = (List<?>) responseBody.get("candidates");
+            Map<?,?> firstCandidate = (Map<?,?>) candidates.get(0);
+            Map<?,?> content = (Map<?,?>) firstCandidate.get("content");
+            List<?> parts = (List<?>) content.get("parts");
+            Map<?,?> firstPart = (Map<?,?>) parts.get(0);
+            return (String) firstPart.get("text");
+
+        } catch (Exception geminiCallException) {
+            log.error("Gemini API call failed: {}", geminiCallException.getMessage(), geminiCallException);
+            throw new ExternalServiceException("Gemini", "Gemini API call failed: " + geminiCallException.getMessage());
+        }
+    }
+
+    /**
+     * Calls Gemini and parses the response as JSON into the given class.
+     * The prompt must instruct Gemini to respond ONLY with valid JSON.
+     *
+     * @param prompt the prompt — must instruct Gemini: "Respond ONLY with JSON. No preamble."
+     * @param responseClass the class to deserialize the JSON into
+     * @return the deserialized object
+     */
+    public <T> T callGemini(String prompt, Class<T> responseClass) {
+        String jsonText = callGemini(prompt);
+        try {
+            // Remove markdown code blocks if the LLM wrapped it
+            if (jsonText.startsWith("```json")) {
+                jsonText = jsonText.substring(7);
+            }
+            if (jsonText.startsWith("```")) {
+                jsonText = jsonText.substring(3);
+            }
+            if (jsonText.endsWith("```")) {
+                jsonText = jsonText.substring(0, jsonText.length() - 3);
+            }
+            return objectMapper.readValue(jsonText.trim(), responseClass);
         } catch (Exception e) {
-            log.error("Failed to call Gemini API: {}", e.getMessage());
-            throw new RuntimeException("LLM call failed", e);
+            log.error("Failed to parse Gemini JSON response into {}: {}", responseClass.getSimpleName(), e.getMessage());
+            throw new ExternalServiceException("Gemini", "Failed to parse JSON: " + e.getMessage());
         }
     }
 }

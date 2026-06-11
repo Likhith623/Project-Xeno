@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface AgentDecisionRepository extends JpaRepository<AgentDecisionEntity, UUID> {
+    java.util.List<AgentDecisionEntity> findAllBySessionIdOrderByStepNumberAsc(UUID sessionId);
 }

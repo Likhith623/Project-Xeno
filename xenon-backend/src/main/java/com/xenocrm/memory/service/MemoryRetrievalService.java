@@ -1,7 +1,7 @@
 package com.xenocrm.memory.service;
 
 import com.xenocrm.memory.entity.OrgMemoryEntryEntity;
-import com.xenocrm.memory.repository.OrgMemoryRepository;
+import com.xenocrm.memory.repository.OrgMemoryEntryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MemoryRetrievalService {
 
-    private final OrgMemoryRepository memoryRepository;
+    private final OrgMemoryEntryRepository memoryRepository;
 
     public String buildContextPromptForSegment(String segmentTag) {
-        List<OrgMemoryEntryEntity> memories = memoryRepository.findBySegmentTag(segmentTag);
+        List<OrgMemoryEntryEntity> memories = memoryRepository.findAllBySegmentTagAndIsActiveTrue(segmentTag);
 
         if (memories.isEmpty()) {
             return "No prior organizational memory available for segment: " + segmentTag;

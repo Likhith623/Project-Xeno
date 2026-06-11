@@ -3,9 +3,9 @@ spring:
     name: xeno-crm-backend
 
   datasource:
-    url: ${spring.datasource.url}
-    username: ${spring.datasource.username}
-    password: ${spring.datasource.password}
+    url: jdbc:postgresql://db.${SUPABASE_PROJECT_ID}.supabase.co:5432/postgres
+    username: postgres
+    password: ${SUPABASE_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -54,7 +54,7 @@ channel:
 
 # ── Security ────────────────────────────────────────────────────────────────
 security:
-  api-key: ${CRM_API_KEY:default-dev-key}
+  api-key: ${CRM_API_KEY}
 
 # ── Async ───────────────────────────────────────────────────────────────────
 async:

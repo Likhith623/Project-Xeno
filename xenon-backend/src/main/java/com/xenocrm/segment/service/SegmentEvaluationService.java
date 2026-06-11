@@ -7,7 +7,7 @@ import com.xenocrm.segment.entity.AudienceSegmentEntity;
 import com.xenocrm.segment.enums.SegmentStatus;
 import com.xenocrm.segment.enums.SegmentType;
 import com.xenocrm.segment.mapper.SegmentMapper;
-import com.xenocrm.segment.repository.SegmentRepository;
+import com.xenocrm.segment.repository.AudienceSegmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class SegmentEvaluationService {
 
-    private final SegmentRepository segmentRepository;
+    private final AudienceSegmentRepository segmentRepository;
     private final SegmentMapper segmentMapper;
 
     @Transactional

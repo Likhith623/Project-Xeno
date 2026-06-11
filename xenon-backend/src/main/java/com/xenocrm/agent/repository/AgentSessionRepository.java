@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface AgentSessionRepository extends JpaRepository<AgentSessionEntity, UUID> {
+    java.util.List<AgentSessionEntity> findAllByStatus(com.xenocrm.agent.enums.AgentSessionStatus status);
 }

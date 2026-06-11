@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -48,11 +49,11 @@ public class AgentOrchestrationService {
         log.info("Processing chat for session {}", session.getId());
 
         // Call Gemini
-        llmGatewayService.callGemini(requestDto.getPrompt(), String.class);
+        String llmResponse = llmGatewayService.callGemini(requestDto.getPrompt());
 
         return AgentChatResponseDto.builder()
                 .sessionId(session.getId())
-                .textReply("This is a mock reply from the Sovereign Agent.")
+                .textReply(llmResponse)
                 .actionTaken(AgentDecisionType.segment_query)
                 .build();
     }
