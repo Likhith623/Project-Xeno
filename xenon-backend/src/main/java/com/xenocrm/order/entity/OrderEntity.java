@@ -34,9 +34,6 @@ public class OrderEntity {
     @Column(name = "id")
     private UUID id;
 
-    @Column(name = "external_id", unique = true, nullable = false)
-    private String externalId;
-
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private CustomerEntity customer;
@@ -44,28 +41,15 @@ public class OrderEntity {
     @Column(name = "total_amount", precision = 12, scale = 2, nullable = false)
     private BigDecimal totalAmount;
 
-    @Column(name = "currency", nullable = false)
-    private String currency; // DEFAULT 'INR'
-
-    
-    @Column(name = "status", nullable = false)
-    private OrderStatus status; // DEFAULT 'completed'
-
-    @Column(name = "order_date", nullable = false)
-    private OffsetDateTime orderDate;
-
-    @Column(name = "store_id")
-    private String storeId;
-
-    @Column(name = "channel")
-    private String channel;
+    @Column(name = "status")
+    private OrderStatus status; // DEFAULT 'pending'
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
     @Builder.Default

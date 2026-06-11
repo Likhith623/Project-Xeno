@@ -39,15 +39,12 @@ public class OrderItemEntity {
     private ProductEntity product;
 
     @Column(name = "quantity", nullable = false)
-    private Integer quantity; // DEFAULT 1
+    private Integer quantity; // CHECK (quantity > 0)
 
-    @Column(name = "unit_price", precision = 12, scale = 2, nullable = false)
-    private BigDecimal unitPrice;
-
-    @Column(name = "subtotal", precision = 12, scale = 2, nullable = false)
-    private BigDecimal subtotal;
+    @Column(name = "price_at_time", precision = 12, scale = 2, nullable = false)
+    private BigDecimal priceAtTime;
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private OffsetDateTime createdAt;
 }

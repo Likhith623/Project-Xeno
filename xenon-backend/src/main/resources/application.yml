@@ -74,10 +74,7 @@ logging:
     com.xenocrm: DEBUG
 
 ---
-# Channel stub profile — runs on port 8081
 spring:
-  config:
-    activate:
-      on-profile: stub
+  profiles: stub
 server:
   port: 8081

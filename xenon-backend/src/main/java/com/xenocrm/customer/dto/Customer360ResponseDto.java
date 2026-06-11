@@ -2,62 +2,34 @@ package com.xenocrm.customer.dto;
 
 import com.xenocrm.customer.enums.CustomerGender;
 import com.xenocrm.customer.enums.PreferredChannel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Customer360ResponseDto — Comprehensive DTO containing customer and their computed metrics.
- * Layer: DTO
- * Purpose: API response for a full customer view.
- */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Customer360ResponseDto {
     private UUID id;
-    private String externalId;
-    private String email;
     private String phone;
-    private String whatsappNumber;
+    private String email;
     private String name;
     private CustomerGender gender;
     private LocalDate dateOfBirth;
     private String city;
-    private String state;
     private String country;
-    private String[] tags;
+    private String[] optOutChannels;
     private Map<String, Object> customAttributes;
     private PreferredChannel preferredChannel;
-    private String[] optOutChannels;
-    private boolean isGloballyOptedOut;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
-
-    // Metrics fields
-    private Integer recencyDays;
-    private Integer frequency;
-    private BigDecimal monetaryTotal;
-    private BigDecimal monetaryAvgOrder;
-    private BigDecimal rfmScore;
-    private Integer totalOrdersLast30d;
-    private Integer totalOrdersLast90d;
-    private BigDecimal avgDaysBetweenOrders;
-    private UUID favouriteCategoryId;
-    private String favouriteChannel;
-    private BigDecimal clvPredicted;
+    
+    private Integer totalOrders;
+    private BigDecimal totalSpent;
+    private OffsetDateTime lastOrderDate;
+    private BigDecimal aov;
+    private BigDecimal purchaseFrequency;
     private BigDecimal churnProbability;
-    private BigDecimal emailOpenRate;
-    private BigDecimal emailClickRate;
-    private BigDecimal whatsappReadRate;
-    private BigDecimal smsClickRate;
-    private OffsetDateTime lastComputedAt;
+    private BigDecimal predictedLtv;
 }

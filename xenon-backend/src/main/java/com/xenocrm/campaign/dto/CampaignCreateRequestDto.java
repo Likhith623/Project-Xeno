@@ -2,15 +2,14 @@ package com.xenocrm.campaign.dto;
 
 import com.xenocrm.campaign.enums.CampaignStatus;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -25,19 +24,16 @@ public class CampaignCreateRequestDto {
     @NotBlank
     private String name;
 
-    private String description;
-
     @NotNull
     private UUID segmentId;
 
     private CampaignStatus status;
 
-    private OffsetDateTime scheduledAt;
+    private BigDecimal budget;
 
-    @NotEmpty
-    private String[] channels;
+    private OffsetDateTime startDate;
 
-    private String[] tags;
+    private OffsetDateTime endDate;
 
-    private Map<String, Object> utmParams;
+    private String goal;
 }
