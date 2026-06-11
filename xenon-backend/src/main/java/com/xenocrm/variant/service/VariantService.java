@@ -58,4 +58,11 @@ public class VariantService {
                 .map(variantMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public MessageVariantResponseDto getVariantById(UUID id) {
+        MessageVariantEntity variant = variantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Variant", "id", id));
+        return variantMapper.toResponseDto(variant);
+    }
 }

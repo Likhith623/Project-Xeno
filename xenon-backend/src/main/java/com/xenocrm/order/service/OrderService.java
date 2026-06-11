@@ -36,6 +36,9 @@ public class OrderService {
         if (order.getStatus() == null) {
             order.setStatus(OrderStatus.PENDING);
         }
+        if (order.getPlacedAt() == null) {
+            order.setPlacedAt(java.time.OffsetDateTime.now());
+        }
 
         OrderEntity savedOrder = orderRepository.save(order);
         return orderMapper.toResponseDto(savedOrder);

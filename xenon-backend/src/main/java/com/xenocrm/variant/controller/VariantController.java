@@ -39,4 +39,11 @@ public class VariantController {
         List<MessageVariantResponseDto> responseDtos = variantService.getVariantsByCampaignId(campaignId);
         return ResponseEntity.ok(ResponseWrapper.success(responseDtos));
     }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get variant by ID")
+    public ResponseEntity<ResponseWrapper<MessageVariantResponseDto>> getVariantById(@PathVariable UUID id) {
+        MessageVariantResponseDto responseDto = variantService.getVariantById(id);
+        return ResponseEntity.ok(ResponseWrapper.success(responseDto));
+    }
 }

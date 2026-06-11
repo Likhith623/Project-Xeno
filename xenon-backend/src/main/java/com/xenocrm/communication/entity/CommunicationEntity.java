@@ -7,6 +7,8 @@ import com.xenocrm.order.entity.OrderEntity;
 import com.xenocrm.variant.entity.MessageVariantEntity;
 import com.xenocrm.channelservice.enums.MessageChannel;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,12 +47,12 @@ public class CommunicationEntity {
     @JoinColumn(name = "customer_id", nullable = false)
     private CustomerEntity customer;
 
-    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "channel", columnDefinition = "message_channel")
     private MessageChannel channel;
 
     
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status")
     private CommunicationStatus status;
 

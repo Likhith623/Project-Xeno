@@ -45,7 +45,7 @@ public class OrderEntity {
     @Column(name = "order_number", unique = true)
     private String orderNumber;                 // UNIQUE, nullable
 
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status")
     private OrderStatus status;                 // pending/confirmed/shipped/delivered/cancelled/returned
 
@@ -64,8 +64,9 @@ public class OrderEntity {
     @Column(name = "coupon_code")
     private String couponCode;                  // nullable
 
+    @Builder.Default
     @Column(name = "placed_at", nullable = false)
-    private OffsetDateTime placedAt;            // NOT NULL DEFAULT NOW()
+    private OffsetDateTime placedAt = OffsetDateTime.now();            // NOT NULL DEFAULT NOW()
 
     @Column(name = "delivered_at")
     private OffsetDateTime deliveredAt;         // nullable

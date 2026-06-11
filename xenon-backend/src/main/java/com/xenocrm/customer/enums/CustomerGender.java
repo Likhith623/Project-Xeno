@@ -1,7 +1,7 @@
 package com.xenocrm.customer.enums;
 
 /**
- * CustomerGender -- Domain enum for gender IN (male,female,other,unknown).
+ * CustomerGender -- Domain enum for gender IN (MALE,feMALE,OTHER,UNKNOWN).
  * Layer: Domain Enum
  * Converter: CustomerGenderConverter translates to/from lowercase for PostgreSQL CHECK constraints.
  */

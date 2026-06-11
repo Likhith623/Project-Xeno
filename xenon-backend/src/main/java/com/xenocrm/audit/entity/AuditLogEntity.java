@@ -46,7 +46,7 @@ public class AuditLogEntity {
     private String action; // "CREATE","UPDATE","DELETE","LAUNCH","PAUSE","CORRECT"
 
     
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "actor_type", length = 50, nullable = false)
     private AuditActorType actorType; // USER | AGENT | SYSTEM
 

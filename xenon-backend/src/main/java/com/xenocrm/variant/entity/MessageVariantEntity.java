@@ -43,7 +43,7 @@ public class MessageVariantEntity {
     @Column(name = "name", nullable = false)
     private String name;                        // NOT NULL -- e.g. Email - urgency copy A
 
-    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "channel", columnDefinition = "message_channel", nullable = false)
     private MessageChannel channel;             // Postgres ENUM -- must include columnDefinition
 

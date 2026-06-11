@@ -41,7 +41,7 @@ public class SimulationRunEntity {
     private CampaignEntity campaign;
 
     
-    @Enumerated(EnumType.STRING)
+    
     @Column(name = "status")
     private SimulationRunStatus status; // DEFAULT 'pending'
 

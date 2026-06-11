@@ -6,5 +6,5 @@ package com.xenocrm.channelservice.enums;
  * Converter: MessageChannelConverter translates to/from lowercase for PostgreSQL CHECK constraints.
  */
 public enum MessageChannel {
-    EMAIL, WHATSAPP, SMS, RCS
+    email, whatsapp, sms, rcs
 }
