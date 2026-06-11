@@ -1,0 +1,2778 @@
+# XENO AI-NATIVE CRM — BACKEND BUILD PROMPT (FINAL)
+# Paste this ENTIRE file as your prompt. Do not skip any section.
+# Every section is a hard requirement.
+
+---
+
+## YOUR ROLE AND MISSION
+
+You are a senior Java engineer building the complete, production-quality Spring Boot backend
+for an AI-native CRM called Xeno Mini CRM. You write clean, fully commented,
+enterprise-grade code. You follow every instruction in this document exactly.
+
+The database schema is provided at the bottom of this prompt. It already exists in Supabase
+PostgreSQL. Your job is to build a Spring Boot application that maps to it perfectly — every
+table, every column, every view, every stored function, every enum value — zero drift allowed.
+
+---
+
+## CRITICAL DECISIONS — READ FIRST
+
+### LLM: GEMINI ONLY
+- Use **ONLY Google Gemini** via the REST API (`RestClient`). No OpenAI SDK, no OpenAI
+  dependency in pom.xml, nothing from OpenAI anywhere.
+- The Gemini API key already exists in `src/main/resources/application-local.properties`
+  as `gemini.api-key`. Your `application.yml` must reference it as `${gemini.api-key}`.
+- The Gemini endpoint for text generation is:
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={apiKey}`
+- The Gemini HTTP request body format is:
+  ```json
+  {
+    "contents": [{ "role": "user", "parts": [{ "text": "your prompt here" }] }],
+    "generationConfig": { "temperature": 0.3, "maxOutputTokens": 2000 }
+  }
+  ```
+- The Gemini HTTP response body to parse is at: `response.candidates[0].content.parts[0].text`
+- `AgentLlmGatewayService` wraps this REST call completely. All other services call only
+  `AgentLlmGatewayService` — never call Gemini directly from any other class.
+
+### ARRAY/JSONB HIBERNATE MAPPING
+- You MUST add the `io.hypersistence:hypersistence-utils-hibernate-63` dependency to pom.xml.
+- For `String[]` columns (`tags`, `optOutChannels`): use `@Type(io.hypersistence.utils.hibernate.type.array.StringArrayType.class)`
+- For `UUID[]` columns (`sourceCampaignIds` in `org_memory_entries`): use `@Type(io.hypersistence.utils.hibernate.type.array.UUIDArrayType.class)`
+- For all `JSONB` columns (`customAttributes`, `filterJson`, `templateParams`, `metadata`,
+  `attributes`, `payload`, `winningCopySignals`, `personaDistribution`, `plan`,
+  `conversationLog`, `inputContext`, `outputAction`, `oldValue`, `newValue`):
+  use `@JdbcTypeCode(SqlTypes.JSON)` from Hibernate 6.
+
+### POSTGRES ENUM MAPPING
+- The schema defines one Postgres ENUM type: `message_channel ('email','whatsapp','sms','rcs')`.
+- Map this in Java using `@Enumerated(EnumType.STRING)` on `MessageChannel` enum fields.
+- Also add `@Column(columnDefinition = "message_channel")` on those fields so Hibernate knows
+  the Postgres type. Without this, Hibernate will fail with a type cast error.
+
+### @EnableJpaAuditing PLACEMENT
+- Add `@EnableJpaAuditing` to `DatabaseConfiguration.java` (not to the main application class).
+- Every entity that uses `@CreatedDate` or `@LastModifiedDate` must have
+  `@EntityListeners(AuditingEntityListener.class)` on the class.
+
+### audit_logs entity_id IS Long (BIGINT)
+- The `audit_logs.entity_id` column is `BIGINT`. When auditing a UUID-keyed entity
+  (e.g. a campaign), convert the UUID to a String and store it in `entity_type`.
+  Do NOT try to store a UUID in `entityId`. Store a meaningful string like
+  `"Campaign:3fa85f64-5717-4562-b3fc-2c963f66afa6"` in `description` if needed.
+  `entityId` will hold a numeric ID (e.g. for future numeric-keyed tables) or `0L`
+  for UUID-keyed entities — document this clearly in `AuditLogService`.
+
+### CHANNEL STUB — SEPARATE SPRING PROFILE
+- The channel stub runs on port `8081` using the Spring profile `stub`.
+- In `application.yml`, add a profile block `spring.profiles: stub` that sets `server.port: 8081`.
+- The stub's `@SpringBootApplication` scan path is `com.xenocrm.channelstub` only,
+  so it does NOT load CRM beans. Use `@Profile("stub")` on all stub classes.
+
+---
+
+## ABSOLUTE CODE QUALITY RULES — NON-NEGOTIABLE
+
+1. **Every class has a Javadoc block comment** at the top: what it is, which layer,
+   what it depends on.
+2. **Every method has a comment** above it: what it does, parameters, return value, exceptions.
+3. **Every entity field has a one-line comment** explaining what it stores and constraints.
+4. **No magic numbers or strings.** All constants live in `XenoCrmConstants.java`.
+5. **Full descriptive names.** `campaignRepository` not `repo`. `selectedVariant` not `v`.
+   `callbackPayloadDto` not `dto`. No abbreviations anywhere.
+6. **One responsibility per class.**
+7. **No business logic in controllers.** Controllers validate → call one service → return ResponseWrapper.
+8. **No queries in services.** All DB access via Repository interfaces.
+9. **`@Transactional` on every service method that writes to the database.**
+10. **Every `@Async` method returns `CompletableFuture<T>`, never `void`.**
+11. **Entities and DTOs strictly separate.** Entities = JPA annotations. DTOs = Bean Validation.
+    MapStruct maps between them.
+12. **All API responses use `ResponseWrapper<T>`.** Never return raw entities or DTOs.
+13. **All secrets via `${property}` references.** Never hardcode keys or passwords.
+
+---
+
+## pom.xml — COMPLETE DEPENDENCY LIST
+
+```xml
+<dependencies>
+    <!-- Spring Boot core -->
+    <dependency><groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId></dependency>
+
+    <!-- PostgreSQL -->
+    <dependency><groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId><scope>runtime</scope></dependency>
+
+    <!-- Flyway -->
+    <dependency><groupId>org.flywaydb</groupId>
+        <artifactId>flyway-database-postgresql</artifactId></dependency>
+
+    <!-- Lombok -->
+    <dependency><groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId><optional>true</optional></dependency>
+
+    <!-- MapStruct -->
+    <dependency><groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId><version>1.5.5.Final</version></dependency>
+    <dependency><groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct-processor</artifactId>
+        <version>1.5.5.Final</version><scope>provided</scope></dependency>
+
+    <!-- Springdoc OpenAPI / Swagger -->
+    <dependency><groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>2.5.0</version></dependency>
+
+    <!-- Apache Commons Math — Beta distribution for Thompson Sampling -->
+    <dependency><groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId><version>3.6.1</version></dependency>
+
+    <!--
+      Hypersistence Utils — MANDATORY for mapping String[], UUID[], and JSONB
+      to Hibernate 6 / Spring Boot 3 entities.
+      Without this, @Type for array columns will not compile.
+    -->
+    <dependency>
+        <groupId>io.hypersistence</groupId>
+        <artifactId>hypersistence-utils-hibernate-63</artifactId>
+        <version>3.7.3</version>
+    </dependency>
+
+    <!-- Jackson for JSON (Java 8+ time types) -->
+    <dependency><groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId></dependency>
+
+    <!-- Test -->
+    <dependency><groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+</dependencies>
+```
+
+NOTE: There is NO OpenAI dependency. Gemini is called via Spring's built-in `RestClient`.
+
+---
+
+## application.yml — COMPLETE CONFIGURATION
+
+```yaml
+spring:
+  application:
+    name: xeno-crm-backend
+
+  datasource:
+    url: jdbc:postgresql://db.${SUPABASE_PROJECT_ID}.supabase.co:5432/postgres
+    username: postgres
+    password: ${SUPABASE_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc.batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  config:
+    # Loads application-local.properties (contains gemini.api-key, not committed to git)
+    import: optional:classpath:application-local.properties
+
+server:
+  port: 8080
+
+# ── Gemini LLM ──────────────────────────────────────────────────────────────
+gemini:
+  api-key: ${gemini.api-key}          # value comes from application-local.properties
+  model: gemini-2.5-pro
+  endpoint: https://generativelanguage.googleapis.com/v1beta/models
+  max-output-tokens: 2000
+  temperature: 0.3
+
+# ── Channel stub ────────────────────────────────────────────────────────────
+channel:
+  stub:
+    base-url: http://localhost:8081
+  crm:
+    callback-url: http://localhost:8080/api/v1/callbacks/channel
+
+# ── Security ────────────────────────────────────────────────────────────────
+security:
+  api-key: ${CRM_API_KEY}
+
+# ── Async ───────────────────────────────────────────────────────────────────
+async:
+  core-pool-size: 10
+  max-pool-size: 50
+  queue-capacity: 500
+
+# ── Self-correction thresholds ──────────────────────────────────────────────
+correction:
+  failure-rate-threshold: 0.30
+  low-open-rate-threshold: 0.05
+  opt-out-rate-threshold: 0.02
+  evaluation-window-minutes: 10
+
+logging:
+  level:
+    com.xenocrm: DEBUG
+
+---
+# Channel stub profile — runs on port 8081
+spring:
+  config:
+    activate:
+      on-profile: stub
+server:
+  port: 8081
+```
+
+---
+
+## FLYWAY MIGRATION
+
+Place the schema SQL provided at the bottom of this prompt in:
+`src/main/resources/db/migration/V1__initial_schema.sql`
+Do not modify the SQL content.
+
+---
+
+## COMPLETE PACKAGE STRUCTURE
+
+Create every package and class listed below. Do not add extras. Do not skip any.
+
+```
+com.xenocrm
+├── XenoCrmApplication.java
+│
+├── config/
+│   ├── AsyncConfiguration.java          ← ThreadPoolTaskExecutor + virtual threads
+│   ├── DatabaseConfiguration.java       ← @EnableJpaAuditing lives HERE
+│   ├── GeminiClientConfiguration.java   ← @Bean RestClient for Gemini (not "LlmClient")
+│   ├── OpenApiConfiguration.java        ← Springdoc Swagger config
+│   └── SecurityConfiguration.java       ← API key filter setup
+│
+├── constants/
+│   └── XenoCrmConstants.java
+│
+├── security/
+│   └── ApiKeyAuthenticationFilter.java
+│
+├── exception/
+│   ├── XenoCrmException.java
+│   ├── ResourceNotFoundException.java
+│   ├── ValidationException.java
+│   ├── ExternalServiceException.java
+│   └── GlobalExceptionHandler.java
+│
+├── common/
+│   ├── ResponseWrapper.java
+│   └── PaginationMetadata.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: CUSTOMERS
+│  tables: customers, customer_metrics
+│  ═══════════════════════════════
+│
+├── customer/
+│   ├── entity/
+│   │   ├── CustomerEntity.java
+│   │   └── CustomerMetricsEntity.java
+│   ├── enums/
+│   │   ├── CustomerGender.java       ← MALE, FEMALE, OTHER, UNKNOWN
+│   │   └── PreferredChannel.java     ← EMAIL, WHATSAPP, SMS, RCS
+│   ├── repository/
+│   │   ├── CustomerRepository.java
+│   │   └── CustomerMetricsRepository.java
+│   ├── dto/
+│   │   ├── CustomerCreateRequestDto.java
+│   │   ├── CustomerUpdateRequestDto.java
+│   │   ├── CustomerResponseDto.java
+│   │   └── Customer360ResponseDto.java
+│   ├── mapper/
+│   │   └── CustomerMapper.java
+│   ├── service/
+│   │   ├── CustomerIngestionService.java
+│   │   └── CustomerMetricsComputationService.java
+│   └── controller/
+│       └── CustomerController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: PRODUCTS & ORDERS
+│  tables: product_categories, products, orders, order_items
+│  ═══════════════════════════════
+│
+├── product/
+│   ├── entity/
+│   │   ├── ProductEntity.java
+│   │   └── ProductCategoryEntity.java
+│   ├── repository/
+│   │   ├── ProductRepository.java
+│   │   └── ProductCategoryRepository.java
+│   ├── dto/
+│   │   ├── ProductCreateRequestDto.java
+│   │   ├── ProductCategoryResponseDto.java
+│   │   └── ProductResponseDto.java
+│   ├── mapper/
+│   │   └── ProductMapper.java
+│   ├── service/
+│   │   └── ProductService.java
+│   └── controller/
+│       └── ProductController.java
+│
+├── order/
+│   ├── entity/
+│   │   ├── OrderEntity.java
+│   │   └── OrderItemEntity.java
+│   ├── enums/
+│   │   └── OrderStatus.java
+│   │       ← PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED, RETURNED
+│   ├── repository/
+│   │   ├── OrderRepository.java
+│   │   └── OrderItemRepository.java
+│   ├── dto/
+│   │   ├── OrderCreateRequestDto.java
+│   │   ├── OrderItemDto.java
+│   │   └── OrderResponseDto.java
+│   ├── mapper/
+│   │   └── OrderMapper.java
+│   ├── service/
+│   │   └── OrderIngestionService.java
+│   └── controller/
+│       └── OrderController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: SEGMENTATION
+│  tables: audience_segments, segment_members
+│  ═══════════════════════════════
+│
+├── segment/
+│   ├── entity/
+│   │   ├── AudienceSegmentEntity.java
+│   │   ├── SegmentMemberEntity.java
+│   │   └── SegmentMemberId.java           ← @Embeddable composite PK
+│   ├── enums/
+│   │   ├── SegmentType.java    ← STATIC, DYNAMIC, AI_GENERATED
+│   │   └── SegmentStatus.java  ← DRAFT, BUILDING, READY, ARCHIVED
+│   ├── repository/
+│   │   ├── AudienceSegmentRepository.java
+│   │   └── SegmentMemberRepository.java
+│   ├── dto/
+│   │   ├── SegmentCreateRequestDto.java
+│   │   ├── SegmentResponseDto.java
+│   │   └── SegmentEvaluationResultDto.java
+│   ├── mapper/
+│   │   └── SegmentMapper.java
+│   ├── service/
+│   │   ├── SegmentManagementService.java
+│   │   └── SegmentEvaluationService.java
+│   └── controller/
+│       └── SegmentController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: CAMPAIGNS
+│  table: campaigns
+│  views: v_campaign_performance, v_opt_out_alerts
+│  ═══════════════════════════════
+│
+├── campaign/
+│   ├── entity/
+│   │   └── CampaignEntity.java
+│   ├── enums/
+│   │   └── CampaignStatus.java
+│   │       ← DRAFT, SIMULATING, SCHEDULED, RUNNING, PAUSED, COMPLETED, CANCELLED, FAILED
+│   ├── repository/
+│   │   └── CampaignRepository.java
+│   ├── dto/
+│   │   ├── CampaignCreateRequestDto.java
+│   │   ├── CampaignResponseDto.java
+│   │   ├── CampaignStatusUpdateRequestDto.java
+│   │   ├── CampaignPerformanceSummaryDto.java
+│   │   └── OptOutAlertDto.java        ← for v_opt_out_alerts view results
+│   ├── mapper/
+│   │   └── CampaignMapper.java
+│   ├── service/
+│   │   ├── CampaignManagementService.java
+│   │   └── CampaignLaunchOrchestrationService.java
+│   └── controller/
+│       └── CampaignController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: MESSAGE VARIANTS + MAB
+│  table: message_variants
+│  view:  v_variant_mab_stats
+│  ═══════════════════════════════
+│
+├── variant/
+│   ├── entity/
+│   │   └── MessageVariantEntity.java
+│   ├── enums/
+│   │   └── MessageChannel.java
+│   │       ← EMAIL, WHATSAPP, SMS, RCS
+│   │       Maps to Postgres ENUM message_channel
+│   ├── repository/
+│   │   └── MessageVariantRepository.java
+│   ├── dto/
+│   │   ├── MessageVariantCreateRequestDto.java
+│   │   ├── MessageVariantResponseDto.java
+│   │   └── MabStatsResponseDto.java
+│   ├── mapper/
+│   │   └── MessageVariantMapper.java
+│   ├── service/
+│   │   ├── MessageVariantService.java
+│   │   └── ThompsonSamplingService.java
+│   └── controller/
+│       └── MessageVariantController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: COMMUNICATIONS
+│  table: communications
+│  ═══════════════════════════════
+│
+├── communication/
+│   ├── entity/
+│   │   └── CommunicationEntity.java
+│   ├── enums/
+│   │   └── CommunicationStatus.java
+│   │       ← PENDING, SENT, DELIVERED, FAILED, OPENED, READ,
+│   │         CLICKED, CONVERTED, UNSUBSCRIBED, BOUNCED, EXPIRED
+│   ├── repository/
+│   │   └── CommunicationRepository.java
+│   ├── dto/
+│   │   ├── CommunicationResponseDto.java
+│   │   └── CommunicationStatusSummaryDto.java
+│   ├── mapper/
+│   │   └── CommunicationMapper.java
+│   └── service/
+│       └── CommunicationTrackingService.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: CHANNEL SERVICE
+│  table: channel_callbacks
+│  ═══════════════════════════════
+│
+├── channelservice/
+│   ├── entity/
+│   │   └── ChannelCallbackEntity.java
+│   ├── enums/
+│   │   ├── ChannelCallbackEventType.java
+│   │   │   ← DELIVERED, FAILED, OPENED, READ, CLICKED,
+│   │   │     CONVERTED, UNSUBSCRIBED, BOUNCED, EXPIRED
+│   │   └── CallbackProcessingStatus.java  ← PENDING, PROCESSED, ERROR
+│   ├── repository/
+│   │   └── ChannelCallbackRepository.java
+│   ├── dto/
+│   │   ├── ChannelSendRequestDto.java
+│   │   ├── ChannelSendResponseDto.java
+│   │   └── ChannelCallbackPayloadDto.java
+│   ├── service/
+│   │   ├── ChannelDispatchService.java
+│   │   └── CallbackProcessingService.java
+│   └── controller/
+│       └── ChannelCallbackController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: CHANNEL STUB (profile: stub, port 8081)
+│  ═══════════════════════════════
+│
+├── channelstub/
+│   ├── ChannelStubController.java        ← @Profile("stub")
+│   ├── ChannelStubSimulationService.java ← @Profile("stub")
+│   └── ChannelStubOutcomeGenerator.java  ← @Profile("stub")
+│
+│  ═══════════════════════════════
+│  DOMAIN: SELF-CORRECTION ENGINE
+│  table: correction_events
+│  ═══════════════════════════════
+│
+├── correction/
+│   ├── entity/
+│   │   └── CorrectionEventEntity.java
+│   ├── enums/
+│   │   ├── CorrectionTriggerType.java
+│   │   │   ← HIGH_FAILURE_RATE, LOW_OPEN_RATE, LOW_CTR,
+│   │   │     CHANNEL_TIMEOUT, BOUNCE_SPIKE, OPT_OUT_SPIKE
+│   │   ├── CorrectionActionType.java
+│   │   │   ← SWITCH_CHANNEL, REWRITE_COPY, PAUSE_CAMPAIGN,
+│   │   │     REDUCE_FREQUENCY, ADD_FALLBACK, NO_ACTION
+│   │   └── CorrectionOutcome.java
+│   │       ← IMPROVED, NEUTRAL, WORSENED, INSUFFICIENT_DATA
+│   ├── repository/
+│   │   └── CorrectionEventRepository.java
+│   ├── dto/
+│   │   ├── CorrectionEventResponseDto.java
+│   │   └── CorrectionDecisionDto.java
+│   ├── mapper/
+│   │   └── CorrectionEventMapper.java
+│   ├── service/
+│   │   ├── CampaignHealthMonitorService.java
+│   │   ├── AiCorrectionDecisionService.java
+│   │   └── CorrectionExecutionService.java
+│   └── controller/
+│       └── CorrectionController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: AUDIENCE SIMULATOR
+│  tables: simulation_runs, simulation_personas, simulation_results
+│  ═══════════════════════════════
+│
+├── simulator/
+│   ├── entity/
+│   │   ├── SimulationRunEntity.java
+│   │   ├── SimulationPersonaEntity.java
+│   │   └── SimulationResultEntity.java
+│   ├── enums/
+│   │   └── SimulationRunStatus.java  ← PENDING, RUNNING, COMPLETED, FAILED
+│   ├── repository/
+│   │   ├── SimulationRunRepository.java
+│   │   ├── SimulationPersonaRepository.java
+│   │   └── SimulationResultRepository.java
+│   ├── dto/
+│   │   ├── SimulationRunRequestDto.java
+│   │   └── SimulationRunResultDto.java
+│   ├── mapper/
+│   │   └── SimulationMapper.java
+│   ├── service/
+│   │   ├── AudienceSimulationOrchestrationService.java
+│   │   ├── PersonaMatchingService.java
+│   │   └── MonteCarloSimulationEngine.java
+│   └── controller/
+│       └── SimulationController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: ORGANIZATIONAL MEMORY
+│  table: org_memory_entries
+│  ═══════════════════════════════
+│
+├── memory/
+│   ├── entity/
+│   │   └── OrgMemoryEntryEntity.java
+│   ├── enums/
+│   │   ├── MemoryLearningType.java
+│   │   │   ← COPY_STYLE, SEND_TIME, CHANNEL_PREFERENCE,
+│   │   │     FREQUENCY, OFFER_TYPE, SUBJECT_PATTERN
+│   │   └── TimeOfDay.java  ← MORNING, AFTERNOON, EVENING, NIGHT
+│   ├── repository/
+│   │   └── OrgMemoryEntryRepository.java
+│   ├── dto/
+│   │   ├── OrgMemoryEntryResponseDto.java
+│   │   └── OrgMemoryQueryDto.java
+│   ├── mapper/
+│   │   └── OrgMemoryMapper.java
+│   ├── service/
+│   │   ├── MemoryRetrievalService.java
+│   │   └── MemoryPersistenceService.java
+│   └── controller/
+│       └── OrgMemoryController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: SOVEREIGN AGENT
+│  tables: agent_sessions, agent_decisions
+│  ═══════════════════════════════
+│
+├── agent/
+│   ├── entity/
+│   │   ├── AgentSessionEntity.java
+│   │   └── AgentDecisionEntity.java
+│   ├── enums/
+│   │   ├── AgentSessionStatus.java
+│   │   │   ← RUNNING, COMPLETED, FAILED, PAUSED
+│   │   └── AgentDecisionType.java
+│   │       ← SEGMENT_QUERY, VARIANT_GENERATION, CHANNEL_SELECTION,
+│   │         SCHEDULE_DECISION, SEND_COMMAND, ABORT, MEMORY_LOOKUP,
+│   │         SIMULATION_TRIGGER, CORRECTION_TRIGGER, DONE
+│   ├── repository/
+│   │   ├── AgentSessionRepository.java
+│   │   └── AgentDecisionRepository.java
+│   ├── dto/
+│   │   ├── AgentGoalRequestDto.java
+│   │   ├── AgentSessionResponseDto.java
+│   │   └── AgentDecisionResponseDto.java
+│   ├── mapper/
+│   │   └── AgentMapper.java
+│   ├── service/
+│   │   ├── AgentOrchestrationService.java
+│   │   ├── AgentSegmentBuilderTool.java
+│   │   ├── AgentCampaignBuilderTool.java
+│   │   ├── AgentMemoryLookupTool.java
+│   │   └── AgentLlmGatewayService.java    ← THE ONLY class that calls Gemini
+│   └── controller/
+│       └── AgentController.java
+│
+│  ═══════════════════════════════
+│  DOMAIN: AUDIT LOG
+│  table: audit_logs
+│  ═══════════════════════════════
+│
+└── audit/
+    ├── entity/
+    │   └── AuditLogEntity.java
+    ├── enums/
+    │   └── AuditActorType.java   ← USER, AGENT, SYSTEM
+    ├── repository/
+    │   └── AuditLogRepository.java
+    ├── dto/
+    │   └── AuditLogResponseDto.java
+    ├── mapper/
+    │   └── AuditLogMapper.java
+    ├── service/
+    │   └── AuditLogService.java
+    └── controller/
+        └── AuditLogController.java
+```
+
+---
+
+## ENTITY SPECIFICATIONS — EVERY TABLE, EVERY COLUMN
+
+Every Java field name must be the camelCase of the snake_case column name.
+Every `@Column(name=...)` must use the exact snake_case column name from the schema.
+Every entity class must have `@EntityListeners(AuditingEntityListener.class)`.
+
+### ENTITY TEMPLATE (apply to every entity)
+```java
+/**
+ * [EntityName] — JPA entity mapping to the `[table_name]` table.
+ * Layer: Domain Entity
+ * Purpose: [what it represents]
+ * Relationships: [list all]
+ */
+@Entity
+@Table(name = "[table_name]")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+public class [EntityName] { ... }
+```
+
+---
+
+### CustomerEntity → table `customers`
+
+```java
+@Column(name="id")
+UUID id;                        // PRIMARY KEY, generated by DB
+
+@Column(name="external_id", unique=true)
+String externalId;              // Brand's own customer ID — nullable, UNIQUE
+
+@Column(name="email", unique=true)
+String email;                   // Customer email — nullable, UNIQUE
+
+@Column(name="phone")
+String phone;                   // E.164 format e.g. +919876543210 — nullable
+
+@Column(name="whatsapp_number")
+String whatsappNumber;          // WhatsApp number if different from phone — nullable
+
+@Column(name="name", nullable=false)
+String name;                    // Full name — required
+
+@Enumerated(EnumType.STRING)
+@Column(name="gender")
+CustomerGender gender;          // CHECK IN ('male','female','other','unknown') DEFAULT 'unknown'
+
+@Column(name="date_of_birth")
+LocalDate dateOfBirth;          // Date of birth — nullable
+
+@Column(name="city")
+String city;                    // City name — nullable
+
+@Column(name="state")
+String state;                   // State/province — nullable
+
+@Column(name="country")
+String country;                 // ISO country code DEFAULT 'IN'
+
+@Type(StringArrayType.class)
+@Column(name="tags", columnDefinition="text[]")
+String[] tags;                  // TEXT[] DEFAULT '{}' — e.g. ['vip','coffee-buyer']
+                                // Import: io.hypersistence.utils.hibernate.type.array.StringArrayType
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="custom_attributes", columnDefinition="jsonb")
+Map<String, Object> customAttributes;  // JSONB — brand-specific metadata
+
+@Enumerated(EnumType.STRING)
+@Column(name="preferred_channel")
+PreferredChannel preferredChannel;  // CHECK IN ('email','whatsapp','sms','rcs')
+
+@Type(StringArrayType.class)
+@Column(name="opt_out_channels", columnDefinition="text[]")
+String[] optOutChannels;        // TEXT[] — channels this customer has opted out from
+
+@Column(name="is_globally_opted_out", nullable=false)
+boolean isGloballyOptedOut;     // DEFAULT FALSE — skip entirely if true
+
+@CreatedDate
+@Column(name="created_at", nullable=false, updatable=false)
+OffsetDateTime createdAt;
+
+@LastModifiedDate
+@Column(name="updated_at", nullable=false)
+OffsetDateTime updatedAt;
+```
+
+Relationships:
+```java
+@OneToOne(mappedBy="customer", cascade=CascadeType.ALL, fetch=FetchType.LAZY)
+CustomerMetricsEntity metrics;  // computed metrics — lazy loaded
+
+@OneToMany(mappedBy="customer", fetch=FetchType.LAZY)
+List<OrderEntity> orders;       // purchase history — lazy loaded
+```
+
+---
+
+### CustomerMetricsEntity → table `customer_metrics`
+
+```java
+@Id
+@Column(name="customer_id")
+UUID customerId;                // PRIMARY KEY = customers.id — uses @MapsId
+
+@Column(name="recency_days")
+Integer recencyDays;            // Days since most recent order — nullable until first compute
+
+@Column(name="frequency")
+Integer frequency;              // Total number of orders across all time — nullable
+
+@Column(name="monetary_total", precision=12, scale=2)
+BigDecimal monetaryTotal;       // Sum of all order total_amount — nullable
+
+@Column(name="monetary_avg_order", precision=12, scale=2)
+BigDecimal monetaryAvgOrder;    // Average order value — nullable
+
+@Column(name="rfm_score", precision=4, scale=2)
+BigDecimal rfmScore;            // Composite RFM score 1–5 — nullable
+
+@Column(name="total_orders_last_30d")
+Integer totalOrdersLast30d;     // Count of orders in last 30 days DEFAULT 0
+
+@Column(name="total_orders_last_90d")
+Integer totalOrdersLast90d;     // Count of orders in last 90 days DEFAULT 0
+
+@Column(name="avg_days_between_orders", precision=6, scale=2)
+BigDecimal avgDaysBetweenOrders; // Average days between consecutive orders — nullable
+
+@Column(name="favourite_category_id")
+UUID favouriteCategoryId;       // FK to product_categories.id — nullable
+
+@Column(name="favourite_channel")
+String favouriteChannel;        // Most used purchase channel: 'web','app','store' — nullable
+
+@Column(name="clv_predicted", precision=12, scale=2)
+BigDecimal clvPredicted;        // Predicted 12-month customer lifetime value — nullable
+
+@Column(name="churn_probability", precision=5, scale=4)
+BigDecimal churnProbability;    // Probability 0–1 of churning — nullable
+
+@Column(name="email_open_rate", precision=5, scale=4)
+BigDecimal emailOpenRate;       // Email open rate from last 90 days DEFAULT 0
+
+@Column(name="email_click_rate", precision=5, scale=4)
+BigDecimal emailClickRate;      // Email click rate from last 90 days DEFAULT 0
+
+@Column(name="whatsapp_read_rate", precision=5, scale=4)
+BigDecimal whatsappReadRate;    // WhatsApp read rate from last 90 days DEFAULT 0
+
+@Column(name="sms_click_rate", precision=5, scale=4)
+BigDecimal smsClickRate;        // SMS click rate from last 90 days DEFAULT 0
+
+@Column(name="last_computed_at", nullable=false)
+OffsetDateTime lastComputedAt;  // When these metrics were last recalculated
+```
+
+Relationship:
+```java
+@OneToOne(fetch=FetchType.LAZY)
+@MapsId
+@JoinColumn(name="customer_id")
+CustomerEntity customer;        // The customer these metrics belong to
+```
+
+---
+
+### ProductCategoryEntity → table `product_categories`
+
+```java
+UUID   id;           // PRIMARY KEY
+String name;         // NOT NULL — category display name
+UUID   parentId;     // FK → product_categories.id — nullable (root has no parent)
+String slug;         // UNIQUE NOT NULL — URL-safe identifier
+```
+
+Self-join relationships:
+```java
+@ManyToOne(fetch=FetchType.LAZY)
+@JoinColumn(name="parent_id")
+ProductCategoryEntity parentCategory;   // nullable — parent in the category tree
+
+@OneToMany(mappedBy="parentCategory", fetch=FetchType.LAZY)
+List<ProductCategoryEntity> childCategories;  // sub-categories
+```
+
+---
+
+### ProductEntity → table `products`
+
+```java
+UUID       id;          // PRIMARY KEY
+String     sku;         // UNIQUE NOT NULL — stock-keeping unit
+String     name;        // NOT NULL
+// category FK via @ManyToOne
+BigDecimal price;       // NUMERIC(12,2) NOT NULL CHECK >= 0
+String     currency;    // DEFAULT 'INR'
+String     brand;       // nullable
+
+@Type(StringArrayType.class)
+@Column(name="tags", columnDefinition="text[]")
+String[] tags;          // TEXT[] DEFAULT '{}'
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="attributes", columnDefinition="jsonb")
+Map<String,Object> attributes;  // JSONB — color, size, etc.
+
+boolean    isActive;    // DEFAULT TRUE
+OffsetDateTime createdAt;  // @CreatedDate
+```
+
+Relationship: `@ManyToOne(fetch=LAZY)` `category` → `@JoinColumn(name="category_id")`
+
+---
+
+### OrderEntity → table `orders`
+
+```java
+UUID       id;
+// customer FK via @ManyToOne — NOT NULL, ON DELETE RESTRICT
+String     orderNumber;    // UNIQUE, nullable
+@Enumerated(EnumType.STRING)
+OrderStatus status;        // 'pending','confirmed','shipped','delivered','cancelled','returned'
+String     channel;        // 'web','app','store','whatsapp'
+BigDecimal totalAmount;    // NUMERIC(12,2) NOT NULL CHECK >= 0
+String     currency;       // DEFAULT 'INR'
+BigDecimal discountAmount; // DEFAULT 0
+String     couponCode;     // nullable
+OffsetDateTime placedAt;   // NOT NULL DEFAULT NOW()
+OffsetDateTime deliveredAt; // nullable
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="metadata", columnDefinition="jsonb")
+Map<String,Object> metadata;  // JSONB DEFAULT '{}'
+
+@CreatedDate
+OffsetDateTime createdAt;
+```
+
+Relationships:
+- `@ManyToOne(fetch=LAZY, optional=false)` `customer` → `@JoinColumn(name="customer_id")`
+- `@OneToMany(mappedBy="order", cascade=ALL, fetch=LAZY)` `orderItems`
+
+---
+
+### OrderItemEntity → table `order_items`
+
+```java
+UUID       id;
+// order FK @ManyToOne NOT NULL ON DELETE CASCADE
+// product FK @ManyToOne nullable
+String     productSku;      // denormalised for resilience — nullable
+String     productName;     // NOT NULL
+int        quantity;        // CHECK > 0
+BigDecimal unitPrice;       // NUMERIC(12,2) CHECK >= 0
+BigDecimal discountAmount;  // DEFAULT 0
+
+@Column(name="line_total", insertable=false, updatable=false)
+BigDecimal lineTotal;
+// GENERATED ALWAYS AS STORED: (unit_price - discount_amount) * quantity
+// MUST be insertable=false, updatable=false — Hibernate must NOT write this column
+```
+
+---
+
+### AudienceSegmentEntity → table `audience_segments`
+
+```java
+UUID   id;
+String name;           // NOT NULL
+String description;    // nullable
+
+@Enumerated(EnumType.STRING)
+SegmentType type;      // 'static','dynamic','ai_generated' DEFAULT 'dynamic'
+
+@Enumerated(EnumType.STRING)
+SegmentStatus status;  // 'draft','building','ready','archived' DEFAULT 'draft'
+
+@Column(name="filter_sql", columnDefinition="TEXT")
+String filterSql;      // WHERE clause fragment — NEVER interpolated raw into SQL
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="filter_json", columnDefinition="jsonb")
+Map<String,Object> filterJson;  // Human-readable filter for the UI
+
+boolean    isPinned;          // DEFAULT FALSE — static segment, not re-evaluated
+boolean    createdByAgent;    // DEFAULT FALSE
+String     agentGoal;         // NL goal that spawned this segment — nullable
+int        customerCount;     // DEFAULT 0 — updated by fn_evaluate_segment
+OffsetDateTime lastEvaluatedAt; // nullable
+
+@CreatedDate
+OffsetDateTime createdAt;
+@LastModifiedDate
+OffsetDateTime updatedAt;
+```
+
+---
+
+### SegmentMemberEntity → table `segment_members` (composite PK)
+
+```java
+// SegmentMemberId.java — @Embeddable class
+@Embeddable
+public class SegmentMemberId implements Serializable {
+    @Column(name="segment_id")
+    UUID segmentId;
+    @Column(name="customer_id")
+    UUID customerId;
+    // equals() and hashCode() MUST be implemented
+}
+
+// SegmentMemberEntity.java
+@EmbeddedId
+SegmentMemberId id;              // Composite PK
+
+OffsetDateTime addedAt;          // NOT NULL DEFAULT NOW()
+
+@ManyToOne(fetch=FetchType.LAZY)
+@MapsId("segmentId")
+@JoinColumn(name="segment_id")
+AudienceSegmentEntity segment;
+
+@ManyToOne(fetch=FetchType.LAZY)
+@MapsId("customerId")
+@JoinColumn(name="customer_id")
+CustomerEntity customer;
+```
+
+---
+
+### CampaignEntity → table `campaigns`
+
+```java
+UUID       id;
+String     name;            // NOT NULL
+String     description;     // nullable
+
+@Enumerated(EnumType.STRING)
+CampaignStatus status;      // 'draft','simulating','scheduled','running',
+                            // 'paused','completed','cancelled','failed'
+
+@Column(columnDefinition="TEXT")
+String     goal;            // Marketer's NL goal — nullable
+
+// targetSegment FK @ManyToOne nullable
+
+OffsetDateTime scheduledAt;         // nullable
+OffsetDateTime startedAt;           // nullable
+OffsetDateTime completedAt;         // nullable
+String     timezone;                // DEFAULT 'Asia/Kolkata'
+Integer    maxSendCount;            // nullable — hard cap
+BigDecimal optOutRateThreshold;     // DEFAULT 0.02 — auto-pause if breached
+boolean    createdByAgent;          // DEFAULT FALSE
+String     agentSessionId;          // nullable
+UUID       parentCampaignId;        // self-referencing FK — nullable
+
+// Denormalised performance counters:
+// ALL incremented via @Modifying @Query UPDATE — never via read-modify-write
+int        totalSent;       // DEFAULT 0
+int        totalDelivered;  // DEFAULT 0
+int        totalFailed;     // DEFAULT 0
+int        totalOpened;     // DEFAULT 0
+int        totalRead;       // DEFAULT 0
+int        totalClicked;    // DEFAULT 0
+int        totalConverted;  // DEFAULT 0
+BigDecimal revenueAttributed;  // NUMERIC(14,2) DEFAULT 0
+
+@CreatedDate OffsetDateTime createdAt;
+@LastModifiedDate OffsetDateTime updatedAt;
+```
+
+Relationships:
+- `@ManyToOne(fetch=LAZY)` `targetSegment` → `@JoinColumn(name="segment_id")`
+- `@ManyToOne(fetch=LAZY)` `parentCampaign` → `@JoinColumn(name="parent_campaign_id")`
+
+---
+
+### MessageVariantEntity → table `message_variants`
+
+```java
+UUID   id;
+// campaign FK @ManyToOne NOT NULL ON DELETE CASCADE
+String name;           // NOT NULL
+
+@Enumerated(EnumType.STRING)
+@Column(name="channel", columnDefinition="message_channel")
+MessageChannel channel;  // Postgres ENUM — must include columnDefinition
+
+String subjectLine;    // email subject — nullable
+String previewText;    // email preview — nullable
+@Column(columnDefinition="TEXT")
+String bodyText;       // plaintext / WhatsApp body — nullable
+@Column(columnDefinition="TEXT")
+String bodyHtml;       // rich HTML email — nullable
+String ctaText;        // CTA button label — nullable
+String ctaUrl;         // destination URL — nullable
+String mediaUrl;       // image/video URL — nullable
+String templateId;     // WA Business template ID — nullable
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="template_params", columnDefinition="jsonb")
+Map<String,Object> templateParams;  // template placeholder values
+
+// Thompson Sampling Beta(α,β) posterior parameters:
+BigDecimal mabAlpha;      // NUMERIC(10,4) DEFAULT 1.0 — successes + prior 1
+BigDecimal mabBeta;       // NUMERIC(10,4) DEFAULT 1.0 — trials-without-success + prior 1
+int        mabImpressions; // DEFAULT 0 — total deliveries recorded
+int        mabConversions; // DEFAULT 0 — total clicks/conversions recorded
+boolean    mabIsActive;    // DEFAULT TRUE — set false to disable this variant
+
+boolean    generatedByAi;    // DEFAULT FALSE
+String     generationPrompt; // nullable — prompt used to generate this variant
+
+@CreatedDate OffsetDateTime createdAt;
+@LastModifiedDate OffsetDateTime updatedAt;
+```
+
+---
+
+### CommunicationEntity → table `communications`
+
+```java
+UUID   id;
+// campaign FK @ManyToOne NOT NULL
+// variant FK @ManyToOne NOT NULL
+// customer FK @ManyToOne NOT NULL
+
+@Enumerated(EnumType.STRING)
+@Column(name="channel", columnDefinition="message_channel")
+MessageChannel channel;
+
+@Enumerated(EnumType.STRING)
+CommunicationStatus status;  // 'pending','sent','delivered','failed','opened',
+                              // 'read','clicked','converted','unsubscribed','bounced','expired'
+
+String channelMessageId;      // ID returned by channel service — nullable initially
+String recipientAddress;      // NOT NULL — email or phone used
+
+String personalisedSubject;   // Snapshot of subject sent — nullable
+@Column(columnDefinition="TEXT")
+String personalisedBody;      // Snapshot of body sent — nullable
+
+// Lifecycle event timestamps (all nullable — populated as callbacks arrive):
+OffsetDateTime sentAt;
+OffsetDateTime deliveredAt;
+OffsetDateTime failedAt;
+OffsetDateTime openedAt;
+OffsetDateTime readAt;
+OffsetDateTime clickedAt;
+OffsetDateTime convertedAt;
+OffsetDateTime unsubscribedAt;
+
+// Failure details:
+String failureReason;         // nullable
+String failureCode;           // channel error code — nullable
+int    retryCount;            // DEFAULT 0
+OffsetDateTime nextRetryAt;   // nullable — when to retry a failed message
+
+// Attribution:
+// attributedOrder FK @ManyToOne nullable
+int    attributionWindowHours; // DEFAULT 72 — hours after send to attribute orders
+
+// Self-correction chain:
+// spawnedFollowup FK @ManyToOne nullable self-referencing
+
+BigDecimal mabSampleValue;    // NUMERIC(8,6) — sampled θ that won the Thompson draw
+
+@CreatedDate OffsetDateTime createdAt;
+@LastModifiedDate OffsetDateTime updatedAt;
+```
+
+Relationships:
+- `@ManyToOne(fetch=LAZY)` `campaign` → `@JoinColumn(name="campaign_id")`
+- `@ManyToOne(fetch=LAZY)` `variant` → `@JoinColumn(name="variant_id")`
+- `@ManyToOne(fetch=LAZY)` `customer` → `@JoinColumn(name="customer_id")`
+- `@ManyToOne(fetch=LAZY)` `attributedOrder` → `@JoinColumn(name="attributed_order_id")`
+- `@ManyToOne(fetch=LAZY)` `spawnedFollowup` → `@JoinColumn(name="spawned_followup_id")`
+
+---
+
+### ChannelCallbackEntity → table `channel_callbacks`
+
+```java
+UUID   id;
+// communication FK @ManyToOne nullable — resolved by Postgres trigger
+String channelMessageId;         // Used to match communication if FK is null
+
+@Enumerated(EnumType.STRING)
+ChannelCallbackEventType eventType;  // NOT NULL
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="payload", columnDefinition="jsonb", nullable=false)
+Map<String,Object> payload;      // Raw callback body
+
+OffsetDateTime receivedAt;       // NOT NULL DEFAULT NOW()
+OffsetDateTime processedAt;      // Set by Postgres trigger fn_apply_callback
+
+@Enumerated(EnumType.STRING)
+CallbackProcessingStatus processingStatus;  // DEFAULT 'pending'
+
+String processingError;          // Set by trigger on error — nullable
+```
+
+**CRITICAL:** The Postgres trigger `fn_apply_callback` fires on INSERT to this table.
+It updates `communications`, increments campaign counters, updates MAB alpha/beta,
+and sets `processing_status = 'processed'` and `processed_at = NOW()`.
+Your Java service must ONLY INSERT the row. Then re-read the `CommunicationEntity`
+after the insert — the trigger has already updated it.
+DO NOT replicate trigger logic in Java.
+
+---
+
+### CorrectionEventEntity → table `correction_events`
+
+```java
+UUID   id;
+// campaign FK @ManyToOne NOT NULL
+
+@Enumerated(EnumType.STRING)
+CorrectionTriggerType triggerType;  // NOT NULL
+
+BigDecimal triggerThreshold;    // Configured threshold that was violated
+BigDecimal observedValue;       // Actual measured rate that crossed the threshold
+Integer    cohortSize;          // Count of communications in the affected cohort
+
+@Enumerated(EnumType.STRING)
+CorrectionActionType actionTaken;  // NOT NULL — what the AI decided to do
+
+@Enumerated(EnumType.STRING)
+@Column(name="old_channel", columnDefinition="message_channel")
+MessageChannel oldChannel;      // nullable
+
+@Enumerated(EnumType.STRING)
+@Column(name="new_channel", columnDefinition="message_channel")
+MessageChannel newChannel;      // nullable
+
+UUID       oldVariantId;        // FK → message_variants.id nullable
+UUID       newVariantId;        // FK → message_variants.id nullable
+
+@Column(columnDefinition="TEXT")
+String     aiReasoning;         // LLM explanation stored verbatim for audit
+
+@Enumerated(EnumType.STRING)
+CorrectionOutcome correctionOutcome;  // nullable — filled in after correction runs
+
+BigDecimal outcomeDelta;        // nullable — e.g. 0.04 = CTR improved by 4pp
+
+@CreatedDate
+OffsetDateTime createdAt;
+OffsetDateTime evaluatedAt;     // nullable — when outcome was assessed
+```
+
+Relationships:
+- `@ManyToOne(fetch=LAZY)` `campaign` → `@JoinColumn(name="campaign_id")`
+- `@ManyToOne(fetch=LAZY)` `oldVariant` → `@JoinColumn(name="old_variant_id")`
+- `@ManyToOne(fetch=LAZY)` `newVariant` → `@JoinColumn(name="new_variant_id")`
+
+---
+
+### SimulationRunEntity → table `simulation_runs`
+
+```java
+UUID   id;
+// campaign FK @ManyToOne NOT NULL
+
+@Enumerated(EnumType.STRING)
+SimulationRunStatus status;         // DEFAULT 'pending'
+
+int    syntheticAudienceSize;        // DEFAULT 500
+
+// Results — populated when status = COMPLETED:
+BigDecimal predictedOpenRate;        // NUMERIC(5,4) nullable
+BigDecimal predictedCtr;             // NUMERIC(5,4) nullable
+BigDecimal predictedConversionRate;  // NUMERIC(5,4) nullable
+BigDecimal predictedRevenue;         // NUMERIC(12,2) nullable
+BigDecimal confidenceIntervalLow;    // NUMERIC(5,4) nullable
+BigDecimal confidenceIntervalHigh;   // NUMERIC(5,4) nullable
+UUID       winningVariantId;         // FK → message_variants.id nullable
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="persona_distribution", columnDefinition="jsonb")
+Map<String,Object> personaDistribution;  // e.g. {"high_value":0.3,"new":0.2}
+
+OffsetDateTime startedAt;    // nullable
+OffsetDateTime completedAt;  // nullable
+
+@CreatedDate
+OffsetDateTime createdAt;
+```
+
+---
+
+### SimulationPersonaEntity → table `simulation_personas`
+
+```java
+UUID   id;
+String name;           // NOT NULL
+String description;    // nullable
+String archetype;      // 'bargain_hunter','loyalist','browser','impulse'
+
+BigDecimal baseOpenRate;        // NUMERIC(5,4) NOT NULL
+BigDecimal baseCtr;             // NUMERIC(5,4) NOT NULL
+BigDecimal baseConversionRate;  // NUMERIC(5,4) NOT NULL
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="channel_multipliers", columnDefinition="jsonb")
+Map<String,Object> channelMultipliers;  // e.g. {"email":1.1,"whatsapp":0.9}
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="time_multipliers", columnDefinition="jsonb")
+Map<String,Object> timeMultipliers;     // e.g. {"morning":1.2,"evening":0.8}
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="copy_multipliers", columnDefinition="jsonb")
+Map<String,Object> copyMultipliers;     // e.g. {"urgency":1.15,"informational":0.9}
+
+boolean    isActive;   // DEFAULT TRUE
+@CreatedDate OffsetDateTime createdAt;
+```
+
+---
+
+### SimulationResultEntity → table `simulation_results`
+
+```java
+UUID   id;
+// simulationRun FK @ManyToOne NOT NULL ON DELETE CASCADE
+// variant FK @ManyToOne NOT NULL
+// persona FK @ManyToOne nullable
+
+int        simulatedSends;       // DEFAULT 0
+int        simulatedOpens;       // DEFAULT 0
+int        simulatedClicks;      // DEFAULT 0
+int        simulatedConversions; // DEFAULT 0
+BigDecimal simulatedRevenue;     // DEFAULT 0
+
+// GENERATED ALWAYS AS STORED columns — Hibernate must NOT write these:
+@Column(name="open_rate", insertable=false, updatable=false)
+BigDecimal openRate;             // simulated_opens / simulated_sends
+
+@Column(name="ctr", insertable=false, updatable=false)
+BigDecimal ctr;                  // simulated_clicks / simulated_sends
+```
+
+---
+
+### OrgMemoryEntryEntity → table `org_memory_entries`
+
+```java
+UUID   id;
+String segmentTag;     // nullable e.g. 'coffee_buyers'
+
+@Enumerated(EnumType.STRING)
+@Column(name="channel", columnDefinition="message_channel")
+MessageChannel channel;  // nullable = cross-channel finding
+
+Integer dayOfWeek;     // 0–6 nullable (0=Sunday) CHECK BETWEEN 0 AND 6
+
+@Enumerated(EnumType.STRING)
+TimeOfDay timeOfDay;   // 'morning','afternoon','evening','night' nullable
+
+@Enumerated(EnumType.STRING)
+MemoryLearningType learningType;  // NOT NULL
+
+@Column(columnDefinition="TEXT", nullable=false)
+String learningSummary;  // Human-readable learning description
+
+BigDecimal confidence;   // DEFAULT 0.5, updated as evidence accumulates
+
+@Type(UUIDArrayType.class)
+@Column(name="source_campaign_ids", columnDefinition="uuid[]")
+UUID[] sourceCampaignIds;  // UUIDs of campaigns that support this learning
+                           // Import: io.hypersistence.utils.hibernate.type.array.UUIDArrayType
+
+int        evidenceCount;  // DEFAULT 1 — count of supporting campaigns
+BigDecimal avgLift;        // nullable — avg performance delta vs baseline
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="winning_copy_signals", columnDefinition="jsonb")
+Map<String,Object> winningCopySignals;  // e.g. {"urgency":true,"length":"short"}
+
+boolean    isActive;    // DEFAULT TRUE — set false when contradicted by new evidence
+OffsetDateTime expiresAt;  // nullable — stale knowledge auto-expires
+
+@CreatedDate OffsetDateTime createdAt;
+@LastModifiedDate OffsetDateTime updatedAt;
+```
+
+---
+
+### AgentSessionEntity → table `agent_sessions`
+
+```java
+UUID   id;
+
+@Column(columnDefinition="TEXT", nullable=false)
+String goal;           // Marketer's raw NL input
+
+@Enumerated(EnumType.STRING)
+AgentSessionStatus status;  // DEFAULT 'running'
+
+String modelUsed;      // DEFAULT 'gemini-2.5-pro'
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="conversation_log", columnDefinition="jsonb")
+List<Map<String,Object>> conversationLog;  // JSONB DEFAULT '[]' — all LLM turns
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="plan", columnDefinition="jsonb")
+Map<String,Object> plan;   // Structured plan settled on by the agent
+
+UUID createdSegmentId;      // FK → audience_segments.id nullable
+UUID createdCampaignId;     // FK → campaigns.id nullable
+
+String errorMessage;        // nullable — set on failure
+OffsetDateTime startedAt;   // NOT NULL DEFAULT NOW()
+OffsetDateTime completedAt; // nullable
+int    tokensUsedIn;        // DEFAULT 0 — track token usage for cost awareness
+int    tokensUsedOut;       // DEFAULT 0
+```
+
+---
+
+### AgentDecisionEntity → table `agent_decisions`
+
+```java
+UUID   id;
+// session FK @ManyToOne NOT NULL ON DELETE CASCADE
+int    stepNumber;     // NOT NULL — turn index in the agent loop
+
+@Enumerated(EnumType.STRING)
+AgentDecisionType decisionType;  // NOT NULL
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="input_context", columnDefinition="jsonb")
+Map<String,Object> inputContext;   // State passed to LLM for this turn
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="output_action", columnDefinition="jsonb")
+Map<String,Object> outputAction;   // Parsed action the LLM chose
+
+@Column(columnDefinition="TEXT")
+String reasoning;      // LLM reasoning text — nullable
+
+@CreatedDate OffsetDateTime createdAt;
+```
+
+---
+
+### AuditLogEntity → table `audit_logs`
+
+```java
+@GeneratedValue(strategy=GenerationType.IDENTITY)
+Long   id;             // BIGSERIAL PRIMARY KEY — NOT UUID
+
+UUID   traceId;        // nullable — groups related events in one HTTP request
+
+@Column(name="entity_type", length=100, nullable=false)
+String entityType;     // e.g. "CampaignEntity", "AgentSession"
+
+@Column(name="entity_id", nullable=false)
+Long   entityId;       // BIGINT — use 0L for UUID-keyed entities (document this clearly)
+                       // For UUID entities, store the UUID string in 'description'
+
+@Column(name="action", length=50, nullable=false)
+String action;         // "CREATE","UPDATE","DELETE","LAUNCH","PAUSE","CORRECT"
+
+@Enumerated(EnumType.STRING)
+@Column(name="actor_type", length=50, nullable=false)
+AuditActorType actorType;  // USER | AGENT | SYSTEM
+
+@Column(name="actor_id", length=255)
+String actorId;        // nullable — API key hash, agent session ID, or "scheduler"
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="old_value", columnDefinition="jsonb")
+Map<String,Object> oldValue;   // State before the action — nullable
+
+@JdbcTypeCode(SqlTypes.JSON)
+@Column(name="new_value", columnDefinition="jsonb")
+Map<String,Object> newValue;   // State after the action — nullable
+
+@Column(columnDefinition="TEXT")
+String description;    // Human-readable summary — use to store UUID for UUID-keyed entities
+
+@Column(name="created_at", nullable=false, updatable=false)
+LocalDateTime createdAt;  // Uses LocalDateTime NOT OffsetDateTime (schema: TIMESTAMP not TIMESTAMPTZ)
+                          // No @CreatedDate — set explicitly: LocalDateTime.now()
+```
+
+---
+
+## REPOSITORY SPECIFICATIONS
+
+Every repository extends `JpaRepository<EntityType, IdType>`. Every method has Javadoc.
+
+### `CustomerRepository`
+```java
+Optional<CustomerEntity> findByEmail(String email);
+Optional<CustomerEntity> findByPhone(String phone);
+Optional<CustomerEntity> findByExternalId(String externalId);
+Page<CustomerEntity> findAllByIsGloballyOptedOutFalse(Pageable pageable);
+
+/** Finds customers whose tags array contains the given tag value. */
+@Query(value="SELECT * FROM customers WHERE :tag = ANY(tags)", nativeQuery=true)
+List<CustomerEntity> findAllByTag(@Param("tag") String tag);
+```
+
+### `CustomerMetricsRepository`
+```java
+Optional<CustomerMetricsEntity> findByCustomerId(UUID customerId);
+List<CustomerMetricsEntity> findAllByRfmScoreGreaterThanEqual(BigDecimal minimumRfmScore);
+List<CustomerMetricsEntity> findAllByChurnProbabilityGreaterThan(BigDecimal threshold);
+```
+
+### `CampaignRepository`
+```java
+List<CampaignEntity> findAllByStatus(CampaignStatus status);
+List<CampaignEntity> findAllByCreatedByAgentTrue();
+
+/** Atomically increments total_sent. Use UPDATE not read-modify-write. */
+@Modifying @Transactional
+@Query("UPDATE CampaignEntity c SET c.totalSent = c.totalSent + 1 WHERE c.id = :id")
+void incrementTotalSent(@Param("id") UUID campaignId);
+
+/** Same pattern for each counter: */
+@Modifying @Transactional
+@Query("UPDATE CampaignEntity c SET c.totalDelivered = c.totalDelivered + 1 WHERE c.id = :id")
+void incrementTotalDelivered(@Param("id") UUID campaignId);
+
+@Modifying @Transactional
+@Query("UPDATE CampaignEntity c SET c.totalFailed = c.totalFailed + 1 WHERE c.id = :id")
+void incrementTotalFailed(@Param("id") UUID campaignId);
+
+@Modifying @Transactional
+@Query("UPDATE CampaignEntity c SET c.totalOpened = c.totalOpened + 1 WHERE c.id = :id")
+void incrementTotalOpened(@Param("id") UUID campaignId);
+
+@Modifying @Transactional
+@Query("UPDATE CampaignEntity c SET c.totalRead = c.totalRead + 1 WHERE c.id = :id")
+void incrementTotalRead(@Param("id") UUID campaignId);
+
+@Modifying @Transactional
+@Query("UPDATE CampaignEntity c SET c.totalClicked = c.totalClicked + 1 WHERE c.id = :id")
+void incrementTotalClicked(@Param("id") UUID campaignId);
+
+@Modifying @Transactional
+@Query("UPDATE CampaignEntity c SET c.totalConverted = c.totalConverted + 1 WHERE c.id = :id")
+void incrementTotalConverted(@Param("id") UUID campaignId);
+
+/** Queries v_campaign_performance view for one campaign's performance summary. */
+@Query(value="SELECT * FROM v_campaign_performance WHERE id = CAST(:id AS uuid)", nativeQuery=true)
+Optional<Object[]> findPerformanceSummaryById(@Param("id") String campaignId);
+
+/** Queries v_opt_out_alerts for all currently running campaigns. */
+@Query(value="SELECT * FROM v_opt_out_alerts", nativeQuery=true)
+List<Object[]> findAllOptOutAlerts();
+```
+
+### `MessageVariantRepository`
+```java
+List<MessageVariantEntity> findAllByCampaignId(UUID campaignId);
+List<MessageVariantEntity> findAllByCampaignIdAndMabIsActiveTrue(UUID campaignId);
+
+@Modifying @Transactional
+@Query("UPDATE MessageVariantEntity v SET v.mabAlpha = v.mabAlpha + 1 WHERE v.id = :id")
+void incrementMabAlpha(@Param("id") UUID variantId);
+
+@Modifying @Transactional
+@Query("UPDATE MessageVariantEntity v SET v.mabBeta = v.mabBeta + 1 WHERE v.id = :id")
+void incrementMabBeta(@Param("id") UUID variantId);
+
+@Modifying @Transactional
+@Query("UPDATE MessageVariantEntity v SET v.mabImpressions = v.mabImpressions + 1 WHERE v.id = :id")
+void incrementMabImpressions(@Param("id") UUID variantId);
+
+@Modifying @Transactional
+@Query("UPDATE MessageVariantEntity v SET v.mabConversions = v.mabConversions + 1 WHERE v.id = :id")
+void incrementMabConversions(@Param("id") UUID variantId);
+
+/** Queries v_variant_mab_stats view for Thompson Sampling statistics. */
+@Query(value="SELECT * FROM v_variant_mab_stats WHERE campaign_id = CAST(:campaignId AS uuid)", nativeQuery=true)
+List<Object[]> findMabStatsByCampaignId(@Param("campaignId") String campaignId);
+```
+
+### `CommunicationRepository`
+```java
+Page<CommunicationEntity> findAllByCampaignId(UUID campaignId, Pageable pageable);
+Page<CommunicationEntity> findAllByCustomerId(UUID customerId, Pageable pageable);
+Optional<CommunicationEntity> findByChannelMessageId(String channelMessageId);
+long countByCampaignIdAndStatus(UUID campaignId, CommunicationStatus status);
+
+@Query("SELECT COUNT(c) FROM CommunicationEntity c WHERE c.campaign.id = :campaignId AND c.status = com.xenocrm.communication.enums.CommunicationStatus.UNSUBSCRIBED")
+long countUnsubscribedByCampaignId(@Param("campaignId") UUID campaignId);
+```
+
+### `ChannelCallbackRepository`
+```java
+List<ChannelCallbackEntity> findAllByProcessingStatus(CallbackProcessingStatus status);
+Optional<ChannelCallbackEntity> findByChannelMessageId(String channelMessageId);
+```
+
+### `AudienceSegmentRepository`
+```java
+List<AudienceSegmentEntity> findAllByStatus(SegmentStatus status);
+List<AudienceSegmentEntity> findAllByCreatedByAgentTrue();
+
+/** Calls the fn_evaluate_segment stored function. Returns new customer_count. */
+@Query(value="SELECT fn_evaluate_segment(CAST(:segmentId AS uuid))", nativeQuery=true)
+Integer callEvaluateSegmentFunction(@Param("segmentId") String segmentId);
+```
+
+### `SegmentMemberRepository`
+```java
+// Note: use @Query because segmentId is embedded in the composite key
+@Query("SELECT sm FROM SegmentMemberEntity sm WHERE sm.id.segmentId = :segmentId")
+List<SegmentMemberEntity> findAllBySegmentId(@Param("segmentId") UUID segmentId);
+
+@Query("SELECT sm FROM SegmentMemberEntity sm WHERE sm.id.segmentId = :segmentId")
+Page<SegmentMemberEntity> findAllBySegmentId(@Param("segmentId") UUID segmentId, Pageable pageable);
+
+@Modifying @Transactional
+@Query("DELETE FROM SegmentMemberEntity sm WHERE sm.id.segmentId = :segmentId")
+void deleteAllBySegmentId(@Param("segmentId") UUID segmentId);
+
+@Query("SELECT COUNT(sm) > 0 FROM SegmentMemberEntity sm WHERE sm.id.segmentId = :segmentId AND sm.id.customerId = :customerId")
+boolean existsBySegmentIdAndCustomerId(@Param("segmentId") UUID segmentId, @Param("customerId") UUID customerId);
+```
+
+### `OrgMemoryEntryRepository`
+```java
+List<OrgMemoryEntryEntity> findAllBySegmentTagAndIsActiveTrue(String segmentTag);
+List<OrgMemoryEntryEntity> findAllByChannelAndIsActiveTrue(MessageChannel channel);
+List<OrgMemoryEntryEntity> findAllBySegmentTagAndChannelAndIsActiveTrue(String segmentTag, MessageChannel channel);
+
+@Modifying @Transactional
+@Query("UPDATE OrgMemoryEntryEntity m SET m.isActive = false WHERE m.expiresAt < :now")
+void deactivateExpiredEntries(@Param("now") OffsetDateTime now);
+```
+
+### `AgentSessionRepository`
+```java
+List<AgentSessionEntity> findAllByStatus(AgentSessionStatus status);
+```
+
+### `AgentDecisionRepository`
+```java
+List<AgentDecisionEntity> findAllBySessionIdOrderByStepNumberAsc(UUID sessionId);
+```
+
+### `AuditLogRepository`
+```java
+Page<AuditLogEntity> findAllByEntityTypeAndEntityId(String entityType, Long entityId, Pageable pageable);
+Page<AuditLogEntity> findAllByTraceId(UUID traceId, Pageable pageable);
+Page<AuditLogEntity> findAllByActorId(String actorId, Pageable pageable);
+```
+
+---
+
+## KEY SERVICE IMPLEMENTATIONS
+
+### `GeminiClientConfiguration.java`
+
+```java
+/**
+ * GeminiClientConfiguration — Creates the Spring RestClient bean for Gemini API calls.
+ * Layer: Configuration
+ * This is the ONLY place where the Gemini base URL and API key are configured.
+ * All LLM calls go through AgentLlmGatewayService which injects this bean.
+ */
+@Configuration
+public class GeminiClientConfiguration {
+
+    @Value("${gemini.endpoint}")
+    private String geminiBaseEndpoint;
+
+    /**
+     * Creates a pre-configured RestClient pointed at the Gemini REST API base URL.
+     * The API key is added as a query parameter per request in AgentLlmGatewayService,
+     * not here, so this client can be reused for different model endpoints.
+     */
+    @Bean(name = "geminiRestClient")
+    public RestClient createGeminiRestClient() {
+        return RestClient.builder()
+            .baseUrl(geminiBaseEndpoint)
+            .defaultHeader("Content-Type", "application/json")
+            .build();
+    }
+}
+```
+
+### `AgentLlmGatewayService.java`
+
+```java
+/**
+ * AgentLlmGatewayService — The ONLY class that calls the Gemini REST API.
+ * Layer: Service (LLM Infrastructure)
+ * All other services that need LLM output must call this service.
+ * Direct Gemini calls anywhere else are forbidden.
+ *
+ * Gemini endpoint format:
+ *   POST {gemini.endpoint}/{gemini.model}:generateContent?key={gemini.api-key}
+ *
+ * Request body:
+ *   { "contents": [{ "role": "user", "parts": [{ "text": "..." }] }],
+ *     "generationConfig": { "temperature": 0.3, "maxOutputTokens": 2000 } }
+ *
+ * Response parsing:
+ *   response.candidates[0].content.parts[0].text
+ */
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class AgentLlmGatewayService {
+
+    @Qualifier("geminiRestClient")
+    private final RestClient geminiRestClient;
+
+    @Value("${gemini.api-key}")
+    private String geminiApiKey;
+
+    @Value("${gemini.model}")
+    private String geminiModel;
+
+    @Value("${gemini.max-output-tokens}")
+    private int maxOutputTokens;
+
+    @Value("${gemini.temperature}")
+    private double temperature;
+
+    /**
+     * Sends a text prompt to Gemini and returns the raw text response.
+     *
+     * @param prompt the complete prompt string to send
+     * @return the LLM's text response
+     * @throws ExternalServiceException if Gemini returns an error or the response cannot be parsed
+     */
+    public String callGemini(String prompt) {
+        // Build request body as a Map (Jackson will serialize it)
+        Map<String,Object> requestBody = Map.of(
+            "contents", List.of(
+                Map.of("role", "user",
+                       "parts", List.of(Map.of("text", prompt)))
+            ),
+            "generationConfig", Map.of(
+                "temperature", temperature,
+                "maxOutputTokens", maxOutputTokens
+            )
+        );
+
+        // Call Gemini: POST /models/{model}:generateContent?key={apiKey}
+        String endpoint = "/" + geminiModel + ":generateContent?key=" + geminiApiKey;
+
+        try {
+            Map<?,?> responseBody = geminiRestClient.post()
+                .uri(endpoint)
+                .body(requestBody)
+                .retrieve()
+                .body(Map.class);
+
+            // Parse: response.candidates[0].content.parts[0].text
+            List<?> candidates = (List<?>) responseBody.get("candidates");
+            Map<?,?> firstCandidate = (Map<?,?>) candidates.get(0);
+            Map<?,?> content = (Map<?,?>) firstCandidate.get("content");
+            List<?> parts = (List<?>) content.get("parts");
+            Map<?,?> firstPart = (Map<?,?>) parts.get(0);
+            return (String) firstPart.get("text");
+
+        } catch (Exception geminiCallException) {
+            log.error("Gemini API call failed: {}", geminiCallException.getMessage(), geminiCallException);
+            throw new ExternalServiceException("Gemini", "Gemini API call failed: " + geminiCallException.getMessage());
+        }
+    }
+
+    /**
+     * Calls Gemini and parses the response as JSON into the given class.
+     * The prompt must instruct Gemini to respond ONLY with valid JSON.
+     *
+     * @param prompt the prompt — must instruct Gemini: "Respond ONLY with JSON. No preamble."
+     * @param responseClass the class to deserialize the JSON into
+     * @return the des
+
+     sql schema: -- =============================================================================
+-- XENO AI-NATIVE CRM — SUPABASE POSTGRESQL SCHEMA
+-- Architecture: Sovereign Agent + Audience Simulator + Thompson Sampling MAB
+--               + Async Callback Self-Correction + Organizational Memory Layer
+-- =============================================================================
+
+-- Enable required Postgres extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";      -- for fuzzy name/email search
+
+
+-- =============================================================================
+-- LAYER 0 — RAW CUSTOMER DATA  (Ingestion)
+-- =============================================================================
+
+-- customers: the core identity record for every shopper
+CREATE TABLE customers (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    external_id         TEXT UNIQUE,                  -- brand's own customer ID, if any
+    email               TEXT UNIQUE,
+    phone               TEXT,                         -- E.164 format: +919876543210
+    whatsapp_number     TEXT,
+    name                TEXT NOT NULL,
+    gender              TEXT CHECK (gender IN ('male','female','other','unknown')) DEFAULT 'unknown',
+    date_of_birth       DATE,
+    city                TEXT,
+    state               TEXT,
+    country             TEXT DEFAULT 'IN',
+    tags                TEXT[]    DEFAULT '{}',       -- e.g. ['vip','coffee-buyer','churned']
+    custom_attributes   JSONB     DEFAULT '{}',       -- brand-specific metadata
+    preferred_channel   TEXT CHECK (preferred_channel IN ('email','whatsapp','sms','rcs')) DEFAULT 'email',
+    opt_out_channels    TEXT[]    DEFAULT '{}',       -- channels this user has opted out from
+    is_globally_opted_out BOOLEAN DEFAULT FALSE,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_customers_email       ON customers (email);
+CREATE INDEX idx_customers_phone       ON customers (phone);
+CREATE INDEX idx_customers_tags        ON customers USING GIN (tags);
+CREATE INDEX idx_customers_custom_attr ON customers USING GIN (custom_attributes);
+CREATE INDEX idx_customers_city        ON customers (city);
+CREATE INDEX idx_customers_country     ON customers (country);
+
+
+-- product_categories: taxonomy tree (electronics > phones > flagship)
+CREATE TABLE product_categories (
+    id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name        TEXT NOT NULL,
+    parent_id   UUID REFERENCES product_categories(id),
+    slug        TEXT UNIQUE NOT NULL
+);
+
+-- products: SKU-level catalog
+CREATE TABLE products (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    sku             TEXT UNIQUE NOT NULL,
+    name            TEXT NOT NULL,
+    category_id     UUID REFERENCES product_categories(id),
+    price           NUMERIC(12,2) NOT NULL CHECK (price >= 0),
+    currency        TEXT NOT NULL DEFAULT 'INR',
+    brand           TEXT,
+    tags            TEXT[]  DEFAULT '{}',
+    attributes      JSONB   DEFAULT '{}',   -- color, size, etc.
+    is_active       BOOLEAN DEFAULT TRUE,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_products_sku      ON products (sku);
+CREATE INDEX idx_products_category ON products (category_id);
+CREATE INDEX idx_products_tags     ON products USING GIN (tags);
+
+
+-- orders: one row per order (header)
+CREATE TABLE orders (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id     UUID NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
+    order_number    TEXT UNIQUE,
+    status          TEXT CHECK (status IN ('pending','confirmed','shipped','delivered','cancelled','returned')) DEFAULT 'pending',
+    channel         TEXT,                   -- 'web','app','store','whatsapp'
+    total_amount    NUMERIC(12,2) NOT NULL CHECK (total_amount >= 0),
+    currency        TEXT NOT NULL DEFAULT 'INR',
+    discount_amount NUMERIC(12,2) DEFAULT 0,
+    coupon_code     TEXT,
+    placed_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    delivered_at    TIMESTAMPTZ,
+    metadata        JSONB DEFAULT '{}',
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_orders_customer    ON orders (customer_id);
+CREATE INDEX idx_orders_placed_at   ON orders (placed_at DESC);
+CREATE INDEX idx_orders_status      ON orders (status);
+
+
+-- order_items: line items inside each order
+CREATE TABLE order_items (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_id        UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    product_id      UUID REFERENCES products(id),
+    product_sku     TEXT,                   -- denormalized for resilience
+    product_name    TEXT NOT NULL,
+    quantity        INT NOT NULL CHECK (quantity > 0),
+    unit_price      NUMERIC(12,2) NOT NULL CHECK (unit_price >= 0),
+    discount_amount NUMERIC(12,2) DEFAULT 0,
+    line_total      NUMERIC(12,2) GENERATED ALWAYS AS
+                        ((unit_price - discount_amount) * quantity) STORED
+);
+
+CREATE INDEX idx_order_items_order   ON order_items (order_id);
+CREATE INDEX idx_order_items_product ON order_items (product_id);
+
+
+-- =============================================================================
+-- LAYER 1 — CUSTOMER COMPUTED METRICS  (RFM + behaviour signals)
+-- Populated/refreshed by a Spring @Scheduled job or Supabase Edge Function
+-- =============================================================================
+
+CREATE TABLE customer_metrics (
+    customer_id             UUID PRIMARY KEY REFERENCES customers(id) ON DELETE CASCADE,
+
+    -- RFM
+    recency_days            INT,            -- days since last order
+    frequency               INT,            -- total orders (all time)
+    monetary_total          NUMERIC(12,2),  -- cumulative spend
+    monetary_avg_order      NUMERIC(12,2),  -- avg order value
+    rfm_score               NUMERIC(4,2),   -- composite 1–5
+
+    -- behaviour
+    total_orders_last_30d   INT DEFAULT 0,
+    total_orders_last_90d   INT DEFAULT 0,
+    avg_days_between_orders NUMERIC(6,2),   -- inter-purchase cadence
+    favourite_category_id   UUID REFERENCES product_categories(id),
+    favourite_channel       TEXT,           -- 'web','app','store'
+    clv_predicted           NUMERIC(12,2),  -- predicted 12-month CLV
+    churn_probability       NUMERIC(5,4),   -- 0–1
+
+    -- engagement
+    email_open_rate         NUMERIC(5,4) DEFAULT 0,
+    email_click_rate        NUMERIC(5,4) DEFAULT 0,
+    whatsapp_read_rate      NUMERIC(5,4) DEFAULT 0,
+    sms_click_rate          NUMERIC(5,4) DEFAULT 0,
+
+    last_computed_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_customer_metrics_rfm       ON customer_metrics (rfm_score DESC);
+CREATE INDEX idx_customer_metrics_churn     ON customer_metrics (churn_probability DESC);
+CREATE INDEX idx_customer_metrics_clv       ON customer_metrics (clv_predicted DESC);
+CREATE INDEX idx_customer_metrics_recency   ON customer_metrics (recency_days);
+
+
+-- =============================================================================
+-- LAYER 2 — SEGMENTATION ENGINE
+-- Segments are either AI-generated (from the Sovereign Agent) or manual
+-- =============================================================================
+
+-- audience_segments: definition + metadata
+CREATE TABLE audience_segments (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name            TEXT NOT NULL,
+    description     TEXT,
+    type            TEXT CHECK (type IN ('static','dynamic','ai_generated')) DEFAULT 'dynamic',
+    status          TEXT CHECK (status IN ('draft','building','ready','archived')) DEFAULT 'draft',
+    --
+    -- For dynamic segments: SQL WHERE clause fragment evaluated against
+    -- customers + customer_metrics + orders.  Stored as-is; executed via a
+    -- parameterised query on the backend (NEVER interpolated raw into SQL).
+    filter_sql      TEXT,
+    -- Human-readable representation of the filter for the UI
+    filter_json     JSONB DEFAULT '{}',
+    -- For static segments: populated once, not re-evaluated
+    is_pinned       BOOLEAN DEFAULT FALSE,
+
+    -- Sovereign Agent provenance
+    created_by_agent    BOOLEAN DEFAULT FALSE,
+    agent_goal          TEXT,               -- original NL goal that spawned this segment
+
+    -- Stats (refreshed on re-evaluation)
+    customer_count  INT DEFAULT 0,
+    last_evaluated_at TIMESTAMPTZ,
+
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_segments_type   ON audience_segments (type);
+CREATE INDEX idx_segments_status ON audience_segments (status);
+
+
+-- segment_members: resolved customer ↔ segment mapping (both static & cached dynamic)
+CREATE TABLE segment_members (
+    segment_id  UUID NOT NULL REFERENCES audience_segments(id) ON DELETE CASCADE,
+    customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+    added_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (segment_id, customer_id)
+);
+
+CREATE INDEX idx_segment_members_customer ON segment_members (customer_id);
+
+
+-- =============================================================================
+-- LAYER 3 — CAMPAIGNS
+-- =============================================================================
+
+CREATE TABLE campaigns (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name            TEXT NOT NULL,
+    description     TEXT,
+    status          TEXT CHECK (status IN (
+                        'draft','simulating','scheduled','running',
+                        'paused','completed','cancelled','failed'
+                    )) DEFAULT 'draft',
+    goal            TEXT,                   -- marketer's natural-language goal
+    segment_id      UUID REFERENCES audience_segments(id),
+
+    -- scheduling
+    scheduled_at    TIMESTAMPTZ,
+    started_at      TIMESTAMPTZ,
+    completed_at    TIMESTAMPTZ,
+    timezone        TEXT DEFAULT 'Asia/Kolkata',
+
+    -- budget / safety rails
+    max_send_count  INT,                    -- hard cap on messages dispatched
+    opt_out_rate_threshold NUMERIC(5,4) DEFAULT 0.02,   -- auto-pause if exceeded
+
+    -- Sovereign Agent provenance
+    created_by_agent    BOOLEAN DEFAULT FALSE,
+    agent_session_id    TEXT,               -- ties back to the agent run
+    parent_campaign_id  UUID REFERENCES campaigns(id),  -- for self-correction retries
+
+    -- aggregated performance (denormalized for dashboard speed)
+    total_sent          INT DEFAULT 0,
+    total_delivered     INT DEFAULT 0,
+    total_failed        INT DEFAULT 0,
+    total_opened        INT DEFAULT 0,
+    total_read          INT DEFAULT 0,
+    total_clicked       INT DEFAULT 0,
+    total_converted     INT DEFAULT 0,      -- orders attributed to this campaign
+    revenue_attributed  NUMERIC(14,2) DEFAULT 0,
+
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_campaigns_status       ON campaigns (status);
+CREATE INDEX idx_campaigns_segment      ON campaigns (segment_id);
+CREATE INDEX idx_campaigns_scheduled_at ON campaigns (scheduled_at);
+CREATE INDEX idx_campaigns_agent        ON campaigns (created_by_agent, agent_session_id);
+
+
+-- =============================================================================
+-- LAYER 4 — MESSAGE VARIANTS  (inputs to the MAB)
+-- Each campaign has 1–N variants across channels; the MAB chooses which to send
+-- =============================================================================
+
+CREATE TYPE message_channel AS ENUM ('email','whatsapp','sms','rcs');
+
+CREATE TABLE message_variants (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_id     UUID NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+    name            TEXT NOT NULL,          -- e.g. "Email – urgency copy A"
+    channel         message_channel NOT NULL,
+
+    -- Content fields (all optional depending on channel)
+    subject_line    TEXT,                   -- email subject
+    preview_text    TEXT,                   -- email preview
+    body_text       TEXT,                   -- plaintext / WhatsApp body
+    body_html       TEXT,                   -- rich email HTML
+    cta_text        TEXT,                   -- button label
+    cta_url         TEXT,                   -- destination URL (may be personalised template)
+    media_url       TEXT,                   -- image / video for WhatsApp / RCS
+    template_id     TEXT,                   -- approved WA Business template ID
+    template_params JSONB DEFAULT '{}',     -- placeholder values
+
+    -- MAB state (Thompson Sampling — Beta(α, β) posterior per variant)
+    mab_alpha       NUMERIC(10,4) DEFAULT 1.0,   -- successes + 1  (prior)
+    mab_beta        NUMERIC(10,4) DEFAULT 1.0,   -- failures  + 1  (prior)
+    mab_impressions INT DEFAULT 0,
+    mab_conversions INT DEFAULT 0,
+    mab_is_active   BOOLEAN DEFAULT TRUE,
+
+    -- AI generation metadata
+    generated_by_ai BOOLEAN DEFAULT FALSE,
+    generation_prompt TEXT,
+
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_variants_campaign ON message_variants (campaign_id);
+CREATE INDEX idx_variants_channel  ON message_variants (campaign_id, channel);
+CREATE INDEX idx_variants_mab      ON message_variants (mab_alpha, mab_beta);
+
+
+-- =============================================================================
+-- LAYER 5 — COMMUNICATIONS  (one row = one message dispatched to one customer)
+-- =============================================================================
+
+CREATE TABLE communications (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_id         UUID NOT NULL REFERENCES campaigns(id),
+    variant_id          UUID NOT NULL REFERENCES message_variants(id),
+    customer_id         UUID NOT NULL REFERENCES customers(id),
+    channel             message_channel NOT NULL,
+
+    -- Delivery state machine
+    -- pending → sent → delivered | failed
+    --                delivered → opened → read → clicked → converted
+    status              TEXT CHECK (status IN (
+                            'pending','sent','delivered','failed',
+                            'opened','read','clicked','converted',
+                            'unsubscribed','bounced','expired'
+                        )) DEFAULT 'pending',
+
+    -- External channel reference (from stubbed channel service)
+    channel_message_id  TEXT,               -- ID returned by the channel service
+    recipient_address   TEXT NOT NULL,      -- email address or phone number used
+
+    -- Personalised content snapshot (what was actually sent)
+    personalised_subject    TEXT,
+    personalised_body       TEXT,
+
+    -- Timestamps of each lifecycle event (NULL = not yet happened)
+    sent_at             TIMESTAMPTZ,
+    delivered_at        TIMESTAMPTZ,
+    failed_at           TIMESTAMPTZ,
+    opened_at           TIMESTAMPTZ,
+    read_at             TIMESTAMPTZ,
+    clicked_at          TIMESTAMPTZ,
+    converted_at        TIMESTAMPTZ,
+    unsubscribed_at     TIMESTAMPTZ,
+
+    -- Failure details
+    failure_reason      TEXT,
+    failure_code        TEXT,               -- channel-specific error code
+    retry_count         INT DEFAULT 0,
+    next_retry_at       TIMESTAMPTZ,
+
+    -- Attribution
+    attributed_order_id UUID REFERENCES orders(id),
+    attribution_window_hours INT DEFAULT 72,
+
+    -- Callback self-correction link
+    spawned_followup_id UUID REFERENCES communications(id), -- new comm triggered by self-correction
+
+    -- MAB context (which sample was used to select this variant)
+    mab_sample_value    NUMERIC(8,6),       -- sampled θ that won the draw
+
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_comms_campaign     ON communications (campaign_id);
+CREATE INDEX idx_comms_customer     ON communications (customer_id);
+CREATE INDEX idx_comms_variant      ON communications (variant_id);
+CREATE INDEX idx_comms_status       ON communications (status);
+CREATE INDEX idx_comms_channel_msg  ON communications (channel_message_id);
+CREATE INDEX idx_comms_sent_at      ON communications (sent_at DESC);
+CREATE INDEX idx_comms_retry        ON communications (next_retry_at) WHERE status = 'failed';
+
+
+-- =============================================================================
+-- LAYER 6 — CHANNEL CALLBACKS  (raw webhook events from the stubbed channel service)
+-- Append-only event log; the processor updates communications from these
+-- =============================================================================
+
+CREATE TABLE channel_callbacks (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    communication_id    UUID REFERENCES communications(id),
+    channel_message_id  TEXT,               -- match by this if comm_id is unknown
+    event_type          TEXT CHECK (event_type IN (
+                            'delivered','failed','opened','read',
+                            'clicked','converted','unsubscribed','bounced','expired'
+                        )) NOT NULL,
+    payload             JSONB NOT NULL DEFAULT '{}',  -- raw callback body
+    received_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    processed_at        TIMESTAMPTZ,
+    processing_status   TEXT CHECK (processing_status IN ('pending','processed','error')) DEFAULT 'pending',
+    processing_error    TEXT
+);
+
+CREATE INDEX idx_callbacks_comm_id   ON channel_callbacks (communication_id);
+CREATE INDEX idx_callbacks_msg_id    ON channel_callbacks (channel_message_id);
+CREATE INDEX idx_callbacks_pending   ON channel_callbacks (processing_status, received_at)
+                                      WHERE processing_status = 'pending';
+CREATE INDEX idx_callbacks_event     ON channel_callbacks (event_type);
+
+
+-- =============================================================================
+-- LAYER 7 — AI SELF-CORRECTION ENGINE
+-- Records every correction decision: why it fired, what it changed, outcome
+-- =============================================================================
+
+CREATE TABLE correction_events (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_id         UUID NOT NULL REFERENCES campaigns(id),
+    trigger_type        TEXT CHECK (trigger_type IN (
+                            'high_failure_rate','low_open_rate','low_ctr',
+                            'channel_timeout','bounce_spike','opt_out_spike'
+                        )) NOT NULL,
+    trigger_threshold   NUMERIC(8,4),       -- value that crossed the threshold
+    observed_value      NUMERIC(8,4),       -- actual measured value
+    cohort_size         INT,                -- how many communications were in the affected cohort
+
+    -- What the AI decided to do
+    action_taken        TEXT CHECK (action_taken IN (
+                            'switch_channel','rewrite_copy','pause_campaign',
+                            'reduce_frequency','add_fallback','no_action'
+                        )) NOT NULL,
+    old_channel         message_channel,
+    new_channel         message_channel,
+    old_variant_id      UUID REFERENCES message_variants(id),
+    new_variant_id      UUID REFERENCES message_variants(id),
+    ai_reasoning        TEXT,               -- LLM explanation stored for audit
+
+    -- Outcome measurement (filled in after the correction has had time to run)
+    correction_outcome  TEXT CHECK (correction_outcome IN ('improved','neutral','worsened','insufficient_data')),
+    outcome_delta       NUMERIC(8,4),       -- e.g. +0.04 = CTR improved by 4pp
+
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    evaluated_at        TIMESTAMPTZ
+);
+
+CREATE INDEX idx_corrections_campaign ON correction_events (campaign_id);
+CREATE INDEX idx_corrections_trigger  ON correction_events (trigger_type);
+CREATE INDEX idx_corrections_action   ON correction_events (action_taken);
+
+
+-- =============================================================================
+-- LAYER 8 — AUDIENCE SIMULATOR  (pre-send synthetic CTR / conversion estimate)
+-- =============================================================================
+
+-- simulation_runs: one per campaign variant set before go-live
+CREATE TABLE simulation_runs (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    campaign_id         UUID NOT NULL REFERENCES campaigns(id),
+    status              TEXT CHECK (status IN ('pending','running','completed','failed')) DEFAULT 'pending',
+    synthetic_audience_size INT NOT NULL DEFAULT 500,
+
+    -- Results (populated on completion)
+    predicted_open_rate     NUMERIC(5,4),
+    predicted_ctr           NUMERIC(5,4),
+    predicted_conversion_rate NUMERIC(5,4),
+    predicted_revenue       NUMERIC(12,2),
+    confidence_interval_low NUMERIC(5,4),
+    confidence_interval_high NUMERIC(5,4),
+    winning_variant_id      UUID REFERENCES message_variants(id),
+
+    -- Persona distribution used
+    persona_distribution    JSONB DEFAULT '{}',  -- {'high_value':0.3,'new':0.2,...}
+
+    started_at      TIMESTAMPTZ,
+    completed_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- simulation_personas: the synthetic customer archetypes
+CREATE TABLE simulation_personas (
+    id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name                TEXT NOT NULL,       -- "Value-seeking new shopper"
+    description         TEXT,
+    archetype           TEXT,                -- 'bargain_hunter','loyalist','browser','impulse'
+    -- Probabilistic response parameters
+    base_open_rate      NUMERIC(5,4) NOT NULL,
+    base_ctr            NUMERIC(5,4) NOT NULL,
+    base_conversion_rate NUMERIC(5,4) NOT NULL,
+    -- Modifier matrix: how channel / time / copy-style shifts these probabilities
+    channel_multipliers JSONB DEFAULT '{}',  -- {"email":1.1,"whatsapp":0.9}
+    time_multipliers    JSONB DEFAULT '{}',  -- {"morning":1.2,"evening":0.8}
+    copy_multipliers    JSONB DEFAULT '{}',  -- {"urgency":1.15,"informational":0.9}
+    is_active           BOOLEAN DEFAULT TRUE,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- simulation_results: per-variant outcomes inside a simulation run
+CREATE TABLE simulation_results (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    simulation_id   UUID NOT NULL REFERENCES simulation_runs(id) ON DELETE CASCADE,
+    variant_id      UUID NOT NULL REFERENCES message_variants(id),
+    persona_id      UUID REFERENCES simulation_personas(id),
+    simulated_sends INT NOT NULL DEFAULT 0,
+    simulated_opens INT NOT NULL DEFAULT 0,
+    simulated_clicks INT NOT NULL DEFAULT 0,
+    simulated_conversions INT NOT NULL DEFAULT 0,
+    simulated_revenue NUMERIC(12,2) DEFAULT 0,
+    open_rate       NUMERIC(5,4) GENERATED ALWAYS AS
+                        (CASE WHEN simulated_sends=0 THEN 0
+                              ELSE simulated_opens::NUMERIC / simulated_sends END) STORED,
+    ctr             NUMERIC(5,4) GENERATED ALWAYS AS
+                        (CASE WHEN simulated_sends=0 THEN 0
+                              ELSE simulated_clicks::NUMERIC / simulated_sends END) STORED
+);
+
+CREATE INDEX idx_sim_results_simulation ON simulation_results (simulation_id);
+CREATE INDEX idx_sim_results_variant    ON simulation_results (variant_id);
+
+
+-- =============================================================================
+-- LAYER 9 — ORGANIZATIONAL MEMORY LAYER
+-- Stores learnings persisted across campaigns for future Sovereign Agent use
+-- =============================================================================
+
+CREATE TABLE org_memory_entries (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    -- Scope
+    segment_tag     TEXT,               -- 'coffee_buyers', 'luxury_segment', etc.
+    channel         message_channel,    -- NULL = cross-channel finding
+    day_of_week     INT CHECK (day_of_week BETWEEN 0 AND 6),  -- NULL = any day
+    time_of_day     TEXT CHECK (time_of_day IN ('morning','afternoon','evening','night')),
+
+    -- The learning itself
+    learning_type   TEXT CHECK (learning_type IN (
+                        'copy_style','send_time','channel_preference',
+                        'frequency','offer_type','subject_pattern'
+                    )) NOT NULL,
+    learning_summary TEXT NOT NULL,     -- e.g. "Urgency CTAs +22% CTR for coffee segment on Wed"
+    confidence      NUMERIC(5,4) DEFAULT 0.5,   -- 0–1, updated as evidence accumulates
+
+    -- Evidence base
+    source_campaign_ids UUID[] DEFAULT '{}',
+    evidence_count  INT DEFAULT 1,      -- number of campaigns supporting this learning
+    avg_lift        NUMERIC(6,4),       -- average performance delta vs baseline
+
+    -- For the MAB: which copy patterns worked
+    winning_copy_signals JSONB DEFAULT '{}',  -- {"urgency":true,"emoji":false,"length":"short"}
+
+    is_active       BOOLEAN DEFAULT TRUE,   -- set false when contradicted by new data
+    expires_at      TIMESTAMPTZ,            -- stale knowledge auto-expires
+
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_org_memory_segment  ON org_memory_entries (segment_tag);
+CREATE INDEX idx_org_memory_channel  ON org_memory_entries (channel);
+CREATE INDEX idx_org_memory_type     ON org_memory_entries (learning_type);
+CREATE INDEX idx_org_memory_active   ON org_memory_entries (is_active, confidence DESC);
+CREATE INDEX idx_org_memory_dow      ON org_memory_entries (day_of_week, time_of_day);
+
+
+-- =============================================================================
+-- LAYER 10 — SOVEREIGN AGENT  (audit log of every agent session and decision)
+-- =============================================================================
+
+CREATE TABLE agent_sessions (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    goal            TEXT NOT NULL,          -- raw marketer input
+    status          TEXT CHECK (status IN ('running','completed','failed','paused')) DEFAULT 'running',
+    model_used      TEXT DEFAULT 'gemini-2.5-pro',
+    -- JSON array of all LLM turns (truncated if >100 turns for storage efficiency)
+    conversation_log JSONB DEFAULT '[]',
+    -- Structured plan the agent settled on
+    plan            JSONB DEFAULT '{}',
+    -- Resources created by this session
+    created_segment_id  UUID REFERENCES audience_segments(id),
+    created_campaign_id UUID REFERENCES campaigns(id),
+    error_message       TEXT,
+    started_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at    TIMESTAMPTZ,
+    tokens_used_in  INT DEFAULT 0,
+    tokens_used_out INT DEFAULT 0
+);
+
+CREATE INDEX idx_agent_sessions_status ON agent_sessions (status);
+CREATE INDEX idx_agent_sessions_goal   ON agent_sessions USING GIN (to_tsvector('english', goal));
+
+
+-- agent_decisions: fine-grained step log for explainability
+CREATE TABLE agent_decisions (
+    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id      UUID NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
+    step_number     INT NOT NULL,
+    decision_type   TEXT CHECK (decision_type IN (
+                        'segment_query','variant_generation','channel_selection',
+                        'schedule_decision','send_command','abort','memory_lookup',
+                        'simulation_trigger','correction_trigger'
+                    )) NOT NULL,
+    input_context   JSONB DEFAULT '{}',
+    output_action   JSONB DEFAULT '{}',
+    reasoning       TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_agent_decisions_session ON agent_decisions (session_id, step_number);
+
+
+-- =============================================================================
+-- UTILITY — VIEWS for dashboard / API layer
+-- =============================================================================
+
+-- Campaign performance summary view
+CREATE OR REPLACE VIEW v_campaign_performance AS
+SELECT
+    c.id,
+    c.name,
+    c.status,
+    c.goal,
+    c.scheduled_at,
+    c.started_at,
+    c.completed_at,
+    c.created_by_agent,
+    c.total_sent,
+    c.total_delivered,
+    c.total_failed,
+    c.total_opened,
+    c.total_read,
+    c.total_clicked,
+    c.total_converted,
+    c.revenue_attributed,
+    -- rates (avoid division by zero)
+    CASE WHEN c.total_sent    > 0 THEN ROUND(c.total_delivered::NUMERIC  / c.total_sent * 100, 2) END AS delivery_rate_pct,
+    CASE WHEN c.total_sent    > 0 THEN ROUND(c.total_failed::NUMERIC     / c.total_sent * 100, 2) END AS failure_rate_pct,
+    CASE WHEN c.total_delivered > 0 THEN ROUND(c.total_opened::NUMERIC   / c.total_delivered * 100, 2) END AS open_rate_pct,
+    CASE WHEN c.total_delivered > 0 THEN ROUND(c.total_clicked::NUMERIC  / c.total_delivered * 100, 2) END AS ctr_pct,
+    CASE WHEN c.total_delivered > 0 THEN ROUND(c.total_converted::NUMERIC/ c.total_delivered * 100, 2) END AS conversion_rate_pct,
+    -- opt-out rate across the campaign's communications
+    (SELECT ROUND(
+        COUNT(*) FILTER (WHERE status = 'unsubscribed')::NUMERIC / NULLIF(COUNT(*),0) * 100, 4
+     ) FROM communications WHERE campaign_id = c.id) AS opt_out_rate_pct,
+    seg.name AS segment_name,
+    seg.customer_count AS segment_size
+FROM campaigns c
+LEFT JOIN audience_segments seg ON c.segment_id = seg.id;
+
+
+-- Per-variant MAB performance view (Thompson Sampling derived stats)
+CREATE OR REPLACE VIEW v_variant_mab_stats AS
+SELECT
+    mv.id,
+    mv.campaign_id,
+    mv.name,
+    mv.channel,
+    mv.mab_alpha,
+    mv.mab_beta,
+    mv.mab_impressions,
+    mv.mab_conversions,
+    -- Expected conversion rate under the Beta posterior: α/(α+β)
+    ROUND(mv.mab_alpha / (mv.mab_alpha + mv.mab_beta), 4) AS expected_conversion_rate,
+    -- Approximate 95% credible interval width: ± 1.96 * sqrt(α*β / (α+β)^2 / (α+β+1))
+    ROUND(1.96 * SQRT(
+        (mv.mab_alpha * mv.mab_beta)
+        / POWER(mv.mab_alpha + mv.mab_beta, 2)
+        / (mv.mab_alpha + mv.mab_beta + 1)
+    ), 4) AS ci_half_width_95,
+    mv.mab_is_active,
+    c.name AS campaign_name
+FROM message_variants mv
+JOIN campaigns c ON mv.campaign_id = c.id;
+
+
+-- Customer 360 view (joins customer + metrics in one record for the API)
+CREATE OR REPLACE VIEW v_customer_360 AS
+SELECT
+    cu.id,
+    cu.name,
+    cu.email,
+    cu.phone,
+    cu.whatsapp_number,
+    cu.preferred_channel,
+    cu.opt_out_channels,
+    cu.is_globally_opted_out,
+    cu.tags,
+    cu.city,
+    cu.country,
+    cu.created_at AS customer_since,
+    m.recency_days,
+    m.frequency,
+    m.monetary_total,
+    m.monetary_avg_order,
+    m.rfm_score,
+    m.clv_predicted,
+    m.churn_probability,
+    m.email_open_rate,
+    m.email_click_rate,
+    m.whatsapp_read_rate,
+    m.last_computed_at AS metrics_last_updated
+FROM customers cu
+LEFT JOIN customer_metrics m ON cu.id = m.customer_id;
+
+
+-- Opt-out safety guardrail view: campaigns approaching or exceeding threshold
+CREATE OR REPLACE VIEW v_opt_out_alerts AS
+SELECT
+    c.id AS campaign_id,
+    c.name AS campaign_name,
+    c.opt_out_rate_threshold,
+    ROUND(
+        COUNT(*) FILTER (WHERE comm.status = 'unsubscribed')::NUMERIC
+        / NULLIF(COUNT(comm.id), 0) * 100, 4
+    ) AS current_opt_out_rate_pct,
+    CASE
+        WHEN (COUNT(*) FILTER (WHERE comm.status = 'unsubscribed')::NUMERIC
+              / NULLIF(COUNT(comm.id), 0)) >= c.opt_out_rate_threshold
+        THEN 'EXCEEDED'
+        WHEN (COUNT(*) FILTER (WHERE comm.status = 'unsubscribed')::NUMERIC
+              / NULLIF(COUNT(comm.id), 0)) >= c.opt_out_rate_threshold * 0.8
+        THEN 'WARNING'
+        ELSE 'OK'
+    END AS alert_level
+FROM campaigns c
+JOIN communications comm ON c.id = comm.campaign_id
+WHERE c.status = 'running'
+GROUP BY c.id, c.name, c.opt_out_rate_threshold;
+
+
+-- =============================================================================
+-- UTILITY — FUNCTIONS & TRIGGERS
+-- =============================================================================
+
+-- Auto-update updated_at on every write
+CREATE OR REPLACE FUNCTION fn_set_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_customers_updated_at
+    BEFORE UPDATE ON customers
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+CREATE TRIGGER trg_campaigns_updated_at
+    BEFORE UPDATE ON campaigns
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+CREATE TRIGGER trg_comms_updated_at
+    BEFORE UPDATE ON communications
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+CREATE TRIGGER trg_variants_updated_at
+    BEFORE UPDATE ON message_variants
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+CREATE TRIGGER trg_segments_updated_at
+    BEFORE UPDATE ON audience_segments
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+CREATE TRIGGER trg_org_memory_updated_at
+    BEFORE UPDATE ON org_memory_entries
+    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+
+-- After each callback is processed, propagate the status to communications
+-- and increment MAB counters for conversion events.
+CREATE OR REPLACE FUNCTION fn_apply_callback()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+DECLARE
+    v_comm_id UUID;
+    v_variant_id UUID;
+BEGIN
+    -- Resolve communication id (prefer direct FK, fall back to message id lookup)
+    v_comm_id := NEW.communication_id;
+    IF v_comm_id IS NULL THEN
+        SELECT id INTO v_comm_id
+        FROM communications
+        WHERE channel_message_id = NEW.channel_message_id
+        LIMIT 1;
+    END IF;
+
+    IF v_comm_id IS NULL THEN
+        NEW.processing_status := 'error';
+        NEW.processing_error  := 'Could not resolve communication_id';
+        RETURN NEW;
+    END IF;
+
+    -- Update the communication status (forward-only state machine)
+    UPDATE communications
+    SET
+        status        = NEW.event_type,
+        processed_at  = NOW(),
+        delivered_at  = CASE WHEN NEW.event_type = 'delivered'     THEN NOW() ELSE delivered_at END,
+        failed_at     = CASE WHEN NEW.event_type = 'failed'        THEN NOW() ELSE failed_at    END,
+        opened_at     = CASE WHEN NEW.event_type = 'opened'        THEN NOW() ELSE opened_at    END,
+        read_at       = CASE WHEN NEW.event_type = 'read'          THEN NOW() ELSE read_at      END,
+        clicked_at    = CASE WHEN NEW.event_type = 'clicked'       THEN NOW() ELSE clicked_at   END,
+        converted_at  = CASE WHEN NEW.event_type = 'converted'     THEN NOW() ELSE converted_at END,
+        unsubscribed_at = CASE WHEN NEW.event_type = 'unsubscribed' THEN NOW() ELSE unsubscribed_at END,
+        failure_reason = COALESCE(NEW.payload->>'error_message', failure_reason),
+        failure_code   = COALESCE(NEW.payload->>'error_code', failure_code)
+    WHERE id = v_comm_id;
+
+    -- Increment the relevant campaign counter
+    UPDATE campaigns SET
+        total_delivered = total_delivered + CASE WHEN NEW.event_type = 'delivered'    THEN 1 ELSE 0 END,
+        total_failed    = total_failed    + CASE WHEN NEW.event_type = 'failed'       THEN 1 ELSE 0 END,
+        total_opened    = total_opened    + CASE WHEN NEW.event_type = 'opened'       THEN 1 ELSE 0 END,
+        total_read      = total_read      + CASE WHEN NEW.event_type = 'read'         THEN 1 ELSE 0 END,
+        total_clicked   = total_clicked   + CASE WHEN NEW.event_type = 'clicked'      THEN 1 ELSE 0 END,
+        total_converted = total_converted + CASE WHEN NEW.event_type = 'converted'    THEN 1 ELSE 0 END
+    WHERE id = (SELECT campaign_id FROM communications WHERE id = v_comm_id);
+
+    -- Update Thompson Sampling MAB counters on conversion/click (treat click as success)
+    IF NEW.event_type IN ('converted','clicked') THEN
+        SELECT variant_id INTO v_variant_id
+        FROM communications WHERE id = v_comm_id;
+
+        UPDATE message_variants SET
+            mab_conversions = mab_conversions + 1,
+            mab_alpha       = mab_alpha + 1          -- Beta posterior: increment α on success
+        WHERE id = v_variant_id;
+    END IF;
+
+    -- Increment MAB impressions on delivery (treat delivery as a "trial")
+    IF NEW.event_type = 'delivered' THEN
+        SELECT variant_id INTO v_variant_id
+        FROM communications WHERE id = v_comm_id;
+
+        UPDATE message_variants SET
+            mab_impressions = mab_impressions + 1,
+            mab_beta        = mab_beta + 1           -- Beta posterior: increment β on non-success
+        WHERE id = v_variant_id;
+    END IF;
+
+    NEW.communication_id    := v_comm_id;
+    NEW.processing_status   := 'processed';
+    NEW.processed_at        := NOW();
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_process_callback
+    BEFORE INSERT ON channel_callbacks
+    FOR EACH ROW EXECUTE FUNCTION fn_apply_callback();
+
+
+-- Stored procedure: Thompson Sampling — sample a variant for a given campaign
+-- Called by the Spring backend just before each message dispatch
+CREATE OR REPLACE FUNCTION fn_thompson_sample(p_campaign_id UUID)
+RETURNS UUID LANGUAGE plpgsql AS $$
+DECLARE
+    best_variant_id UUID;
+    best_sample     NUMERIC := -1;
+    rec             RECORD;
+    this_sample     NUMERIC;
+BEGIN
+    FOR rec IN
+        SELECT id, mab_alpha, mab_beta
+        FROM message_variants
+        WHERE campaign_id = p_campaign_id AND mab_is_active = TRUE
+    LOOP
+        -- Sample from Beta(α, β) using the Johnk method approximation via pgcrypto
+        -- True Beta sampling requires an extension; this approximates via Gamma(α,1)/Gamma(α,1)+Gamma(β,1)
+        -- For a full implementation use a Java-side call with Apache Commons Math.
+        -- Here we store the expected value as a proxy (deterministic fallback).
+        this_sample := rec.mab_alpha / (rec.mab_alpha + rec.mab_beta);
+        -- Add a small noise term to simulate sampling variance (use random() which is thread-local in PG)
+        this_sample := this_sample + (random() - 0.5) *
+                       SQRT(rec.mab_alpha * rec.mab_beta
+                            / POWER(rec.mab_alpha + rec.mab_beta, 2)
+                            / (rec.mab_alpha + rec.mab_beta + 1));
+
+        IF this_sample > best_sample THEN
+            best_sample     := this_sample;
+            best_variant_id := rec.id;
+        END IF;
+    END LOOP;
+
+    RETURN best_variant_id;
+END;
+$$;
+
+
+-- Stored procedure: materialise a dynamic segment into segment_members
+CREATE OR REPLACE FUNCTION fn_evaluate_segment(p_segment_id UUID)
+RETURNS INT LANGUAGE plpgsql AS $$
+DECLARE
+    v_count INT;
+    v_filter TEXT;
+BEGIN
+    SELECT filter_sql INTO v_filter
+    FROM audience_segments
+    WHERE id = p_segment_id;
+
+    -- Remove stale memberships
+    DELETE FROM segment_members WHERE segment_id = p_segment_id;
+
+    -- Re-insert (filter_sql is a WHERE clause fragment applied to the
+    -- v_customer_360 view — the Java layer builds this via a safe query builder,
+    -- never by raw interpolation)
+    EXECUTE format(
+        'INSERT INTO segment_members (segment_id, customer_id)
+         SELECT %L, id FROM v_customer_360 WHERE %s
+         ON CONFLICT DO NOTHING',
+        p_segment_id, COALESCE(v_filter, 'TRUE')
+    );
+
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+
+    UPDATE audience_segments
+    SET customer_count    = v_count,
+        last_evaluated_at = NOW(),
+        status            = 'ready'
+    WHERE id = p_segment_id;
+
+    RETURN v_count;
+END;
+$$;
+
+
+-- =============================================================================
+-- ROW LEVEL SECURITY (Supabase)
+-- All tables are private by default; service-role key bypasses RLS (used by Spring)
+-- =============================================================================
+
+ALTER TABLE customers           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE product_categories  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customer_metrics    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audience_segments   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE segment_members     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE campaigns           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE message_variants    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE communications      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE channel_callbacks   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE correction_events   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE simulation_runs     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE simulation_personas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE simulation_results  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE org_memory_entries  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_sessions      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_decisions     ENABLE ROW LEVEL SECURITY;
+
+-- Spring Boot uses the Supabase service_role key, which bypasses RLS.
+-- No additional policies are required for the backend.
+-- If you add a frontend calling Supabase directly (not recommended for this CRM),
+-- add anon/authenticated policies here.
+
+
+-- =============================================================================
+-- SAMPLE SEED DATA  (realistic demo data for the walkthrough video)
+-- =============================================================================
+
+-- Product categories
+INSERT INTO product_categories (id, name, slug) VALUES
+    ('a1000000-0000-0000-0000-000000000001', 'Coffee & Beverages', 'coffee-beverages'),
+    ('a1000000-0000-0000-0000-000000000002', 'Beauty & Skincare',  'beauty-skincare'),
+    ('a1000000-0000-0000-0000-000000000003', 'Luxury Accessories', 'luxury-accessories');
+
+-- Products
+INSERT INTO products (id, sku, name, category_id, price, tags) VALUES
+    ('b1000000-0000-0000-0000-000000000001', 'COFFEE-ARABICA-250G', 'Ethiopian Arabica Beans 250g', 'a1000000-0000-0000-0000-000000000001', 799.00,  ARRAY['coffee','beans','premium']),
+    ('b1000000-0000-0000-0000-000000000002', 'COFFEE-COLDBREW-KIT', 'Cold Brew Starter Kit',        'a1000000-0000-0000-0000-000000000001', 1499.00, ARRAY['coffee','cold-brew']),
+    ('b1000000-0000-0000-0000-000000000003', 'BEAUTY-SERUM-30ML',   'Vitamin C Brightening Serum',  'a1000000-0000-0000-0000-000000000002', 2199.00, ARRAY['beauty','serum','skincare']),
+    ('b1000000-0000-0000-0000-000000000004', 'LUXURY-WALLET-01',    'Genuine Leather Slim Wallet',  'a1000000-0000-0000-0000-000000000003', 3499.00, ARRAY['luxury','leather','wallet']);
+
+-- Simulation personas
+INSERT INTO simulation_personas (id, name, archetype, base_open_rate, base_ctr, base_conversion_rate, channel_multipliers, copy_multipliers) VALUES
+    ('c1000000-0000-0000-0000-000000000001', 'Loyal Coffee Enthusiast', 'loyalist',
+     0.48, 0.15, 0.08,
+     '{"email":1.2,"whatsapp":1.1,"sms":0.7}',
+     '{"urgency":1.3,"loyalty_reward":1.5,"informational":0.9}'),
+    ('c1000000-0000-0000-0000-000000000002', 'Bargain Hunter',          'bargain_hunter',
+     0.35, 0.12, 0.06,
+     '{"email":1.0,"whatsapp":1.3,"sms":1.1}',
+     '{"discount":1.6,"urgency":1.2,"informational":0.7}'),
+    ('c1000000-0000-0000-0000-000000000003', 'Luxury Aspirant',         'impulse',
+     0.30, 0.08, 0.04,
+     '{"email":1.1,"whatsapp":0.8,"rcs":1.4}',
+     '{"exclusivity":1.7,"scarcity":1.4,"discount":0.6}'),
+    ('c1000000-0000-0000-0000-000000000004', 'Occasional Browser',      'browser',
+     0.20, 0.04, 0.02,
+     '{"email":1.0,"whatsapp":0.9,"sms":0.8}',
+     '{"informational":1.1,"urgency":0.9,"discount":1.2}');
+
+-- Sample customers
+INSERT INTO customers (id, email, phone, name, city, tags, preferred_channel) VALUES
+    ('d1000000-0000-0000-0000-000000000001', 'priya.sharma@example.com', '+919876543210', 'Priya Sharma',   'Bengaluru', ARRAY['coffee-buyer','vip'],     'email'),
+    ('d1000000-0000-0000-0000-000000000002', 'ravi.kumar@example.com',   '+919876543211', 'Ravi Kumar',     'Mumbai',    ARRAY['coffee-buyer'],            'whatsapp'),
+    ('d1000000-0000-0000-0000-000000000003', 'ananya.iyer@example.com',  '+919876543212', 'Ananya Iyer',    'Chennai',   ARRAY['beauty','skincare'],       'email'),
+    ('d1000000-0000-0000-0000-000000000004', 'vikram.seth@example.com',  '+919876543213', 'Vikram Seth',    'Delhi',     ARRAY['luxury','high-value'],     'email'),
+    ('d1000000-0000-0000-0000-000000000005', 'meena.nair@example.com',   '+919876543214', 'Meena Nair',     'Kochi',     ARRAY['coffee-buyer','churned'],  'sms');
+
+-- Customer metrics for seed customers
+INSERT INTO customer_metrics (customer_id, recency_days, frequency, monetary_total, monetary_avg_order, rfm_score, clv_predicted, churn_probability, email_open_rate, email_click_rate) VALUES
+    ('d1000000-0000-0000-0000-000000000001', 12,  8, 14200, 1775, 4.2, 28000, 0.05, 0.52, 0.18),
+    ('d1000000-0000-0000-0000-000000000002', 45,  3,  4800, 1600, 2.8,  8000, 0.22, 0.31, 0.09),
+    ('d1000000-0000-0000-0000-000000000003',  5, 12, 22000, 1833, 4.8, 42000, 0.03, 0.61, 0.24),
+    ('d1000000-0000-0000-0000-000000000004', 90,  2,  9000, 4500, 2.1,  5000, 0.55, 0.25, 0.05),
+    ('d1000000-0000-0000-0000-000000000005',180,  1,   799,  799, 1.0,   500, 0.88, 0.10, 0.02);
+
+-- Org memory seed: what the AI already knows
+INSERT INTO org_memory_entries (segment_tag, channel, learning_type, learning_summary, confidence, evidence_count, avg_lift, winning_copy_signals) VALUES
+    ('coffee_buyers', 'whatsapp', 'copy_style',
+     'Urgency-framed CTAs ("Grab yours before 6PM") achieve 22% higher CTR vs informational copy for coffee segment on weekday mornings.',
+     0.78, 3, 0.22, '{"urgency":true,"short_body":true,"emoji":true}'),
+    ('beauty_segment', 'email', 'send_time',
+     'Thursday 8–9PM send window achieves 1.4× open rate vs Tuesday morning for beauty segment.',
+     0.71, 2, 0.40, '{"story_driven":true,"long_form":true}'),
+    ('luxury_segment', 'email', 'copy_style',
+     'Exclusivity framing ("Members-only access") converts 3.2× better than discount offers for luxury buyers.',
+     0.85, 5, 0.32, '{"exclusivity":true,"no_discount":true,"premium_imagery":true}'),
+    ('churned_users', 'sms', 'offer_type',
+     'Re-engagement SMS with a time-bound 15% win-back discount recovers ~4% of churned segment within 7 days.',
+     0.62, 2, 0.04, '{"discount":true,"urgency":true,"short_body":true}');
+
+
+-- =============================================================================
+-- END OF SCHEMA
+-- Tables: 18  |  Views: 4  |  Functions: 4  |  Triggers: 7
+-- =============================================================================
+
+
+CREATE TABLE audit_logs (
+    id BIGSERIAL PRIMARY KEY,
+
+    trace_id UUID,
+
+    entity_type VARCHAR(100) NOT NULL,
+    entity_id BIGINT NOT NULL,
+
+    action VARCHAR(50) NOT NULL,
+
+    actor_type VARCHAR(50) NOT NULL,
+    actor_id VARCHAR(255),
+
+    old_value JSONB,
+    new_value JSONB,
+
+    description TEXT,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_audit_entity
+ON audit_logs(entity_type, entity_id);
+
+CREATE INDEX idx_audit_action
+ON audit_logs(action);
+
+CREATE INDEX idx_audit_actor
+ON audit_logs(actor_type);
+
+CREATE INDEX idx_audit_created_at
+ON audit_logs(created_at);
+
+CREATE INDEX idx_audit_trace
+ON audit_logs(trace_id);
+.
