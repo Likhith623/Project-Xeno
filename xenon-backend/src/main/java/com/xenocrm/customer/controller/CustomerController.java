@@ -15,7 +15,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import com.xenocrm.common.PaginationMetadata;
 
 /**
  * CustomerController — Exposes customer ingestion and 360 view endpoints.
@@ -44,6 +49,19 @@ public class CustomerController {
             @Valid @RequestBody CustomerUpdateRequestDto request) {
         CustomerResponseDto responseDto = customerIngestionService.updateCustomer(id, request);
         return ResponseEntity.ok(ResponseWrapper.success(responseDto));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all customers with pagination")
+    public ResponseEntity<ResponseWrapper<List<CustomerResponseDto>>> getAllCustomers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CustomerResponseDto> pagedResult = customerIngestionService.getAllCustomers(pageable);
+        return ResponseEntity.ok(ResponseWrapper.success(
+                pagedResult.getContent(),
+                PaginationMetadata.from(pagedResult)
+        ));
     }
 
     @GetMapping("/{id}")

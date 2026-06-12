@@ -13,6 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import com.xenocrm.common.PaginationMetadata;
 
 /**
  * SegmentController — Exposes segment ingestion and evaluation endpoints.
@@ -30,6 +35,19 @@ public class SegmentController {
     public ResponseEntity<ResponseWrapper<SegmentResponseDto>> createSegment(@Valid @RequestBody SegmentCreateRequestDto request) {
         SegmentResponseDto responseDto = segmentEvaluationService.createSegment(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDto));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all segments with pagination")
+    public ResponseEntity<ResponseWrapper<List<SegmentResponseDto>>> getAllSegments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<SegmentResponseDto> pagedResult = segmentEvaluationService.getAllSegments(pageable);
+        return ResponseEntity.ok(ResponseWrapper.success(
+                pagedResult.getContent(),
+                PaginationMetadata.from(pagedResult)
+        ));
     }
 
     @GetMapping("/{id}")

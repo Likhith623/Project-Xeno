@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * SegmentEvaluationService — Handles segment creation and evaluation.
@@ -51,6 +53,11 @@ public class SegmentEvaluationService {
         AudienceSegmentEntity segment = segmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("AudienceSegment", "id", id));
         return segmentMapper.toResponseDto(segment);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SegmentResponseDto> getAllSegments(Pageable pageable) {
+        return segmentRepository.findAll(pageable).map(segmentMapper::toResponseDto);
     }
 
     @Async("taskExecutor")

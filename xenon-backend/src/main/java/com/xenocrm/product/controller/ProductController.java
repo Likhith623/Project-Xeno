@@ -13,6 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import com.xenocrm.common.PaginationMetadata;
 
 /**
  * ProductController — Exposes product ingestion and retrieval endpoints.
@@ -30,6 +35,19 @@ public class ProductController {
     public ResponseEntity<ResponseWrapper<ProductResponseDto>> createProduct(@Valid @RequestBody ProductCreateRequestDto request) {
         ProductResponseDto responseDto = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDto));
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all products with pagination")
+    public ResponseEntity<ResponseWrapper<List<ProductResponseDto>>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductResponseDto> pagedResult = productService.getAllProducts(pageable);
+        return ResponseEntity.ok(ResponseWrapper.success(
+                pagedResult.getContent(),
+                PaginationMetadata.from(pagedResult)
+        ));
     }
 
     @GetMapping("/{id}")

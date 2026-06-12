@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Slf4j
 @Service
@@ -49,5 +51,10 @@ public class OrderService {
         OrderEntity order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
         return orderMapper.toResponseDto(order);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponseDto> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable).map(orderMapper::toResponseDto);
     }
 }

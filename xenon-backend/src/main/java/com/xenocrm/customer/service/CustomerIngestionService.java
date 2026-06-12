@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * CustomerIngestionService — Handles creation and updates of customers.
@@ -69,6 +71,11 @@ public class CustomerIngestionService {
         CustomerEntity customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
         return customerMapper.toResponseDto(customer);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CustomerResponseDto> getAllCustomers(Pageable pageable) {
+        return customerRepository.findAll(pageable).map(customerMapper::toResponseDto);
     }
 
     @Transactional

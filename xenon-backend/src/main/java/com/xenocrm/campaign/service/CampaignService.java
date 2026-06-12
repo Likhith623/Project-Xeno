@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * CampaignService — Handles campaign creation and retrieval.
@@ -52,5 +54,10 @@ public class CampaignService {
         CampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Campaign", "id", id));
         return campaignMapper.toResponseDto(campaign);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CampaignResponseDto> getAllCampaigns(Pageable pageable) {
+        return campaignRepository.findAll(pageable).map(campaignMapper::toResponseDto);
     }
 }
