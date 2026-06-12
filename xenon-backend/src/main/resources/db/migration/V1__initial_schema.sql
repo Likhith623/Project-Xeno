@@ -378,7 +378,8 @@ CREATE TABLE channel_callbacks (
     received_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     processed_at        TIMESTAMPTZ,
     processing_status   TEXT CHECK (processing_status IN ('pending','processed','error')) DEFAULT 'pending',
-    processing_error    TEXT
+    processing_error    TEXT,
+    retry_count         INT DEFAULT 0
 );
 
 CREATE INDEX idx_callbacks_comm_id   ON channel_callbacks (communication_id);
@@ -741,90 +742,6 @@ CREATE TRIGGER trg_segments_updated_at
 CREATE TRIGGER trg_org_memory_updated_at
     BEFORE UPDATE ON org_memory_entries
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
-
-
--- After each callback is processed, propagate the status to communications
--- and increment MAB counters for conversion events.
-CREATE OR REPLACE FUNCTION fn_apply_callback()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-DECLARE
-    v_comm_id UUID;
-    v_variant_id UUID;
-BEGIN
-    -- Resolve communication id (prefer direct FK, fall back to message id lookup)
-    v_comm_id := NEW.communication_id;
-    IF v_comm_id IS NULL THEN
-        SELECT id INTO v_comm_id
-        FROM communications
-        WHERE channel_message_id = NEW.channel_message_id
-        LIMIT 1;
-    END IF;
-
-    IF v_comm_id IS NULL THEN
-        NEW.processing_status := 'error';
-        NEW.processing_error  := 'Could not resolve communication_id';
-        RETURN NEW;
-    END IF;
-
-    -- Update the communication status (forward-only state machine)
-    UPDATE communications
-    SET
-        status        = NEW.event_type,
-        processed_at  = NOW(),
-        delivered_at  = CASE WHEN NEW.event_type = 'delivered'     THEN NOW() ELSE delivered_at END,
-        failed_at     = CASE WHEN NEW.event_type = 'failed'        THEN NOW() ELSE failed_at    END,
-        opened_at     = CASE WHEN NEW.event_type = 'opened'        THEN NOW() ELSE opened_at    END,
-        read_at       = CASE WHEN NEW.event_type = 'read'          THEN NOW() ELSE read_at      END,
-        clicked_at    = CASE WHEN NEW.event_type = 'clicked'       THEN NOW() ELSE clicked_at   END,
-        converted_at  = CASE WHEN NEW.event_type = 'converted'     THEN NOW() ELSE converted_at END,
-        unsubscribed_at = CASE WHEN NEW.event_type = 'unsubscribed' THEN NOW() ELSE unsubscribed_at END,
-        failure_reason = COALESCE(NEW.payload->>'error_message', failure_reason),
-        failure_code   = COALESCE(NEW.payload->>'error_code', failure_code)
-    WHERE id = v_comm_id;
-
-    -- Increment the relevant campaign counter
-    UPDATE campaigns SET
-        total_delivered = total_delivered + CASE WHEN NEW.event_type = 'delivered'    THEN 1 ELSE 0 END,
-        total_failed    = total_failed    + CASE WHEN NEW.event_type = 'failed'       THEN 1 ELSE 0 END,
-        total_opened    = total_opened    + CASE WHEN NEW.event_type = 'opened'       THEN 1 ELSE 0 END,
-        total_read      = total_read      + CASE WHEN NEW.event_type = 'read'         THEN 1 ELSE 0 END,
-        total_clicked   = total_clicked   + CASE WHEN NEW.event_type = 'clicked'      THEN 1 ELSE 0 END,
-        total_converted = total_converted + CASE WHEN NEW.event_type = 'converted'    THEN 1 ELSE 0 END
-    WHERE id = (SELECT campaign_id FROM communications WHERE id = v_comm_id);
-
-    -- Update Thompson Sampling MAB counters on conversion/click (treat click as success)
-    IF NEW.event_type IN ('converted','clicked') THEN
-        SELECT variant_id INTO v_variant_id
-        FROM communications WHERE id = v_comm_id;
-
-        UPDATE message_variants SET
-            mab_conversions = mab_conversions + 1,
-            mab_alpha       = mab_alpha + 1          -- Beta posterior: increment α on success
-        WHERE id = v_variant_id;
-    END IF;
-
-    -- Increment MAB impressions on delivery (treat delivery as a "trial")
-    IF NEW.event_type = 'delivered' THEN
-        SELECT variant_id INTO v_variant_id
-        FROM communications WHERE id = v_comm_id;
-
-        UPDATE message_variants SET
-            mab_impressions = mab_impressions + 1,
-            mab_beta        = mab_beta + 1           -- Beta posterior: increment β on non-success
-        WHERE id = v_variant_id;
-    END IF;
-
-    NEW.communication_id    := v_comm_id;
-    NEW.processing_status   := 'processed';
-    NEW.processed_at        := NOW();
-    RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER trg_process_callback
-    BEFORE INSERT ON channel_callbacks
-    FOR EACH ROW EXECUTE FUNCTION fn_apply_callback();
-
 
 -- Stored procedure: Thompson Sampling — sample a variant for a given campaign
 -- Called by the Spring backend just before each message dispatch

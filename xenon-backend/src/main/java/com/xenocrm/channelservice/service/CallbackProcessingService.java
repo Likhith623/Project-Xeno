@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * CallbackProcessingService — Receives channel callbacks and stores them in the channel_callbacks table.
  * Layer: Service
- * Note: A Postgres trigger (fn_apply_callback) runs on INSERT to process the callback.
+ * Note: A background @Scheduled worker (CallbackRetryWorker) processes these events to handle race conditions gracefully.
  */
 @Service
 @RequiredArgsConstructor
@@ -20,11 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CallbackProcessingService {
 
     private final ChannelCallbackRepository channelCallbackRepository;
+    private final com.xenocrm.communication.repository.CommunicationRepository communicationRepository;
 
     /**
      * Ingests a raw webhook event from the channel provider.
-     * The DB trigger fn_apply_callback will handle updating the CommunicationEntity
-     * and Thompson Sampling parameters upon insertion.
+     * The callback is saved as PENDING and picked up by CallbackRetryWorker.
      *
      * @param payloadDto The callback payload
      */
@@ -33,14 +33,20 @@ public class CallbackProcessingService {
         log.info("Received callback for message ID: {} with event: {}", 
                 payloadDto.getChannelMessageId(), payloadDto.getEventType());
 
+        com.xenocrm.communication.entity.CommunicationEntity comm = null;
+        if (payloadDto.getCommunicationId() != null) {
+            comm = communicationRepository.findById(payloadDto.getCommunicationId()).orElse(null);
+        }
+
         ChannelCallbackEntity callbackEntity = ChannelCallbackEntity.builder()
                 .channelMessageId(payloadDto.getChannelMessageId())
+                .communication(comm) // set the communication if we have it!
                 .eventType(payloadDto.getEventType())
                 .payload(payloadDto.getPayload())
                 .processingStatus(CallbackProcessingStatus.PENDING)
                 .build();
 
-        // The save triggers fn_apply_callback which updates the status to PROCESSED (or ERROR)
+        // The save persists it. CallbackRetryWorker will process it asynchronously.
         channelCallbackRepository.save(callbackEntity);
     }
 }

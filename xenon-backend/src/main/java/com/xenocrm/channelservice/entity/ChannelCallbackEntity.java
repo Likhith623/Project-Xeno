@@ -67,4 +67,8 @@ public class ChannelCallbackEntity {
 
     @Column(name = "processing_error")
     private String processingError; // Set by trigger on error — nullable
+
+    @Builder.Default
+    @Column(name = "retry_count")
+    private Integer retryCount = 0; // Tracks retry attempts for resilience
 }

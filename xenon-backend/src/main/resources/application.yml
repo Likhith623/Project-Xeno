@@ -49,7 +49,7 @@ gemini:
 # Channel stub
 channel:
   stub:
-    base-url: http://localhost:8081
+    base-url: http://localhost:5001/api/v1/stub/send
   crm:
     callback-url: http://localhost:8080/api/v1/callbacks/channel
 
@@ -73,12 +73,3 @@ correction:
 logging:
   level:
     com.xenocrm: DEBUG
-
----
-# Channel stub profile -- runs on port 8081
-spring:
-  config:
-    activate:
-      on-profile: stub
-server:
-  port: 8081
