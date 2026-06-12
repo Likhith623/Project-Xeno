@@ -150,6 +150,6 @@ Security and tracking trails.
   * **Purpose:** Webhook endpoint intended to be exposed to external providers (like SendGrid or WhatsApp Cloud API). Receives delivery receipts and read-receipts to update internal variant metrics.
   * **Key Features:** Features a robust idempotency guard for duplicate events, and automatically updates the `CustomerEntity`'s `global_opt_out` flag if an `UNSUBSCRIBED` webhook event is received. It triggers the Multi-Armed Bandit update for Thompson Sampling optimization.
 
-## 14. Development Stub (`/api/v1/stub`)
-* **`POST /send`**
-  * **Purpose:** Internal development stub used for end-to-end testing without making costly real-world API requests to external providers.
+## 14. Development Stub (Separate Microservice on Port 5001)
+* **`POST /api/v1/stub/send`**
+  * **Purpose:** Internal development stub used for end-to-end testing. Crucially, this runs as an **entirely separate deployed microservice process** (on port 5001) using a lightweight Java HttpServer, demonstrating a true two-service asynchronous architecture. It simulates network latency, async webhook firing, idempotency race-conditions, and random user interactions (Opens, Clicks, Conversions) to realistically stress-test the CRM's callback handling logic. The CRM interacts with it via HTTP REST calls, perfectly simulating an external provider like SendGrid or WhatsApp Cloud API.

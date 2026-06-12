@@ -15,7 +15,7 @@ HEADERS = {
 TARGET_EMAILS = [
     "nikitha7865@gmail.com",
     "n54547330@gmail.com",
-    "apparipadmasri@gmail.com"
+    "likhithchowdary_vasireddy@srmap.edu.in"
 ]
 
 def make_request(method, path, data=None):

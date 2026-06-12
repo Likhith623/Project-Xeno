@@ -14,7 +14,7 @@ HEADERS = {
 # The target users as requested
 USERS = [
     {"email": "nikitha7865@gmail.com", "name": "Nikitha", "spend": 35000, "product": "Shoes"},
-    {"email": "apparipadmasri@gmail.com", "name": "Padma", "spend": 25000, "product": "Handbag"},
+    {"email": "likhithchowdary_vasireddy@srmap.edu.in", "name": "Likhith", "spend": 25000, "product": "Handbag"},
     {"email": "n54547330@gmail.com", "name": "User3", "spend": 20000, "product": "Watch"}
 ]
 
@@ -103,7 +103,7 @@ def run_production_e2e():
 
     print("\n--- 3. Sovereign AI Agent Invocation ---")
     ai_prompt = {
-        "prompt": "We want to reward our high spenders Nikitha, Padma, and User3. Generate a segment targeting exactly these emails: nikitha7865@gmail.com, apparipadmasri@gmail.com, n54547330@gmail.com and draft an HTML email variant thanking them for their purchases."
+        "prompt": "We want to reward our high spenders Nikitha, Likhith, and User3. Generate a segment targeting exactly these emails: nikitha7865@gmail.com, likhithchowdary_vasireddy@srmap.edu.in, n54547330@gmail.com and draft an HTML email variant thanking them for their purchases."
     }
     print(f"Sending prompt to AI: {ai_prompt['prompt']}")
     st, res = make_request("POST", "/agent/chat", ai_prompt)

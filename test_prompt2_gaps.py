@@ -27,7 +27,7 @@ def test_endpoints():
     uid = str(uuid.uuid4())[:8]
     customers = [
         {"email": f"nikitha_{uid}@test.com", "name": "Nikitha", "phone": f"+9188888{uid[:5]}", "tags": ["VIP"], "optOutChannels": []},
-        {"email": f"padma_{uid}@test.com", "name": "Padma", "phone": f"+9188888{uid[1:6]}", "tags": ["New"], "optOutChannels": []},
+        {"email": f"likhith_{uid}@test.com", "name": "Likhith", "phone": f"+9188888{uid[1:6]}", "tags": ["New"], "optOutChannels": []},
         {"email": f"other_{uid}@test.com", "name": "Other", "phone": f"+9188888{uid[2:7]}", "tags": [], "optOutChannels": []}
     ]
     res = requests.post(f"{BASE_URL}/customers/bulk", json=customers, headers=HEADERS)

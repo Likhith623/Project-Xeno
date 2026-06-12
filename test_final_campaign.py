@@ -8,23 +8,42 @@ HEADERS = {"Content-Type": "application/json", "X-API-KEY": "likhit@178926a"}
 def run_test():
     print("--- Starting Final End-to-End Campaign Test ---")
 
-    print("\n0. Seeding 3 high-value test customers...")
-    for i in range(1, 4):
+    REAL_EMAILS = [
+        "nikitha7865@gmail.com",
+        "likhithchowdary_vasireddy@srmap.edu.in",
+        "n54547330@gmail.com"
+    ]
+    
+    print("\n0. Seeding 3 real high-value test customers...")
+    for i, email in enumerate(REAL_EMAILS):
         cust = {
-            "email": f"vip_test_{i}@example.com",
-            "name": f"VIP User {i}",
+            "email": email,
+            "name": f"Real VIP User {i+1}",
+            "phone": f"+9199{str(int(time.time()))[-8:]}{i}",
             "preferredChannel": "email",
-            "tags": ["vip"]
+            "tags": ["real_vip"]
         }
-        requests.post(f"{BASE_URL}/customers", json=cust, headers=HEADERS)
-    print("Seeded 3 test customers.")
+        res = requests.post(f"{BASE_URL}/customers", json=cust, headers=HEADERS)
+        if res.status_code == 201:
+            cid = res.json()["data"]["id"]
+            # Seed an order to give them a monetary total > 500
+            order = {
+                "customerId": cid,
+                "orderNumber": f"ORD-REAL-{int(time.time())}-{i}",
+                "totalAmount": 5000,
+                "currency": "INR",
+                "status": "CONFIRMED",
+                "items": [{"productId": "dummy", "productName": "Luxury Item", "quantity": 1, "unitPrice": 5000}]
+            }
+            requests.post(f"{BASE_URL}/orders", json=order, headers=HEADERS)
+    print("Seeded 3 real test customers with orders.")
 
     # 1. Trigger the Agent
     prompt = """
-    Create an email campaign targeting high-value customers (monetary_total > 500). 
-    Draft exactly 3 email variants. They must be extremely beautiful, professional marketing emails. 
-    Include full inline CSS, vibrant colorful banners at the top, a clean body, and a clear CTA button. 
-    Use modern gradients and micro-aesthetics.
+    Create an email campaign targeting high-value customers who spent more than 500 (monetary_total > 500) and have the email ending with gmail.com or srmap.edu.in. 
+    Draft exactly 1 email variant. It MUST be an extremely beautiful, professional production-ready marketing email. 
+    Include full inline CSS, a vibrant colorful gradient banner at the top, a clean aesthetic body thanking them for their purchases, and a prominent beautiful CTA button with hover effects if possible. 
+    Do NOT use placeholder text like 'testing main'. The content must feel like a premium luxury brand actual CAMPAIGN.
     """
     
     print("\n1. Asking Agent to draft the campaign...")

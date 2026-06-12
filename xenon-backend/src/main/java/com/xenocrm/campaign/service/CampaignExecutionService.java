@@ -45,6 +45,7 @@ public class CampaignExecutionService {
     private final CommunicationRepository communicationRepository;
     private final CustomerRepository customerRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final EmailDispatchService emailDispatchService;
 
     @Async("taskExecutor")
     @Transactional
@@ -126,6 +127,15 @@ public class CampaignExecutionService {
                             communicationRepository.save(comm);
                             variantRepository.incrementMabImpressions(variant.getId());
                             sentCount++;
+                            
+                            // Send actual email via SMTP for testing
+                            if (MessageChannel.email.equals(req.getChannel())) {
+                                try {
+                                    emailDispatchService.sendEmail(email, variant.getSubjectLine(), variant.getBodyHtml());
+                                } catch (Exception mailEx) {
+                                    log.error("Failed to send real email to {}: {}", email, mailEx.getMessage());
+                                }
+                            }
                         } else {
                             comm.setStatus(CommunicationStatus.FAILED);
                             comm.setFailureReason(res.getErrorMessage());

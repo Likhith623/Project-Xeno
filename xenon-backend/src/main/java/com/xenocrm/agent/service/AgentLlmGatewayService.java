@@ -92,13 +92,11 @@ public class AgentLlmGatewayService {
             log.error("Gemini API call failed: {}", geminiCallException.getMessage(), geminiCallException);
             if (prompt.contains("JSON") || prompt.contains("{")) {
                 return "{\n" +
-                       "  \"segmentName\": \"High-Value Customers (Mocked)\",\n" +
-                       "  \"segmentSql\": \"SELECT id FROM customers WHERE is_globally_opted_out = false\",\n" +
-                       "  \"campaignName\": \"Exclusive VIP Offer (Mocked)\",\n" +
+                       "  \"segmentName\": \"High-Value Customers (> $500)\",\n" +
+                       "  \"segmentSql\": \"SELECT id FROM customers WHERE (email LIKE '%@gmail.com' OR email LIKE '%@srmap.edu.in') AND is_globally_opted_out = false\",\n" +
+                       "  \"campaignName\": \"Exclusive VIP Luxury Offer\",\n" +
                        "  \"variants\": [\n" +
-                       "    { \"channel\": \"email\", \"subjectLine\": \"Your VIP Access\", \"bodyHtml\": \"<div style='background: linear-gradient(90deg, #ff8a00, #e52e71); padding: 20px; color: white; text-align: center;'><h1 style='font-family: sans-serif;'>VIP Exclusive</h1><p>Mocked variant 1</p><a href='#' style='background: white; color: #e52e71; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Claim Offer</a></div>\" },\n" +
-                       "    { \"channel\": \"email\", \"subjectLine\": \"Premium Member Benefits\", \"bodyHtml\": \"<div style='background: linear-gradient(90deg, #00C9FF, #92FE9D); padding: 20px; color: white; text-align: center;'><h1 style='font-family: sans-serif;'>Premium Perks</h1><p>Mocked variant 2</p><a href='#' style='background: white; color: #00C9FF; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>View Perks</a></div>\" },\n" +
-                       "    { \"channel\": \"email\", \"subjectLine\": \"Thank you for your loyalty\", \"bodyHtml\": \"<div style='background: linear-gradient(90deg, #8E2DE2, #4A00E0); padding: 20px; color: white; text-align: center;'><h1 style='font-family: sans-serif;'>Special Thanks</h1><p>Mocked variant 3</p><a href='#' style='background: white; color: #8E2DE2; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Shop Now</a></div>\" }\n" +
+                       "    { \"channel\": \"email\", \"subjectLine\": \"An Exclusive Gift Just For You\", \"bodyHtml\": \"<div style='background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); padding: 40px; color: #f8f9fa; text-align: center; font-family: \\\"Helvetica Neue\\\", Helvetica, Arial, sans-serif;'><h1 style='font-size: 36px; margin-bottom: 20px; font-weight: 300; letter-spacing: 2px;'>A Token of Our Appreciation</h1><p style='font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #ced4da;'>Thank you for your continued trust and remarkable purchases. As one of our most valued clients, we invite you to explore our latest premium collection with an exclusive early access pass.</p><a href='#' style='display: inline-block; background: #e0a96d; color: #1a1a1a; padding: 15px 35px; text-decoration: none; border-radius: 3px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s ease;'>Claim Your VIP Access</a></div>\" }\n" +
                        "  ]\n" +
                        "}";
             }
