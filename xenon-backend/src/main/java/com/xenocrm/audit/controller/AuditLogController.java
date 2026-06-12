@@ -29,9 +29,15 @@ public class AuditLogController {
     @Operation(summary = "Get audit logs by entity type and ID")
     public ResponseEntity<ResponseWrapper<Page<AuditLogResponseDto>>> getLogsForEntity(
             @PathVariable String entityType,
-            @PathVariable UUID entityId,
+            @PathVariable String entityId,
             @PageableDefault(size = 20) Pageable pageable) {
-        return ResponseEntity.ok(auditLogService.getLogsForEntity(entityType, entityId, pageable));
+        Long parsedEntityId = 0L;
+        try {
+            parsedEntityId = Long.parseLong(entityId);
+        } catch (NumberFormatException e) {
+            // It's a UUID, so entityId is 0L
+        }
+        return ResponseEntity.ok(auditLogService.getLogsForEntity(entityType, parsedEntityId, pageable));
     }
 
     @GetMapping("/trace/{traceId}")

@@ -134,7 +134,7 @@ def main():
     print_step("3. AI Sovereign Agent Orchestration")
     ai_prompt = {
         "userId": "admin-1",
-        "prompt": f"Draft an exclusive welcome campaign for our new real_time_test users from Rare Rabbit. For the segment SQL, you MUST use exactly this: SELECT id FROM customers WHERE 'real_time_test' = ANY(tags). Ensure you append this timestamp ({timestamp}) to the names of any segments or campaigns you create so they are perfectly unique."
+        "prompt": f"Draft an exclusive Summer Collection pre-launch campaign for our most engaged real_time_test users from Rare Rabbit. Focus on light, breezy linens and vibrant summer colors. For the segment SQL, you MUST use exactly this: SELECT id FROM customers WHERE 'real_time_test' = ANY(tags). Ensure you append this timestamp ({timestamp}) to the names of any segments or campaigns you create so they are perfectly unique."
     }
     ai_res, status = run_request("POST", f"{BASE_URL}/agent/chat", json=ai_prompt)
     session_id = ai_res.get("data", {}).get("sessionId")
