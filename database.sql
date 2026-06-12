@@ -1,4 +1,4 @@
--- =============================================================================
+﻿-- =============================================================================
 -- XENO AI-NATIVE CRM — SUPABASE POSTGRESQL SCHEMA
 -- Architecture: Sovereign Agent + Audience Simulator + Thompson Sampling MAB
 --               + Async Callback Self-Correction + Organizational Memory Layer
@@ -964,25 +964,3 @@ ON audit_logs(trace_id);
 
 
 
-
-
--- =============================================================================
--- LAYER 11 � SYSTEM AUDIT LOGS
--- =============================================================================
-
-CREATE TABLE audit_logs (
-    id              BIGSERIAL PRIMARY KEY,
-    trace_id        UUID,
-    entity_type     VARCHAR(100) NOT NULL,
-    entity_id       BIGINT NOT NULL,
-    action          VARCHAR(50) NOT NULL,
-    actor_type      VARCHAR(50) NOT NULL,
-    actor_id        VARCHAR(255),
-    old_value       JSONB,
-    new_value       JSONB,
-    description     TEXT,
-    created_at      TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_audit_logs_trace_id ON audit_logs (trace_id);
-CREATE INDEX idx_audit_logs_entity ON audit_logs (entity_type, entity_id);
