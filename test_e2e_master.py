@@ -176,36 +176,11 @@ def main():
     variants_res, _ = run_request("GET", f"{BASE_URL}/variants/campaign/{campaign_id}")
     variants = variants_res.get("data", []) if isinstance(variants_res, dict) else variants_res
     
-    html_template = """
-    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fcfcfc; border: 1px solid #eaeaea; border-radius: 12px; overflow: hidden;">
-        <div style="background-color: #0d0d0d; padding: 40px 20px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 300; letter-spacing: 4px;">RARE RABBIT</h1>
-            <p style="color: #a0a0a0; font-size: 14px; margin-top: 10px; letter-spacing: 1px;">ELEVATE YOUR WARDROBE</p>
-        </div>
-        <div style="padding: 40px; background-color: #ffffff;">
-            <h2 style="color: #222222; font-size: 24px; font-weight: 400; margin-bottom: 20px;">Exclusive Preview For You</h2>
-            <p style="color: #555555; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                You appreciate the finer details. Our Premium Linen collection is crafted for individuals who demand uncompromising quality and effortless style. 
-                <br><br>
-                Because you value premium craftsmanship, we are giving you early access to our newest seasonal arrivals.
-            </p>
-            <div style="text-align: center;">
-                <a href="https://rarerabbit.com/vip-access" style="display: inline-block; background-color: #111111; color: #ffffff; text-decoration: none; padding: 16px 32px; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; border-radius: 4px; font-weight: 600;">Explore The Collection</a>
-            </div>
-        </div>
-        <div style="background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #eaeaea;">
-            <p style="color: #888888; font-size: 12px; margin: 0;">© 2026 Rare Rabbit. All rights reserved.</p>
-        </div>
-    </div>
-    """
-
     for v in variants:
         v_id = v["id"]
         run_request("GET", f"{BASE_URL}/variants/{v_id}")
-        run_request("PATCH", f"{BASE_URL}/variants/{v_id}", json={
-            "bodyHtml": html_template,
-            "subjectLine": "Exclusive: The Rare Rabbit Premium Collection"
-        })
+        # We are intentionally NOT overwriting the AI's generated body/subject
+        # so you get unique emails and subjects every time.
 
     # 1.8 Simulations
     print_step("5. Simulations")
