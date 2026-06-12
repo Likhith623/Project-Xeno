@@ -8,6 +8,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
 public class ChannelSendResponseDto {
     private String channelMessageId;
     private boolean success;

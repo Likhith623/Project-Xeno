@@ -10,8 +10,12 @@ import com.xenocrm.communication.entity.CommunicationEntity;
 import com.xenocrm.communication.repository.CommunicationRepository;
 import com.xenocrm.variant.entity.MessageVariantEntity;
 import com.xenocrm.variant.repository.MessageVariantRepository;
+import com.xenocrm.customer.entity.CustomerEntity;
+import com.xenocrm.customer.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,13 +37,18 @@ public class CallbackRetryWorker {
     private final CommunicationRepository communicationRepository;
     private final CampaignRepository campaignRepository;
     private final MessageVariantRepository variantRepository;
+    private final CustomerRepository customerRepository;
+
+    @Autowired
+    @Lazy
+    private CallbackRetryWorker self;
 
     @Scheduled(fixedDelay = 5000)
     public void processPendingCallbacks() {
         List<ChannelCallbackEntity> pending = callbackRepository.findAllByProcessingStatus(CallbackProcessingStatus.PENDING);
         for (ChannelCallbackEntity callback : pending) {
             try {
-                processSingleCallback(callback);
+                self.processSingleCallback(callback);
             } catch (Exception e) {
                 log.error("Failed to process callback ID {}: {}", callback.getId(), e.getMessage());
                 handleFailure(callback, e.getMessage());
@@ -48,7 +57,10 @@ public class CallbackRetryWorker {
     }
 
     @Transactional
-    public void processSingleCallback(ChannelCallbackEntity callback) {
+    public void processSingleCallback(ChannelCallbackEntity detachedCallback) {
+        ChannelCallbackEntity callback = callbackRepository.findById(detachedCallback.getId())
+            .orElseThrow(() -> new RuntimeException("Callback not found"));
+        
         log.debug("Processing callback: {}", callback.getId());
 
         // 1. Resolve Communication ID
@@ -85,16 +97,20 @@ public class CallbackRetryWorker {
 
         // 4. Update Campaign Counters
         if (comm.getCampaign() != null) {
-            CampaignEntity campaign = comm.getCampaign();
-            updateCampaignCounters(campaign, callback.getEventType());
-            campaignRepository.save(campaign);
+            CampaignEntity campaign = campaignRepository.findById(comm.getCampaign().getId()).orElse(null);
+            if (campaign != null) {
+                updateCampaignCounters(campaign, callback.getEventType());
+                campaignRepository.save(campaign);
+            }
         }
 
         // 5. Update Thompson Sampling (MAB) Variants
         if (comm.getVariant() != null) {
-            MessageVariantEntity variant = comm.getVariant();
-            updateVariantMab(variant, callback.getEventType());
-            variantRepository.save(variant);
+            MessageVariantEntity variant = variantRepository.findById(comm.getVariant().getId()).orElse(null);
+            if (variant != null) {
+                updateVariantMab(variant, callback.getEventType());
+                variantRepository.save(variant);
+            }
         }
 
         // 6. Mark Success
@@ -125,7 +141,16 @@ public class CallbackRetryWorker {
         if (event == ChannelCallbackEventType.CLICKED) comm.setClickedAt(OffsetDateTime.now());
         if (event == ChannelCallbackEventType.CONVERTED) comm.setConvertedAt(OffsetDateTime.now());
         if (event == ChannelCallbackEventType.FAILED) comm.setFailedAt(OffsetDateTime.now());
-        if (event == ChannelCallbackEventType.UNSUBSCRIBED) comm.setUnsubscribedAt(OffsetDateTime.now());
+        if (event == ChannelCallbackEventType.UNSUBSCRIBED) {
+            comm.setUnsubscribedAt(OffsetDateTime.now());
+            if (comm.getCustomer() != null) {
+                CustomerEntity customer = customerRepository.findById(comm.getCustomer().getId()).orElse(null);
+                if (customer != null) {
+                    customer.setGloballyOptedOut(true);
+                    customerRepository.save(customer);
+                }
+            }
+        }
 
         if (callback.getPayload().containsKey("error_message")) {
             comm.setFailureReason(String.valueOf(callback.getPayload().get("error_message")));

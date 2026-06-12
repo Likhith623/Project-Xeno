@@ -69,7 +69,7 @@ Targeting rules and queries.
 * **`GET /{id}`**
   * **Purpose:** Retrieves details about a specific segment.
 * **`PATCH /{id}`**
-  * **Purpose:** Updates the segment details and filter conditions.
+  * **Purpose:** Update a segment's criteria (JSON/SQL), description, or toggle its `isPinned` status to save highly-effective AI segments for future reuse.
 * **`DELETE /{id}`**
   * **Purpose:** Soft or hard deletes an audience segment from the system.
 * **`POST /{id}/evaluate`**
@@ -148,6 +148,7 @@ Security and tracking trails.
 ## 13. External Callbacks (`/api/v1/callbacks/channel`)
 * **`POST /`**
   * **Purpose:** Webhook endpoint intended to be exposed to external providers (like SendGrid or WhatsApp Cloud API). Receives delivery receipts and read-receipts to update internal variant metrics.
+  * **Key Features:** Features a robust idempotency guard for duplicate events, and automatically updates the `CustomerEntity`'s `global_opt_out` flag if an `UNSUBSCRIBED` webhook event is received. It triggers the Multi-Armed Bandit update for Thompson Sampling optimization.
 
 ## 14. Development Stub (`/api/v1/stub`)
 * **`POST /send`**

@@ -90,9 +90,17 @@ public class AgentLlmGatewayService {
 
         } catch (Exception geminiCallException) {
             log.error("Gemini API call failed: {}", geminiCallException.getMessage(), geminiCallException);
-            // Fallback to mock data for testing purposes if API key is invalid
             if (prompt.contains("JSON") || prompt.contains("{")) {
-                return "{ \"status\": \"mocked\", \"plan\": \"Mocked plan due to invalid API key\" }";
+                return "{\n" +
+                       "  \"segmentName\": \"High-Value Customers (Mocked)\",\n" +
+                       "  \"segmentSql\": \"SELECT id FROM customers WHERE is_globally_opted_out = false\",\n" +
+                       "  \"campaignName\": \"Exclusive VIP Offer (Mocked)\",\n" +
+                       "  \"variants\": [\n" +
+                       "    { \"channel\": \"email\", \"subjectLine\": \"Your VIP Access\", \"bodyHtml\": \"<div style='background: linear-gradient(90deg, #ff8a00, #e52e71); padding: 20px; color: white; text-align: center;'><h1 style='font-family: sans-serif;'>VIP Exclusive</h1><p>Mocked variant 1</p><a href='#' style='background: white; color: #e52e71; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Claim Offer</a></div>\" },\n" +
+                       "    { \"channel\": \"email\", \"subjectLine\": \"Premium Member Benefits\", \"bodyHtml\": \"<div style='background: linear-gradient(90deg, #00C9FF, #92FE9D); padding: 20px; color: white; text-align: center;'><h1 style='font-family: sans-serif;'>Premium Perks</h1><p>Mocked variant 2</p><a href='#' style='background: white; color: #00C9FF; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>View Perks</a></div>\" },\n" +
+                       "    { \"channel\": \"email\", \"subjectLine\": \"Thank you for your loyalty\", \"bodyHtml\": \"<div style='background: linear-gradient(90deg, #8E2DE2, #4A00E0); padding: 20px; color: white; text-align: center;'><h1 style='font-family: sans-serif;'>Special Thanks</h1><p>Mocked variant 3</p><a href='#' style='background: white; color: #8E2DE2; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Shop Now</a></div>\" }\n" +
+                       "  ]\n" +
+                       "}";
             }
             return "Mocked response from AgentLlmGatewayService. Gemini API call failed due to invalid credentials.";
         }

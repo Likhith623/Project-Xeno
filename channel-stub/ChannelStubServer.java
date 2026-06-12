@@ -51,7 +51,7 @@ public class ChannelStubServer {
                 String communicationId = matcher.group(1);
                 String channelMessageId = "msg-" + UUID.randomUUID().toString();
 
-                String response = "{\"messageId\": \"" + channelMessageId + "\", \"status\": \"accepted\"}";
+                String response = "{\"channelMessageId\": \"" + channelMessageId + "\", \"success\": true}";
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
                 exchange.sendResponseHeaders(202, response.getBytes().length);
                 OutputStream os = exchange.getResponseBody();
@@ -113,6 +113,7 @@ public class ChannelStubServer {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(CRM_CALLBACK_URL))
                     .header("Content-Type", "application/json")
+                    .header("X-API-KEY", "likhit@178926a")
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                     .build();
 

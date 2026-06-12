@@ -8,4 +8,5 @@ public class SegmentUpdateRequestDto {
     private String description;
     private String filterSql;
     private java.util.Map<String, Object> filterJson;
+    private Boolean isPinned;
 }

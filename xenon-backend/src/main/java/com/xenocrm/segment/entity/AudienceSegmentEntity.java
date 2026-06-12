@@ -60,7 +60,7 @@ public class AudienceSegmentEntity {
     @Column(name = "created_by_agent")
     private boolean createdByAgent; // DEFAULT FALSE
 
-    @Column(name = "agent_goal")
+    @Column(name = "agent_goal", columnDefinition = "TEXT")
     private String agentGoal; // NL goal that spawned this segment — nullable
 
     @Column(name = "customer_count")
