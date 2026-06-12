@@ -50,6 +50,20 @@ public class GlobalExceptionHandler {
                 .body(ResponseWrapper.error("VALIDATION_FAILED", message));
     }
 
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ResponseWrapper<Void>> handleHttpMessageNotReadableException(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        log.warn("Malformed JSON request: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseWrapper.error("BAD_REQUEST", "Malformed JSON request or invalid enum value."));
+    }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ResponseWrapper<Void>> handleDataIntegrityViolationException(org.springframework.dao.DataIntegrityViolationException ex) {
+        log.warn("Database constraint violation: {}", ex.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ResponseWrapper.error("CONFLICT", "A record with the provided unique identifiers already exists or violates database constraints."));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseWrapper<Void>> handleGenericException(Exception ex) {
         log.error("Unhandled exception occurred: ", ex);
