@@ -66,4 +66,10 @@ public class CustomerController {
         customerIngestionService.deleteCustomer(id);
         return ResponseEntity.ok(ResponseWrapper.success(null));
     }
+
+    @GetMapping("/by-email")
+    public ResponseEntity<ResponseWrapper<CustomerResponseDto>> getCustomerByEmail(@RequestParam String email) {
+        CustomerResponseDto responseDto = customerIngestionService.getCustomerByEmail(email);
+        return ResponseEntity.ok(ResponseWrapper.success(responseDto));
+    }
 }

@@ -79,4 +79,11 @@ public class CustomerIngestionService {
         }
         customerRepository.deleteById(id);
     }
+
+    @Transactional(readOnly = true)
+    public CustomerResponseDto getCustomerByEmail(String email) {
+        CustomerEntity customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "email", email));
+        return customerMapper.toResponseDto(customer);
+    }
 }
