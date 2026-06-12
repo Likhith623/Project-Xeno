@@ -50,6 +50,9 @@ public class AgentLlmGatewayService {
     @Value("${gemini.temperature:0.3}")
     private double temperature;
 
+    @Value("${groq.api-key}")
+    private String groqApiKey;
+
     /**
      * Sends a text prompt to Gemini and returns the raw text response.
      *
@@ -89,18 +92,34 @@ public class AgentLlmGatewayService {
             return (String) firstPart.get("text");
 
         } catch (Exception geminiCallException) {
-            log.error("Gemini API call failed: {}", geminiCallException.getMessage(), geminiCallException);
-            if (prompt.contains("JSON") || prompt.contains("{")) {
-                return "{\n" +
-                       "  \"segmentName\": \"High-Value Customers (> $500)\",\n" +
-                       "  \"segmentSql\": \"SELECT id FROM customers WHERE (email LIKE '%@gmail.com' OR email LIKE '%@srmap.edu.in') AND is_globally_opted_out = false\",\n" +
-                       "  \"campaignName\": \"Exclusive VIP Luxury Offer\",\n" +
-                       "  \"variants\": [\n" +
-                       "    { \"channel\": \"email\", \"subjectLine\": \"An Exclusive Gift Just For You\", \"bodyHtml\": \"<div style='background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); padding: 40px; color: #f8f9fa; text-align: center; font-family: \\\"Helvetica Neue\\\", Helvetica, Arial, sans-serif;'><h1 style='font-size: 36px; margin-bottom: 20px; font-weight: 300; letter-spacing: 2px;'>A Token of Our Appreciation</h1><p style='font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #ced4da;'>Thank you for your continued trust and remarkable purchases. As one of our most valued clients, we invite you to explore our latest premium collection with an exclusive early access pass.</p><a href='#' style='display: inline-block; background: #e0a96d; color: #1a1a1a; padding: 15px 35px; text-decoration: none; border-radius: 3px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s ease;'>Claim Your VIP Access</a></div>\" }\n" +
-                       "  ]\n" +
-                       "}";
+            log.error("Gemini API call failed, falling back to Groq: {}", geminiCallException.getMessage());
+            
+            try {
+                Map<String,Object> groqBody = Map.of(
+                    "model", "llama-3.3-70b-versatile",
+                    "messages", List.of(
+                        Map.of("role", "user", "content", prompt)
+                    ),
+                    "temperature", temperature,
+                    "max_tokens", maxOutputTokens
+                );
+
+                Map<?,?> groqResponse = RestClient.create().post()
+                    .uri("https://api.groq.com/openai/v1/chat/completions")
+                    .header("Authorization", "Bearer " + groqApiKey)
+                    .header("Content-Type", "application/json")
+                    .body(groqBody)
+                    .retrieve()
+                    .body(Map.class);
+
+                List<?> choices = (List<?>) groqResponse.get("choices");
+                Map<?,?> firstChoice = (Map<?,?>) choices.get(0);
+                Map<?,?> message = (Map<?,?>) firstChoice.get("message");
+                return (String) message.get("content");
+            } catch (Exception groqCallException) {
+                log.error("Groq API fallback also failed: {}", groqCallException.getMessage(), groqCallException);
+                throw new RuntimeException("Both Gemini and Groq API calls failed. Gemini error: " + geminiCallException.getMessage() + ". Groq error: " + groqCallException.getMessage(), groqCallException);
             }
-            return "Mocked response from AgentLlmGatewayService. Gemini API call failed due to invalid credentials.";
         }
     }
 

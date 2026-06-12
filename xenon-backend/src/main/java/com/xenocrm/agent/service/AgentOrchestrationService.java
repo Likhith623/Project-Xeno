@@ -85,7 +85,7 @@ public class AgentOrchestrationService {
                             "Generate a JSON object with the following schema exactly:\n" +
                             "{\n" +
                             "  \"segmentName\": \"string\",\n" +
-                            "  \"segmentSql\": \"string (e.g. SELECT id FROM customers WHERE monetary_total > 500)\",\n" +
+                            "  \"segmentSql\": \"string (e.g. SELECT id FROM customers WHERE monetary_total > 500). IMPORTANT: For array columns like 'tags' (text[]), you MUST use the ANY operator (e.g. 'real_time_test' = ANY(tags)). Do NOT use LIKE on arrays!\",\n" +
                             "  \"campaignName\": \"string\",\n" +
                             "  \"variants\": [\n" +
                             "    { \"channel\": \"EMAIL\", \"subjectLine\": \"string\", \"bodyHtml\": \"string containing FULL inline CSS, vibrant gradients, a modern banner, clean typography, and a very beautiful CTA button\" }\n" +

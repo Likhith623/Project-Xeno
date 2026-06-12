@@ -29,7 +29,7 @@ public class AuditLogController {
     @Operation(summary = "Get audit logs by entity type and ID")
     public ResponseEntity<ResponseWrapper<Page<AuditLogResponseDto>>> getLogsForEntity(
             @PathVariable String entityType,
-            @PathVariable Long entityId,
+            @PathVariable UUID entityId,
             @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(auditLogService.getLogsForEntity(entityType, entityId, pageable));
     }

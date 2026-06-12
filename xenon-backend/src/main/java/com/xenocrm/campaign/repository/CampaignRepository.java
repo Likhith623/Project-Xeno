@@ -55,4 +55,6 @@ public interface CampaignRepository extends JpaRepository<CampaignEntity, UUID> 
     /** Queries v_opt_out_alerts for all currently running campaigns. */
     @Query(value = "SELECT campaign_id as campaignId, campaign_name as campaignName, opt_out_rate_threshold as optOutRateThreshold, current_opt_out_rate_pct as currentOptOutRatePct, alert_level as alertLevel FROM v_opt_out_alerts", nativeQuery = true)
     List<OptOutAlertProjection> findAllOptOutAlerts();
+    @Query(value = "SELECT COUNT(*) FROM campaigns", nativeQuery = true)
+    long countCampaigns();
 }

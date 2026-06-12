@@ -62,4 +62,11 @@ public class VariantController {
         variantService.deleteVariant(id);
         return ResponseEntity.ok(ResponseWrapper.success(null));
     }
+
+    @GetMapping("/{campaignId}/mab-stats")
+    @Operation(summary = "Get Thompson Sampling (MAB) statistics for campaign variants")
+    public ResponseEntity<ResponseWrapper<List<com.xenocrm.campaign.dto.MabStatsDto>>> getMabStats(@PathVariable UUID campaignId) {
+        List<com.xenocrm.campaign.dto.MabStatsDto> stats = variantService.getMabStats(campaignId);
+        return ResponseEntity.ok(ResponseWrapper.success(stats));
+    }
 }

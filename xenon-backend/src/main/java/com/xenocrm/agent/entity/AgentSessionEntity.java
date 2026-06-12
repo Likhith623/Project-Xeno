@@ -55,7 +55,7 @@ public class AgentSessionEntity {
     @Column(name = "created_campaign_id")
     private UUID createdCampaignId;
 
-    @Column(name = "error_message")
+    @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
     @Column(name = "started_at", nullable = false)

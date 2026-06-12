@@ -122,14 +122,18 @@ public class CampaignExecutionService {
                                 .build();
 
                         ChannelSendResponseDto res = channelDispatchService.dispatchMessage(req);
+                        log.info("DEBUG: Dispatch success for {}: {}", email, res.isSuccess());
                         if (res.isSuccess()) {
+                            log.info("DEBUG: Inside success block for {}", email);
                             comm.setChannelMessageId(res.getChannelMessageId());
                             communicationRepository.save(comm);
                             variantRepository.incrementMabImpressions(variant.getId());
                             sentCount++;
                             
                             // Send actual email via SMTP for testing
+                            log.info("DEBUG: Checking channel. req.getChannel() = {}", req.getChannel());
                             if (MessageChannel.email.equals(req.getChannel())) {
+                                log.info("DEBUG: Calling emailDispatchService for {}", email);
                                 try {
                                     emailDispatchService.sendEmail(email, variant.getSubjectLine(), variant.getBodyHtml());
                                 } catch (Exception mailEx) {
@@ -137,6 +141,7 @@ public class CampaignExecutionService {
                                 }
                             }
                         } else {
+                            log.info("DEBUG: Inside failure block for {}. Error: {}", email, res.getErrorMessage());
                             comm.setStatus(CommunicationStatus.FAILED);
                             comm.setFailureReason(res.getErrorMessage());
                             comm.setFailedAt(OffsetDateTime.now());
@@ -149,8 +154,11 @@ public class CampaignExecutionService {
 
                 campaign.setStatus(CampaignStatus.COMPLETED);
                 campaign.setCompletedAt(OffsetDateTime.now());
-                campaign.setTotalSent(sentCount);
                 campaignRepository.save(campaign);
+                
+                for (int k = 0; k < sentCount; k++) {
+                    campaignRepository.incrementTotalSent(id);
+                }
                 
                 log.info("Successfully executed campaign: {}", id);
 
