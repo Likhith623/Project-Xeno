@@ -16,6 +16,8 @@ public class ChannelCallbackPayloadDto {
     @NotBlank(message = "Channel message ID is required")
     private String channelMessageId;
 
+    private java.util.UUID communicationId;
+
     @NotNull(message = "Event type is required")
     private ChannelCallbackEventType eventType;
 

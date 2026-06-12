@@ -11,4 +11,5 @@ import java.util.UUID;
  */
 @Repository
 public interface CorrectionEventRepository extends JpaRepository<CorrectionEventEntity, UUID> {
+    org.springframework.data.domain.Page<CorrectionEventEntity> findByCampaignId(UUID campaignId, org.springframework.data.domain.Pageable pageable);
 }

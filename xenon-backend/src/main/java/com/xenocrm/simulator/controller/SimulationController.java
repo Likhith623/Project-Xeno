@@ -35,6 +35,14 @@ public class SimulationController {
         return ResponseEntity.ok(ResponseWrapper.success(simulationMapper.toResultDto(run), "Simulation started successfully"));
     }
 
+    @PostMapping("/campaigns/{id}/simulate")
+    @Operation(summary = "Trigger a simulation for a specific campaign")
+    public ResponseEntity<ResponseWrapper<SimulationRunResultDto>> triggerSimulationForCampaign(@PathVariable UUID id, @RequestBody SimulationRunRequestDto requestDto) {
+        requestDto.setCampaignId(id);
+        SimulationRunEntity run = orchestrationService.triggerSimulation(requestDto);
+        return ResponseEntity.ok(ResponseWrapper.success(simulationMapper.toResultDto(run), "Simulation started successfully"));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Get simulation run result")
     public ResponseEntity<ResponseWrapper<SimulationRunResultDto>> getSimulationRun(@PathVariable UUID id) {

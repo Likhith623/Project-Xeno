@@ -19,4 +19,9 @@ public class CorrectionRetrievalService {
         return correctionEventRepository.findAll(pageable)
                 .map(correctionEventMapper::toResponseDto);
     }
+
+    public Page<CorrectionEventResponseDto> getCorrectionsByCampaignId(java.util.UUID campaignId, Pageable pageable) {
+        return correctionEventRepository.findByCampaignId(campaignId, pageable)
+                .map(correctionEventMapper::toResponseDto);
+    }
 }

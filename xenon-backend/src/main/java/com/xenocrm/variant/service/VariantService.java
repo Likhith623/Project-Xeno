@@ -65,4 +65,47 @@ public class VariantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Variant", "id", id));
         return variantMapper.toResponseDto(variant);
     }
+
+    @Transactional
+    public MessageVariantResponseDto updateVariant(UUID id, com.xenocrm.variant.dto.MessageVariantUpdateRequestDto request) {
+        log.debug("Updating variant: {}", id);
+        MessageVariantEntity variant = variantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Variant", "id", id));
+        
+        variantMapper.updateEntityFromDto(request, variant);
+        MessageVariantEntity updatedVariant = variantRepository.save(variant);
+        return variantMapper.toResponseDto(updatedVariant);
+    }
+
+    @Transactional
+    public void deleteVariant(UUID id) {
+        log.debug("Deleting variant: {}", id);
+        if (!variantRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Variant", "id", id);
+        }
+        variantRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.xenocrm.campaign.dto.MabStatsDto> getMabStats(UUID campaignId) {
+        if (!campaignRepository.existsById(campaignId)) {
+            throw new ResourceNotFoundException("Campaign", "id", campaignId);
+        }
+        List<com.xenocrm.variant.repository.MabStatsProjection> rows = variantRepository.findMabStatsByCampaignId(campaignId.toString());
+        return rows.stream().map(row -> com.xenocrm.campaign.dto.MabStatsDto.builder()
+                .variantId(row.getVariantId())
+                .campaignId(row.getCampaignId())
+                .variantName(row.getVariantName())
+                .channel(row.getChannel())
+                .mabAlpha(row.getMabAlpha())
+                .mabBeta(row.getMabBeta())
+                .mabImpressions(row.getMabImpressions() != null ? row.getMabImpressions() : 0)
+                .mabConversions(row.getMabConversions() != null ? row.getMabConversions() : 0)
+                .expectedConversionRate(row.getExpectedConversionRate())
+                .ciHalfWidth95(row.getCiHalfWidth95())
+                .mabIsActive(row.getMabIsActive())
+                .campaignName(row.getCampaignName())
+                .build()
+        ).collect(Collectors.toList());
+    }
 }

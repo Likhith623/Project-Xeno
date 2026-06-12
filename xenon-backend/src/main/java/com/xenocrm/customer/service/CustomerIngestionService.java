@@ -54,6 +54,20 @@ public class CustomerIngestionService {
     }
 
     @Transactional
+    public java.util.List<CustomerResponseDto> bulkCreateCustomers(java.util.List<CustomerCreateRequestDto> requests) {
+        log.debug("Bulk creating {} customers", requests.size());
+        java.util.List<CustomerResponseDto> responses = new java.util.ArrayList<>();
+        for (CustomerCreateRequestDto request : requests) {
+            try {
+                responses.add(createCustomer(request));
+            } catch (Exception e) {
+                log.warn("Failed to create customer in bulk: {}", e.getMessage());
+            }
+        }
+        return responses;
+    }
+
+    @Transactional
     public CustomerResponseDto updateCustomer(UUID id, CustomerUpdateRequestDto request) {
         log.debug("Updating customer with id: {}", id);
 
@@ -92,5 +106,10 @@ public class CustomerIngestionService {
         CustomerEntity customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "email", email));
         return customerMapper.toResponseDto(customer);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CustomerResponseDto> getCustomersByTag(String tag, Pageable pageable) {
+        return customerRepository.findAllByTag(tag, pageable).map(customerMapper::toResponseDto);
     }
 }

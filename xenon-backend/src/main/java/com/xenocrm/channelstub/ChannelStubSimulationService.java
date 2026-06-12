@@ -38,31 +38,31 @@ public class ChannelStubSimulationService {
             Thread.sleep(500);
 
             if (!outcomeGenerator.shouldDeliver(requestDto)) {
-                sendCallback(restClient, messageId, ChannelCallbackEventType.FAILED, Map.of("error_message", "Delivery failed", "error_code", "ERR_500"));
+                sendCallback(restClient, requestDto.getCommunicationId(), messageId, ChannelCallbackEventType.FAILED, Map.of("error_message", "Delivery failed", "error_code", "ERR_500"));
                 return CompletableFuture.completedFuture(null);
             }
 
-            sendCallback(restClient, messageId, ChannelCallbackEventType.DELIVERED, Map.of());
+            sendCallback(restClient, requestDto.getCommunicationId(), messageId, ChannelCallbackEventType.DELIVERED, Map.of());
             
             // Wait before open
             Thread.sleep(1000);
 
             if (outcomeGenerator.shouldOpen(requestDto)) {
-                sendCallback(restClient, messageId, ChannelCallbackEventType.OPENED, Map.of());
+                sendCallback(restClient, requestDto.getCommunicationId(), messageId, ChannelCallbackEventType.OPENED, Map.of());
                 
                 if (outcomeGenerator.shouldUnsubscribe(requestDto)) {
-                    sendCallback(restClient, messageId, ChannelCallbackEventType.UNSUBSCRIBED, Map.of());
+                    sendCallback(restClient, requestDto.getCommunicationId(), messageId, ChannelCallbackEventType.UNSUBSCRIBED, Map.of());
                     return CompletableFuture.completedFuture(null);
                 }
 
                 if (outcomeGenerator.shouldClick(requestDto)) {
-                    sendCallback(restClient, messageId, ChannelCallbackEventType.CLICKED, Map.of());
+                    sendCallback(restClient, requestDto.getCommunicationId(), messageId, ChannelCallbackEventType.CLICKED, Map.of());
 
                     // Wait before conversion
                     Thread.sleep(2000);
 
                     if (outcomeGenerator.shouldConvert(requestDto)) {
-                        sendCallback(restClient, messageId, ChannelCallbackEventType.CONVERTED, Map.of());
+                        sendCallback(restClient, requestDto.getCommunicationId(), messageId, ChannelCallbackEventType.CONVERTED, Map.of());
                     }
                 }
             }
@@ -72,9 +72,10 @@ public class ChannelStubSimulationService {
         return CompletableFuture.completedFuture(null);
     }
 
-    private void sendCallback(RestClient restClient, String messageId, ChannelCallbackEventType eventType, Map<String, Object> payload) {
+    private void sendCallback(RestClient restClient, java.util.UUID communicationId, String messageId, ChannelCallbackEventType eventType, Map<String, Object> payload) {
         try {
             ChannelCallbackPayloadDto dto = new ChannelCallbackPayloadDto();
+            dto.setCommunicationId(communicationId);
             dto.setChannelMessageId(messageId);
             dto.setEventType(eventType);
             dto.setPayload(payload);

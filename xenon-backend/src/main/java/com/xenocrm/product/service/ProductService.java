@@ -52,4 +52,23 @@ public class ProductService {
     public Page<ProductResponseDto> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable).map(productMapper::toResponseDto);
     }
+
+    @Transactional(readOnly = true)
+    public java.util.List<com.xenocrm.product.dto.ProductCategoryResponseDto> getAllCategories() {
+        return productCategoryRepository.findAll().stream().map(productMapper::toCategoryResponseDto).toList();
+    }
+
+    @Transactional
+    public java.util.List<ProductResponseDto> bulkCreateProducts(java.util.List<ProductCreateRequestDto> requests) {
+        log.debug("Bulk creating {} products", requests.size());
+        java.util.List<ProductResponseDto> responses = new java.util.ArrayList<>();
+        for (ProductCreateRequestDto request : requests) {
+            try {
+                responses.add(createProduct(request));
+            } catch (Exception e) {
+                log.warn("Failed to create product in bulk: {}", e.getMessage());
+            }
+        }
+        return responses;
+    }
 }

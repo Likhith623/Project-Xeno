@@ -40,4 +40,28 @@ public class MemoryController {
                 PaginationMetadata.from(memoriesDto)
         ));
     }
+
+    @GetMapping("/query")
+    @Operation(summary = "Query organizational memory by segment tag and channel")
+    public ResponseEntity<ResponseWrapper<Page<OrgMemoryEntryDto>>> queryMemories(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String segmentTag,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String channel,
+            @PageableDefault(size = 20) Pageable pageable) {
+        
+        com.xenocrm.channelservice.enums.MessageChannel messageChannel = null;
+        if (channel != null) {
+            try {
+                messageChannel = com.xenocrm.channelservice.enums.MessageChannel.valueOf(channel.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid channel
+            }
+        }
+        
+        Page<OrgMemoryEntryDto> memoriesDto = memoryService.getMemoriesByQuery(segmentTag, messageChannel, pageable);
+        return ResponseEntity.ok(ResponseWrapper.success(
+                memoriesDto,
+                "Queried organizational memory",
+                PaginationMetadata.from(memoriesDto)
+        ));
+    }
 }

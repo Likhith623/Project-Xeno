@@ -60,4 +60,61 @@ public class CampaignService {
     public Page<CampaignResponseDto> getAllCampaigns(Pageable pageable) {
         return campaignRepository.findAll(pageable).map(campaignMapper::toResponseDto);
     }
+
+    @Transactional
+    public CampaignResponseDto updateCampaignStatus(UUID id, String newStatus) {
+        CampaignEntity campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Campaign", "id", id));
+        campaign.setStatus(CampaignStatus.valueOf(newStatus.toUpperCase()));
+        return campaignMapper.toResponseDto(campaignRepository.save(campaign));
+    }
+
+    @Transactional(readOnly = true)
+    public com.xenocrm.campaign.dto.CampaignPerformanceDto getCampaignPerformance(UUID id) {
+        if (!campaignRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Campaign", "id", id);
+        }
+        com.xenocrm.campaign.repository.CampaignPerformanceProjection row = campaignRepository.findPerformanceSummaryById(id.toString())
+                .orElseThrow(() -> new ResourceNotFoundException("CampaignPerformance", "id", id));
+        
+        return com.xenocrm.campaign.dto.CampaignPerformanceDto.builder()
+                .id(row.getId())
+                .name(row.getName())
+                .status(row.getStatus())
+                .goal(row.getGoal())
+                .scheduledAt(row.getScheduledAt() != null ? java.time.OffsetDateTime.ofInstant(row.getScheduledAt(), java.time.ZoneId.of("Asia/Kolkata")) : null)
+                .startedAt(row.getStartedAt() != null ? java.time.OffsetDateTime.ofInstant(row.getStartedAt(), java.time.ZoneId.of("Asia/Kolkata")) : null)
+                .completedAt(row.getCompletedAt() != null ? java.time.OffsetDateTime.ofInstant(row.getCompletedAt(), java.time.ZoneId.of("Asia/Kolkata")) : null)
+                .createdByAgent(row.getCreatedByAgent())
+                .totalSent(row.getTotalSent() != null ? row.getTotalSent() : 0)
+                .totalDelivered(row.getTotalDelivered() != null ? row.getTotalDelivered() : 0)
+                .totalFailed(row.getTotalFailed() != null ? row.getTotalFailed() : 0)
+                .totalOpened(row.getTotalOpened() != null ? row.getTotalOpened() : 0)
+                .totalRead(row.getTotalRead() != null ? row.getTotalRead() : 0)
+                .totalClicked(row.getTotalClicked() != null ? row.getTotalClicked() : 0)
+                .totalConverted(row.getTotalConverted() != null ? row.getTotalConverted() : 0)
+                .revenueAttributed(row.getRevenueAttributed())
+                .deliveryRatePct(row.getDeliveryRatePct())
+                .failureRatePct(row.getFailureRatePct())
+                .openRatePct(row.getOpenRatePct())
+                .ctrPct(row.getCtrPct())
+                .conversionRatePct(row.getConversionRatePct())
+                .optOutRatePct(row.getOptOutRatePct())
+                .segmentName(row.getSegmentName())
+                .segmentSize(row.getSegmentSize() != null ? row.getSegmentSize() : 0)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<com.xenocrm.campaign.dto.OptOutAlertDto> getOptOutAlerts() {
+        java.util.List<com.xenocrm.campaign.repository.OptOutAlertProjection> rows = campaignRepository.findAllOptOutAlerts();
+        return rows.stream().map(row -> com.xenocrm.campaign.dto.OptOutAlertDto.builder()
+                .campaignId(row.getCampaignId())
+                .campaignName(row.getCampaignName())
+                .optOutRateThreshold(row.getOptOutRateThreshold())
+                .currentOptOutRatePct(row.getCurrentOptOutRatePct())
+                .alertLevel(row.getAlertLevel())
+                .build()
+        ).collect(java.util.stream.Collectors.toList());
+    }
 }

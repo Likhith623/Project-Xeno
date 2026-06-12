@@ -50,9 +50,9 @@ public interface CampaignRepository extends JpaRepository<CampaignEntity, UUID> 
     @Query("UPDATE CampaignEntity c SET c.totalConverted = c.totalConverted + 1 WHERE c.id = :id")
     void incrementTotalConverted(@Param("id") UUID campaignId);
     /** Queries v_campaign_performance view for one campaign performance summary. */
-    @Query(value = "SELECT * FROM v_campaign_performance WHERE id = CAST(:id AS uuid)", nativeQuery = true)
-    Optional<Object[]> findPerformanceSummaryById(@Param("id") String campaignId);
+    @Query(value = "SELECT id as id, name as name, status as status, goal as goal, scheduled_at as scheduledAt, started_at as startedAt, completed_at as completedAt, created_by_agent as createdByAgent, total_sent as totalSent, total_delivered as totalDelivered, total_failed as totalFailed, total_opened as totalOpened, total_read as totalRead, total_clicked as totalClicked, total_converted as totalConverted, revenue_attributed as revenueAttributed, delivery_rate_pct as deliveryRatePct, failure_rate_pct as failureRatePct, open_rate_pct as openRatePct, ctr_pct as ctrPct, conversion_rate_pct as conversionRatePct, opt_out_rate_pct as optOutRatePct, segment_name as segmentName, segment_size as segmentSize FROM v_campaign_performance WHERE id = CAST(:id AS uuid)", nativeQuery = true)
+    Optional<CampaignPerformanceProjection> findPerformanceSummaryById(@Param("id") String campaignId);
     /** Queries v_opt_out_alerts for all currently running campaigns. */
-    @Query(value = "SELECT * FROM v_opt_out_alerts", nativeQuery = true)
-    List<Object[]> findAllOptOutAlerts();
+    @Query(value = "SELECT campaign_id as campaignId, campaign_name as campaignName, opt_out_rate_threshold as optOutRateThreshold, current_opt_out_rate_pct as currentOptOutRatePct, alert_level as alertLevel FROM v_opt_out_alerts", nativeQuery = true)
+    List<OptOutAlertProjection> findAllOptOutAlerts();
 }

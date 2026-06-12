@@ -14,5 +14,5 @@ import java.util.UUID;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     Optional<OrderEntity> findByOrderNumber(String orderNumber);
-    List<OrderEntity> findByCustomerId(UUID customerId);
+    org.springframework.data.domain.Page<OrderEntity> findByCustomerId(UUID customerId, org.springframework.data.domain.Pageable pageable);
 }

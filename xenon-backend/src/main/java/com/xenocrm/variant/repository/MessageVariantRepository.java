@@ -35,6 +35,6 @@ public interface MessageVariantRepository extends JpaRepository<MessageVariantEn
     @Query("UPDATE MessageVariantEntity v SET v.mabConversions = v.mabConversions + 1 WHERE v.id = :id")
     void incrementMabConversions(@Param("id") UUID variantId);
     /** Queries v_variant_mab_stats view for Thompson Sampling statistics. */
-    @Query(value = "SELECT * FROM v_variant_mab_stats WHERE campaign_id = CAST(:campaignId AS uuid)", nativeQuery = true)
-    List<Object[]> findMabStatsByCampaignId(@Param("campaignId") String campaignId);
+    @Query(value = "SELECT id as variantId, campaign_id as campaignId, name as variantName, channel as channel, mab_alpha as mabAlpha, mab_beta as mabBeta, mab_impressions as mabImpressions, mab_conversions as mabConversions, expected_conversion_rate as expectedConversionRate, ci_half_width_95 as ciHalfWidth95, mab_is_active as mabIsActive, campaign_name as campaignName FROM v_variant_mab_stats WHERE campaign_id = CAST(:campaignId AS uuid)", nativeQuery = true)
+    List<MabStatsProjection> findMabStatsByCampaignId(@Param("campaignId") String campaignId);
 }

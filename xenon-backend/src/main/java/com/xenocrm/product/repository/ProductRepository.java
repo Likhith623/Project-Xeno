@@ -14,4 +14,7 @@ import java.util.UUID;
 public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
 
     Optional<ProductEntity> findBySku(String sku);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p.category FROM ProductEntity p WHERE p.category IS NOT NULL")
+    java.util.List<String> findDistinctCategories();
 }

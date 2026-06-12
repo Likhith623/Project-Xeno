@@ -16,6 +16,8 @@ public class ChannelSendRequestDto {
     @NotBlank(message = "Recipient address is required")
     private String recipientAddress;
 
+    private java.util.UUID communicationId;
+
     @NotNull(message = "Channel is required")
     private MessageChannel channel;
 

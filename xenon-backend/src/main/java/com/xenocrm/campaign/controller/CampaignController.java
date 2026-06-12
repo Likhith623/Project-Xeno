@@ -1,24 +1,31 @@
 package com.xenocrm.campaign.controller;
 
 import com.xenocrm.campaign.dto.CampaignCreateRequestDto;
+import com.xenocrm.campaign.dto.CampaignPerformanceDto;
 import com.xenocrm.campaign.dto.CampaignResponseDto;
+import com.xenocrm.campaign.dto.CampaignStatusUpdateRequestDto;
+import com.xenocrm.campaign.dto.MabStatsDto;
+import com.xenocrm.campaign.dto.OptOutAlertDto;
 import com.xenocrm.campaign.service.CampaignExecutionService;
 import com.xenocrm.campaign.service.CampaignService;
+import com.xenocrm.common.PaginationMetadata;
 import com.xenocrm.common.ResponseWrapper;
+import com.xenocrm.correction.dto.CorrectionEventResponseDto;
+import com.xenocrm.correction.service.CorrectionRetrievalService;
+import com.xenocrm.variant.service.VariantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
 import java.util.List;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import com.xenocrm.common.PaginationMetadata;
+import java.util.UUID;
 
 /**
  * CampaignController — Exposes campaign ingestion and execution endpoints.
@@ -31,6 +38,10 @@ public class CampaignController {
 
     private final CampaignService campaignService;
     private final CampaignExecutionService campaignExecutionService;
+    private final VariantService variantService;
+    private final CorrectionRetrievalService correctionRetrievalService;
+    private final com.xenocrm.simulator.service.AudienceSimulationOrchestrationService orchestrationService;
+    private final com.xenocrm.simulator.mapper.SimulationMapper simulationMapper;
 
     @PostMapping
     @Operation(summary = "Create a new campaign manually")
@@ -64,5 +75,59 @@ public class CampaignController {
     public ResponseEntity<ResponseWrapper<Void>> executeCampaign(@PathVariable UUID id) {
         campaignExecutionService.executeCampaignAsync(id);
         return ResponseEntity.accepted().body(ResponseWrapper.success(null));
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Update campaign status (pause, cancel, etc.)")
+    public ResponseEntity<ResponseWrapper<CampaignResponseDto>> updateCampaignStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody CampaignStatusUpdateRequestDto request) {
+        CampaignResponseDto responseDto = campaignService.updateCampaignStatus(id, request.getStatus().name());
+        return ResponseEntity.ok(ResponseWrapper.success(responseDto, "Campaign status updated successfully"));
+    }
+
+    @GetMapping("/{id}/performance")
+    @Operation(summary = "Get campaign performance metrics including delivery, open, and conversion rates")
+    public ResponseEntity<ResponseWrapper<CampaignPerformanceDto>> getCampaignPerformance(@PathVariable UUID id) {
+        CampaignPerformanceDto performanceDto = campaignService.getCampaignPerformance(id);
+        return ResponseEntity.ok(ResponseWrapper.success(performanceDto));
+    }
+
+    @GetMapping("/opt-out-alerts")
+    @Operation(summary = "Get opt-out alerts for running campaigns exceeding safety thresholds")
+    public ResponseEntity<ResponseWrapper<List<OptOutAlertDto>>> getOptOutAlerts() {
+        List<OptOutAlertDto> alerts = campaignService.getOptOutAlerts();
+        return ResponseEntity.ok(ResponseWrapper.success(alerts));
+    }
+
+    @GetMapping("/{id}/variants/mab-stats")
+    @Operation(summary = "Get Thompson Sampling (MAB) statistics for campaign variants")
+    public ResponseEntity<ResponseWrapper<List<MabStatsDto>>> getMabStats(@PathVariable UUID id) {
+        List<MabStatsDto> stats = variantService.getMabStats(id);
+        return ResponseEntity.ok(ResponseWrapper.success(stats));
+    }
+
+    @GetMapping("/{id}/corrections")
+    @Operation(summary = "Get self-correction events for a specific campaign")
+    public ResponseEntity<ResponseWrapper<List<CorrectionEventResponseDto>>> getCampaignCorrections(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CorrectionEventResponseDto> pagedResult = correctionRetrievalService.getCorrectionsByCampaignId(id, pageable);
+        return ResponseEntity.ok(ResponseWrapper.success(
+                pagedResult.getContent(),
+                PaginationMetadata.from(pagedResult)
+        ));
+    }
+
+    @PostMapping("/{id}/simulate")
+    @Operation(summary = "Trigger a simulation for a specific campaign")
+    public ResponseEntity<ResponseWrapper<com.xenocrm.simulator.dto.SimulationRunResultDto>> triggerSimulationForCampaign(
+            @PathVariable UUID id, 
+            @RequestBody com.xenocrm.simulator.dto.SimulationRunRequestDto requestDto) {
+        requestDto.setCampaignId(id);
+        com.xenocrm.simulator.entity.SimulationRunEntity run = orchestrationService.triggerSimulation(requestDto);
+        return ResponseEntity.ok(ResponseWrapper.success(simulationMapper.toResultDto(run), "Simulation started successfully"));
     }
 }

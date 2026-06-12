@@ -34,12 +34,20 @@ public class CustomerController {
 
     private final CustomerIngestionService customerIngestionService;
     private final CustomerMetricsComputationService customerMetricsComputationService;
+    private final com.xenocrm.order.service.OrderService orderService;
 
     @PostMapping
     @Operation(summary = "Create a new customer")
     public ResponseEntity<ResponseWrapper<CustomerResponseDto>> createCustomer(@Valid @RequestBody CustomerCreateRequestDto request) {
         CustomerResponseDto responseDto = customerIngestionService.createCustomer(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDto));
+    }
+
+    @PostMapping("/bulk")
+    @Operation(summary = "Create multiple customers in bulk")
+    public ResponseEntity<ResponseWrapper<List<CustomerResponseDto>>> createCustomersBulk(@Valid @RequestBody List<CustomerCreateRequestDto> requests) {
+        List<CustomerResponseDto> responseDtos = customerIngestionService.bulkCreateCustomers(requests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDtos));
     }
 
     @PutMapping("/{id}")
@@ -89,5 +97,33 @@ public class CustomerController {
     public ResponseEntity<ResponseWrapper<CustomerResponseDto>> getCustomerByEmail(@RequestParam String email) {
         CustomerResponseDto responseDto = customerIngestionService.getCustomerByEmail(email);
         return ResponseEntity.ok(ResponseWrapper.success(responseDto));
+    }
+
+    @GetMapping("/by-tag")
+    @Operation(summary = "Get customers by tag")
+    public ResponseEntity<ResponseWrapper<List<CustomerResponseDto>>> getCustomersByTag(
+            @RequestParam String tag,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CustomerResponseDto> pagedResult = customerIngestionService.getCustomersByTag(tag, pageable);
+        return ResponseEntity.ok(ResponseWrapper.success(
+                pagedResult.getContent(),
+                PaginationMetadata.from(pagedResult)
+        ));
+    }
+
+    @GetMapping("/{id}/orders")
+    @Operation(summary = "Get customer orders")
+    public ResponseEntity<ResponseWrapper<List<com.xenocrm.order.dto.OrderResponseDto>>> getCustomerOrders(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<com.xenocrm.order.dto.OrderResponseDto> pagedResult = orderService.getOrdersByCustomerId(id, pageable);
+        return ResponseEntity.ok(ResponseWrapper.success(
+                pagedResult.getContent(),
+                PaginationMetadata.from(pagedResult)
+        ));
     }
 }

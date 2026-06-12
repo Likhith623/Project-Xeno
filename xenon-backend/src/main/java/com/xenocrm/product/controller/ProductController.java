@@ -37,6 +37,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDto));
     }
 
+    @PostMapping("/bulk")
+    @Operation(summary = "Create multiple products in bulk")
+    public ResponseEntity<ResponseWrapper<List<ProductResponseDto>>> createProductsBulk(@Valid @RequestBody List<ProductCreateRequestDto> requests) {
+        List<ProductResponseDto> responseDtos = productService.bulkCreateProducts(requests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDtos));
+    }
+
     @GetMapping
     @Operation(summary = "Get all products with pagination")
     public ResponseEntity<ResponseWrapper<List<ProductResponseDto>>> getAllProducts(
@@ -55,5 +62,12 @@ public class ProductController {
     public ResponseEntity<ResponseWrapper<ProductResponseDto>> getProduct(@PathVariable UUID id) {
         ProductResponseDto responseDto = productService.getProductById(id);
         return ResponseEntity.ok(ResponseWrapper.success(responseDto));
+    }
+
+    @GetMapping("/categories")
+    @Operation(summary = "Get all product categories")
+    public ResponseEntity<ResponseWrapper<List<com.xenocrm.product.dto.ProductCategoryResponseDto>>> getCategories() {
+        List<com.xenocrm.product.dto.ProductCategoryResponseDto> responseDtos = productService.getAllCategories();
+        return ResponseEntity.ok(ResponseWrapper.success(responseDtos));
     }
 }

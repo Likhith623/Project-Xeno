@@ -19,4 +19,8 @@ public interface MessageVariantMapper {
     /** Converts a MessageVariantEntity to a standard response DTO. */
     @Mapping(target = "campaignId", source = "campaign.id")
     MessageVariantResponseDto toResponseDto(MessageVariantEntity entity);
+
+    @org.mapstruct.Mapping(target = "id", ignore = true)
+    @org.mapstruct.Mapping(target = "campaign", ignore = true)
+    void updateEntityFromDto(com.xenocrm.variant.dto.MessageVariantUpdateRequestDto dto, @org.mapstruct.MappingTarget MessageVariantEntity entity);
 }

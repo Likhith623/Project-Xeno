@@ -23,6 +23,21 @@ public class MemoryRetrievalService {
         return memoryRepository.findAll(pageable).map(memoryMapper::toDto);
     }
 
+    public org.springframework.data.domain.Page<com.xenocrm.memory.dto.OrgMemoryEntryDto> getMemoriesByQuery(
+            String segmentTag, com.xenocrm.channelservice.enums.MessageChannel channel, org.springframework.data.domain.Pageable pageable) {
+        if (segmentTag != null && channel != null) {
+            return new org.springframework.data.domain.PageImpl<>(
+                    memoryRepository.findAllBySegmentTagAndChannelAndIsActiveTrue(segmentTag, channel), pageable, 100).map(memoryMapper::toDto);
+        } else if (segmentTag != null) {
+            return new org.springframework.data.domain.PageImpl<>(
+                    memoryRepository.findAllBySegmentTagAndIsActiveTrue(segmentTag), pageable, 100).map(memoryMapper::toDto);
+        } else if (channel != null) {
+            return new org.springframework.data.domain.PageImpl<>(
+                    memoryRepository.findAllByChannelAndIsActiveTrue(channel), pageable, 100).map(memoryMapper::toDto);
+        }
+        return getAllMemories(pageable);
+    }
+
     public String buildContextPromptForSegment(String segmentTag) {
         List<OrgMemoryEntryEntity> memories = memoryRepository.findAllBySegmentTagAndIsActiveTrue(segmentTag);
 

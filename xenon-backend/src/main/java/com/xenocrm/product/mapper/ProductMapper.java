@@ -20,4 +20,6 @@ public interface ProductMapper {
     @Mapping(target = "categoryId",   source = "category.id")
     @Mapping(target = "categoryName", source = "category.name")
     ProductResponseDto toResponseDto(ProductEntity entity);
+
+    com.xenocrm.product.dto.ProductCategoryResponseDto toCategoryResponseDto(com.xenocrm.product.entity.ProductCategoryEntity entity);
 }

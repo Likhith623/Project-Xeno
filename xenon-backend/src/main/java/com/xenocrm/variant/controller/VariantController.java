@@ -46,4 +46,20 @@ public class VariantController {
         MessageVariantResponseDto responseDto = variantService.getVariantById(id);
         return ResponseEntity.ok(ResponseWrapper.success(responseDto));
     }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update variant details")
+    public ResponseEntity<ResponseWrapper<MessageVariantResponseDto>> updateVariant(
+            @PathVariable UUID id,
+            @Valid @RequestBody com.xenocrm.variant.dto.MessageVariantUpdateRequestDto request) {
+        MessageVariantResponseDto responseDto = variantService.updateVariant(id, request);
+        return ResponseEntity.ok(ResponseWrapper.success(responseDto));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Soft delete variant")
+    public ResponseEntity<ResponseWrapper<Void>> deleteVariant(@PathVariable UUID id) {
+        variantService.deleteVariant(id);
+        return ResponseEntity.ok(ResponseWrapper.success(null));
+    }
 }

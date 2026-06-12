@@ -60,6 +60,26 @@ public class SegmentEvaluationService {
         return segmentRepository.findAll(pageable).map(segmentMapper::toResponseDto);
     }
 
+    @Transactional
+    public SegmentResponseDto updateSegment(UUID id, com.xenocrm.segment.dto.SegmentUpdateRequestDto request) {
+        log.debug("Updating segment: {}", id);
+        AudienceSegmentEntity segment = segmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("AudienceSegment", "id", id));
+        
+        segmentMapper.updateEntityFromDto(request, segment);
+        AudienceSegmentEntity updatedSegment = segmentRepository.save(segment);
+        return segmentMapper.toResponseDto(updatedSegment);
+    }
+
+    @Transactional
+    public void deleteSegment(UUID id) {
+        if (!segmentRepository.existsById(id)) {
+            throw new ResourceNotFoundException("AudienceSegment", "id", id);
+        }
+        segmentRepository.deleteById(id);
+        log.debug("Deleted segment: {}", id);
+    }
+
     @Async("taskExecutor")
     @Transactional
     public CompletableFuture<Void> evaluateSegmentAsync(UUID id) {

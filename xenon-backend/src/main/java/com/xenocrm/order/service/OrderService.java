@@ -46,6 +46,20 @@ public class OrderService {
         return orderMapper.toResponseDto(savedOrder);
     }
 
+    @Transactional
+    public java.util.List<OrderResponseDto> bulkCreateOrders(java.util.List<OrderCreateRequestDto> requests) {
+        log.debug("Bulk creating {} orders", requests.size());
+        java.util.List<OrderResponseDto> responses = new java.util.ArrayList<>();
+        for (OrderCreateRequestDto request : requests) {
+            try {
+                responses.add(createOrder(request));
+            } catch (Exception e) {
+                log.warn("Failed to create order in bulk: {}", e.getMessage());
+            }
+        }
+        return responses;
+    }
+
     @Transactional(readOnly = true)
     public OrderResponseDto getOrderById(UUID id) {
         OrderEntity order = orderRepository.findById(id)
@@ -56,5 +70,10 @@ public class OrderService {
     @Transactional(readOnly = true)
     public Page<OrderResponseDto> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable).map(orderMapper::toResponseDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<OrderResponseDto> getOrdersByCustomerId(UUID customerId, Pageable pageable) {
+        return orderRepository.findByCustomerId(customerId, pageable).map(orderMapper::toResponseDto);
     }
 }

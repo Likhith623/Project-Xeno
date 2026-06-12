@@ -37,6 +37,13 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDto));
     }
 
+    @PostMapping("/bulk")
+    @Operation(summary = "Create multiple orders in bulk")
+    public ResponseEntity<ResponseWrapper<List<OrderResponseDto>>> createOrdersBulk(@Valid @RequestBody List<OrderCreateRequestDto> requests) {
+        List<OrderResponseDto> responseDtos = orderService.bulkCreateOrders(requests);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ResponseWrapper.success(responseDtos));
+    }
+
     @GetMapping
     @Operation(summary = "Get all orders with pagination")
     public ResponseEntity<ResponseWrapper<List<OrderResponseDto>>> getAllOrders(

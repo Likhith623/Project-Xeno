@@ -24,6 +24,6 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, UUID> 
     /** Returns all non-opted-out customers, paginated. */
     Page<CustomerEntity> findAllByIsGloballyOptedOutFalse(Pageable pageable);
     /** Finds customers whose tags array contains the given tag value. */
-    @Query(value = "SELECT * FROM customers WHERE :tag = ANY(tags)", nativeQuery = true)
-    List<CustomerEntity> findAllByTag(@Param("tag") String tag);
+    @Query(value = "SELECT * FROM customers WHERE :tag = ANY(tags)", countQuery = "SELECT count(*) FROM customers WHERE :tag = ANY(tags)", nativeQuery = true)
+    Page<CustomerEntity> findAllByTag(@Param("tag") String tag, Pageable pageable);
 }
