@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Maven
+xenon-backend/target/
+xenon-backend/pom.xml.tag
+xenon-backend/pom.xml.releaseBackup
+xenon-backend/pom.xml.versionsBackup
+xenon-backend/pom.xml.next
+xenon-backend/release.properties
+xenon-backend/dependency-reduced-pom.xml
+xenon-backend/buildNumber.properties
+xenon-backend/.mvn/timing.properties
+xenon-backend/.mvn/wrapper/maven-wrapper.jar
+
+# IDE specific files
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+.classpath
+.project
+.settings/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Documentation & Logs
+*.log
+*.md
+*.sql
+endpoints_found.txt
+PROMPT.txt
+PROMPT2.txt
+run.txt
+
+# Postman & APIs
+openapi.json
+channel-stub/
