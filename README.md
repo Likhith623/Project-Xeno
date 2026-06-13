@@ -1,138 +1,326 @@
-# Project Xeno - Complete Backend Documentation
+# Project Xeno: AI-Native CRM Backend - Ultimate API Contract
 
-This document serves as the comprehensive guide to the **Xenon Backend Architecture**, outlining all implemented domains, their purpose, the database tables they modify, and the Swagger UI configurations for testing. 
+Welcome to the backend repository of **Project Xeno**. This is an AI-Native Mini CRM designed to intelligently group shoppers and dispatch optimized communications via multiple channels using a Sovereign AI Agent.
 
-## 📌 Testing via Swagger UI
-
-Instead of using Postman for manual testing, **Swagger UI** has been fully integrated into the project. It provides an interactive interface to view all available endpoints, see their expected request payloads, and test them directly.
-
-**How to Access:**
-1. Start the Spring Boot application.
-2. Open your browser and navigate to: `http://localhost:8080/swagger-ui/index.html` (or the respective port you configure).
-3. The UI will list all domains and endpoints grouped by tags.
+This README serves as the **Exhaustive Frontend Integration Guide**. It contains API contracts for **EVERY SINGLE ENDPOINT** present in the codebase.
 
 ---
 
-## 🏗️ Domain Functionalities & Endpoints
+## 🌍 Base URL & Authentication
 
-### 1. 👥 Customer Domain
-**Purpose:** Manages the core entity of the CRM — the customers. It handles their creation, metric aggregation, and lifecycle.
-*   **Table Modified:** `customers`, `customer_metrics`
-*   **Endpoints:**
-    *   `POST /api/v1/customers` - Create a new customer.
-        *   **Test Body:** `{"name": "John Doe", "email": "john@example.com", "phone": "1234567890"}`
-    *   `GET /api/v1/customers/{id}` - Fetch a specific customer by ID.
+**Live Production URL:** `https://project-xeno.onrender.com/api/v1`
+**Local Development URL:** `http://localhost:8080/api/v1`
 
-### 2. 🛍️ Product Domain
-**Purpose:** Handles product catalog and categories. Essential for linking orders and campaigns to specific items.
-*   **Table Modified:** `products`, `product_categories`
-*   **Endpoints:**
-    *   `POST /api/v1/products/categories` - Create a category.
-        *   **Test Body:** `{"name": "Electronics", "description": "Gadgets"}`
-    *   `POST /api/v1/products` - Create a new product.
-        *   **Test Body:** `{"sku": "SKU-123", "name": "Laptop", "price": 999.99, "categoryId": "UUID"}`
-    *   `GET /api/v1/products/{id}` - Get a product by ID.
+**Authentication Header:**
+Every request to the API must include the following header:
+```http
+X-API-KEY: likhit@178926a
+Content-Type: application/json
+```
 
-### 3. 🛒 Order Domain
-**Purpose:** Processes transactions and customer purchases. Tracks exactly what products a customer bought.
-*   **Table Modified:** `orders`, `order_items`
-*   **Endpoints:**
-    *   `POST /api/v1/orders` - Place a new order.
-        *   **Test Body:** `{"customerId": "UUID", "totalAmount": 999.99, "items": [{"productId": "UUID", "quantity": 1, "unitPrice": 999.99}]}`
-    *   `GET /api/v1/orders/customer/{customerId}` - Get all orders for a specific customer.
-
-### 4. 🎯 Segment Domain
-**Purpose:** Allows dynamic grouping of customers based on rules and criteria (e.g., "Customers who spent > $500").
-*   **Table Modified:** `segments`
-*   **Endpoints:**
-    *   `POST /api/v1/segments` - Create a new segment.
-        *   **Test Body:** `{"name": "High Spenders", "criteria": {"totalSpent": {"$gt": 500}}}`
-    *   `POST /api/v1/segments/{id}/evaluate` - Triggers asynchronous evaluation of the segment against all customers.
-
-### 5. 📢 Campaign Domain
-**Purpose:** Handles marketing campaigns, linking segments to promotional activities, and tracking their overall metrics.
-*   **Table Modified:** `campaigns`, `campaign_metrics`
-*   **Endpoints:**
-    *   `POST /api/v1/campaigns` - Create a campaign.
-        *   **Test Body:** `{"name": "Summer Sale", "segmentId": "UUID", "channel": "EMAIL"}`
-    *   `POST /api/v1/campaigns/{id}/execute` - Triggers the campaign execution process asynchronously.
-
-### 6. 🧪 Variant & Multi-Armed Bandit Domain
-**Purpose:** Implements A/B testing and Bayesian inference (Thompson Sampling) for campaigns. Dynamically allocates traffic to the best-performing message variant.
-*   **Table Modified:** `variants`
-*   **Endpoints:**
-    *   `POST /api/v1/variants` - Create a variant for a campaign.
-        *   **Test Body:** `{"campaignId": "UUID", "name": "Variant A", "content": "Huge sale today!"}`
-    *   `POST /api/v1/variants/campaign/{campaignId}/select` - Uses the MAB algorithm to pick the best variant for the next user.
-    *   `POST /api/v1/variants/{id}/track` - Track an outcome (e.g., success=true) to update the algorithm's learning.
-
-### 7. ✉️ Communication Domain
-**Purpose:** Logs all messages sent out (Emails, SMS, etc.) and tracks their status (Sent, Failed, Opened).
-*   **Table Modified:** `communication_logs`
-*   **Endpoints:**
-    *   `GET /api/v1/communications/customer/{customerId}` - Get communication history for a customer.
-
-### 8. 🎟️ Event Domain
-**Purpose:** Ingests raw events from customer activity (e.g., Page Views, Clicks, Add to Cart).
-*   **Table Modified:** `events`
-*   **Endpoints:**
-    *   `POST /api/v1/events` - Ingest an event.
-        *   **Test Body:** `{"customerId": "UUID", "eventType": "PAGE_VIEW", "source": "WEB", "payload": {"url": "/home"}}`
-    *   `GET /api/v1/events/customer/{customerId}` - Fetch a customer's event timeline.
-
-### 9. ⚙️ Settings Domain
-**Purpose:** Manages global system configurations and settings (e.g., feature flags, API keys).
-*   **Table Modified:** `system_settings`
-*   **Endpoints:**
-    *   `POST /api/v1/settings` - Create or update a setting.
-        *   **Test Body:** `{"key": "ENABLE_ML", "value": "true", "description": "Enable ML features"}`
-    *   `GET /api/v1/settings` - Retrieve all settings.
-
-### 10. 🧠 ML Domain
-**Purpose:** Tracks and manages Machine Learning model training jobs and metrics.
-*   **Table Modified:** `model_training_logs`
-*   **Endpoints:**
-    *   `POST /api/v1/ml/logs` - Start a training log.
-        *   **Test Body:** `{"modelName": "ChurnPredictor", "modelVersion": "v1.0"}`
-    *   `PATCH /api/v1/ml/logs/{id}/complete` - Mark a model as completed with metrics.
-
-### 11. 📊 Report Domain
-**Purpose:** Manages configurations for custom reports and dashboards built on JSON DSL queries.
-*   **Table Modified:** `report_configs`
-*   **Endpoints:**
-    *   `POST /api/v1/reports/configs` - Create a report config.
-        *   **Test Body:** `{"name": "Sales Q1", "queryDsl": "SELECT * FROM orders", "isActive": true}`
-
-### 12. 🔐 Auth Domain
-**Purpose:** Handles Role-Based Access Control (RBAC), mapping users to roles and permissions.
-*   **Table Modified:** `users`, `roles`, `permissions`, `user_roles`, `role_permissions`
-*   **Endpoints:**
-    *   `POST /api/v1/users` - Create a new user.
-        *   **Test Body:** `{"username": "admin", "email": "admin@xeno.com", "password": "SecurePassword123"}`
-    *   `GET /api/v1/users/{id}` - Get a user profile.
-
-### 13. 🪝 Webhook Domain
-**Purpose:** Allows external systems to subscribe to internal events via HTTP callbacks. Logs execution statuses.
-*   **Table Modified:** `webhook_configs`, `webhook_logs`
-*   **Endpoints:**
-    *   `POST /api/v1/webhooks/configs` - Register a new webhook.
-        *   **Test Body:** `{"url": "https://example.com/hook", "eventType": "ORDER_CREATED", "isActive": true}`
-    *   `POST /api/v1/webhooks/trigger/{eventType}` - Manually trigger webhooks.
-
-### 14. 🕵️‍♂️ Audit Domain
-**Purpose:** Maintains an immutable audit trail of critical actions performed in the system.
-*   **Table Modified:** `audit_logs`
-*   **Endpoints:**
-    *   `POST /api/v1/audit` - Log a manual action.
-        *   **Test Body:** `{"entityName": "Customer", "entityId": "UUID", "action": "UPDATE", "changes": {"old": "A", "new": "B"}}`
-    *   `GET /api/v1/audit/{entityName}/{entityId}` - Fetch logs for a specific entity.
+**Common Response Wrapper (Applies to all endpoints):**
+```json
+{
+  "success": true,
+  "data": { ... }, // Or Array [...]
+  "message": "Optional message",
+  "errorCode": null,
+  "errorMessage": null,
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 20,
+    "totalElements": 1,
+    "totalPages": 1,
+    "last": true
+  } // Nullable if not paginated
+}
+```
 
 ---
 
-## 🚀 Key Architectural Highlights
-*   **Database Schema:** Implements robust JSONB handling via Hypersistence Utils for NoSQL-like flexibility within a Relational Model.
-*   **Concurrency:** Utilizes `@Async("taskExecutor")` to ensure that heavy processes (like evaluating segments or sending campaign blasts) run in the background, not blocking the main thread.
-*   **Intelligence:** Built-in Thomson Sampling (`commons-math3` Bayesian Inference) for variant Multi-Armed Bandit selection to maximize campaign conversion rates over time. 
-*   **MapStruct Mappers:** Employed for clean, performant separation between DTOs and internal Entities.
+## 🤖 1. Agent API (`/agent`)
 
-Enjoy building with Xeno!
+### `POST /chat`
+*Starts the autonomous AI campaign generation process.*
+* **Input:** `{"prompt": "string"}`
+* **Output:** `{"sessionId": "UUID", "status": "IN_PROGRESS", "textReply": "string"}`
+
+### `GET /sessions/{id}`
+*Polls the session for completion. Wait for `status` = `COMPLETED`.*
+* **Output:** 
+  ```json
+  {
+    "id": "UUID",
+    "goal": "string",
+    "status": "COMPLETED",
+    "plan": {
+      "segmentId": "UUID",
+      "campaignId": "UUID",
+      "filterJson": { ... },
+      "channelRecommendation": { "channel": "EMAIL", "estimatedOpenRate": "0.45", "estimatedCtr": "0.1" }
+    }
+  }
+  ```
+
+### `GET /sessions/{id}/decisions`
+*Retrieves the internal step-by-step logic the AI took.*
+* **Output:** Array of `{"stepOrder": int, "decisionType": "string", "reasoning": "string"}`
+
+---
+
+## 👥 2. Customers API (`/customers`)
+
+### `POST /`
+*Creates a customer.*
+* **Input:** `{"name": "string", "email": "string", "phone": "string", "preferredChannel": "EMAIL", "tags": ["string"]}`
+* **Output:** Customer Entity
+
+### `POST /bulk`
+*Ingests multiple customers.*
+* **Input:** Array of Customer Input Objects
+* **Output:** Array of Customer Entities
+
+### `PUT /{id}`
+*Updates a customer.*
+* **Input:** Same as POST
+* **Output:** Customer Entity
+
+### `GET /`
+*Fetches paginated list of customers.*
+* **Query Params:** `page` (default 0), `size` (default 20)
+
+### `GET /{id}`
+*Fetches a single customer by ID.*
+
+### `GET /{id}/360`
+*Fetches the 360-degree RFM view of a customer.*
+* **Output:** `{"id": "UUID", "name": "string", "rfmScore": float, "clvPredicted": float, "emailOpenRate": float}`
+
+### `DELETE /{id}`
+*Soft deletes a customer.*
+
+### `GET /by-email?email={email}`
+*Finds a customer by exact email.*
+
+### `GET /by-tag?tag={tag}`
+*Finds customers containing a specific tag.*
+
+### `GET /{id}/orders`
+*Fetches all orders for this customer.*
+
+---
+
+## 📦 3. Products API (`/products`)
+
+### `POST /`
+*Creates a product.*
+* **Input:** `{"sku": "string", "name": "string", "price": float, "currency": "string"}`
+* **Output:** Product Entity
+
+### `POST /bulk`
+*Bulk ingests products.*
+* **Input:** Array of Product Input Objects
+
+### `GET /`
+*Fetches paginated products.*
+
+### `GET /{id}`
+*Fetches specific product.*
+
+### `GET /categories`
+*Fetches product categories (extracted from product names/tags).*
+
+---
+
+## 🛒 4. Orders API (`/orders`)
+
+### `POST /`
+*Ingests an order and triggers revenue attribution.*
+* **Input:** 
+  ```json
+  {
+    "customerId": "UUID",
+    "orderNumber": "string",
+    "totalAmount": float,
+    "currency": "string",
+    "items": [
+      { "productId": "UUID", "productName": "string", "quantity": int, "unitPrice": float }
+    ]
+  }
+  ```
+* **Output:** Order Entity
+
+### `POST /bulk`
+*Bulk ingests orders.*
+* **Input:** Array of Order Input Objects
+
+### `GET /`
+*Paginated orders list.*
+
+### `GET /{id}`
+*Specific order.*
+
+---
+
+## 🎯 5. Segments API (`/segments`)
+
+### `POST /`
+*Manually create a segment.*
+* **Input:** `{"name": "string", "description": "string", "type": "DYNAMIC", "filterSql": "SELECT id FROM customers..."}`
+
+### `GET /`
+*Paginated segments list.*
+
+### `GET /{id}`
+*Specific segment details.*
+
+### `PATCH /{id}`
+*Update segment fields.*
+* **Input:** `{"name": "string", "description": "string"}`
+
+### `GET /{id}/members`
+*Fetch customers who belong to this segment based on the last evaluation.*
+
+### `DELETE /{id}`
+*Delete segment.*
+
+### `POST /{id}/evaluate`
+*Force execution of the `filterSql` against the DB to refresh segment members.*
+* **Output:** Integer (Count of matched members)
+
+---
+
+## 🚀 6. Campaigns API (`/campaigns`)
+
+### `POST /`
+*Create a campaign manually.*
+* **Input:** `{"name": "string", "segmentId": "UUID", "goal": "string"}`
+
+### `GET /`
+*Paginated campaigns.*
+
+### `GET /{id}`
+*Specific campaign (includes totalSent, totalOpened, revenueAttributed).*
+
+### `POST /{id}/execute`
+*Launch the campaign. Dispatches messages to the channel stub.*
+
+### `PATCH /{id}/status?status={status}`
+*Manually update status (DRAFT, SCHEDULED, RUNNING, PAUSED, COMPLETED, CANCELLED).*
+* **Query Params:** `status`
+
+### `GET /{id}/performance`
+*Get aggregated metrics.*
+* **Output:** `{"totalSent": int, "totalDelivered": int, "totalOpened": int, "revenueAttributed": float, ...}`
+
+### `GET /opt-out-alerts`
+*Fetches campaigns hitting high opt-out thresholds.*
+
+### `GET /{id}/variants/mab-stats`
+*Shortcut to fetch MAB variant stats for this campaign.*
+
+### `GET /{id}/corrections`
+*Fetches auto-corrections triggered by the AI monitor for this campaign.*
+
+### `POST /{id}/simulate`
+*Triggers a dry-run Monte Carlo simulation for this campaign.*
+
+---
+
+## 🎨 7. Variants API (`/variants`)
+
+### `POST /`
+*Create a message variant.*
+* **Input:** `{"campaignId": "UUID", "name": "string", "channel": "EMAIL", "subjectLine": "string", "bodyHtml": "string"}`
+
+### `GET /campaign/{campaignId}`
+*Get all variants for a campaign.*
+
+### `GET /{id}`
+*Specific variant.*
+
+### `PATCH /{id}`
+*Update variant content.*
+* **Input:** Partial Variant Object.
+
+### `DELETE /{id}`
+*Delete variant.*
+
+### `GET /{campaignId}/mab-stats`
+*Get Multi-Armed Bandit stats.*
+* **Output:** Array of `{"variantId": "UUID", "impressions": int, "conversions": int, "conversionRate": float, "thompsonSample": float}`
+
+---
+
+## 📡 8. Communications API (`/communications`)
+
+### `GET /campaign/{campaignId}`
+*Fetch all messages sent out for a specific campaign.*
+* **Output:** Array of Communication Entities (`status`, `channel`, `recipientAddress`).
+
+### `GET /customer/{customerId}`
+*Fetch the timeline of messages sent to a customer.*
+
+### `PATCH /{id}/status?status={status}`
+*Manually overwrite a communication's status (SENT, DELIVERED, OPENED, CLICKED, CONVERTED).*
+
+---
+
+## 🔄 9. Callbacks API (`/callbacks/channel`)
+
+### `POST /`
+*Webhook receiver for the Channel Stub.*
+* **Input:** `{"channelMessageId": "string", "status": "DELIVERED|OPENED|CLICKED|FAILED", "metadata": {}}`
+
+---
+
+## 🧠 10. Memory API (`/memory`)
+
+### `GET /`
+*Fetches all learned Org Memory Entries (e.g. "Email works best on Fridays").*
+
+### `GET /query?tag={tag}`
+*Query organizational memory by segment tag.*
+
+---
+
+## 📊 11. Simulation API (`/simulations`)
+
+### `POST /`
+*Run an isolated audience simulation.*
+* **Input:** `{"campaignId": "UUID", "audienceSize": int}`
+
+### `POST /campaigns/{id}/simulate`
+*Shortcut simulation trigger for a campaign.*
+* **Input:** `{"audienceSize": int}`
+
+### `GET /{id}`
+*Get simulation results.*
+* **Output:** `{"status": "COMPLETED", "projectedOpens": int, "projectedClicks": int}`
+
+---
+
+## 🔧 12. Corrections API (`/corrections`)
+
+### `GET /`
+*Fetches all AI-triggered course corrections (e.g. paused campaigns due to high bounce rates).*
+* **Output:** Array of `{"triggerType": "string", "actionTaken": "string", "aiReasoning": "string"}`
+
+---
+
+## 📋 13. Audit Logs API (`/audit-logs`)
+
+### `GET /entity/{entityType}/{entityId}`
+*Fetches immutable audit history for an entity.*
+* **Output:** Array of `{"action": "CREATE|UPDATE|DELETE", "timestamp": "date", "changes": {}}`
+
+### `GET /trace/{traceId}`
+*Fetches logs by correlation trace ID.*
+
+### `GET /actor/{actorId}`
+*Fetches logs by system/user actor.*
+
+---
+
+## 💡 Frontend Integration Pro-Tip
+Use `POST /agent/chat` -> `GET /agent/sessions/{id}` to automatically assemble `Segments`, `Campaigns`, and `Variants` without having to build massive multi-step forms. Once the agent gives you the `campaignId`, call `POST /campaigns/{id}/execute` to launch the dispatch sequence, and visualize real-time tracking via `GET /campaigns/{id}/performance`.

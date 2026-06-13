@@ -3,4 +3,4 @@ WORKDIR /app
 COPY ChannelStubServer.java .
 RUN javac ChannelStubServer.java
 EXPOSE 5000
-CMD[
+CMD ["java", "ChannelStubServer"]
