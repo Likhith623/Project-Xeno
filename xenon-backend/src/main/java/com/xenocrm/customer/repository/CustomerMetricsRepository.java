@@ -20,4 +20,6 @@ public interface CustomerMetricsRepository extends JpaRepository<CustomerMetrics
     List<CustomerMetricsEntity> findAllByChurnProbabilityGreaterThan(BigDecimal threshold);
     /** Finds the absolute top 100 VIP customers by RFM Score. */
     List<CustomerMetricsEntity> findTop100ByOrderByRfmScoreDesc();
+    /** Finds slipping Whales for VIP Concierge Escalation. */
+    List<CustomerMetricsEntity> findByMonetaryTotalGreaterThanAndRecencyDaysGreaterThan(BigDecimal minMonetary, Integer minRecency);
 }

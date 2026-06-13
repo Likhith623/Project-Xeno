@@ -211,3 +211,14 @@ Security and tracking trails.
 ## 14. Development Stub (Separate Microservice on Port 5001)
 * **`POST /api/v1/stub/send`**
   * **Purpose:** Internal development stub used for end-to-end testing. Runs as a separate microservice to simulate SendGrid or WhatsApp APIs. It simulates network latency, async webhook firing, idempotency race-conditions, and random user interactions to realistically stress-test the CRM's callback handling logic.
+
+---
+
+## 15. Background AI Jobs (Phase 5 Autonomous Agents)
+While not exposed as direct REST APIs, these are the core automated AI services running natively in the backend:
+* **`PredictiveInventoryJob` (Weekly Cron)**
+  * **Purpose:** Detects products with `inventory > 100` sitting for >90 days. Uses AI to synthesize a "Clearance Sale" segment and campaign to liquidate dead stock.
+* **`DynamicDiscountService` (Send-Time Injector)**
+  * **Purpose:** Intercepts `HyperPersonalizationService` at the exact moment of dispatch to dynamically weave a custom discount tier (5% vs 25%) into the email copy based on the user's `Churn Risk` and `LTV`.
+* **`ZeroPartyLookalikeJob` (Monthly Cron)**
+  * **Purpose:** Scrapes the behavioral metadata and cities of the top 100 VIPs, prompting the Sovereign AI to write a raw PostgreSQL query to find identical "Ghost Audience" customers in the database.
