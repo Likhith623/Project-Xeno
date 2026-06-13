@@ -52,123 +52,122 @@ public class CampaignExecutionService {
     public CompletableFuture<Void> executeCampaignAsync(UUID id) {
         log.info("Starting async execution for campaign: {}", id);
 
-        return CompletableFuture.supplyAsync(() -> {
+        try {
             CampaignEntity campaign = campaignRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Campaign", "id", id));
 
             campaign.setStatus(CampaignStatus.RUNNING);
             campaign.setStartedAt(OffsetDateTime.now());
-            campaignRepository.save(campaign);
+            campaign = campaignRepository.save(campaign);
 
-            try {
-                // 1. Fetch the segment
-                AudienceSegmentEntity segment = segmentRepository.findById(campaign.getTargetSegment().getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Segment", "id", campaign.getTargetSegment().getId()));
+            // 1. Fetch the segment
+            AudienceSegmentEntity segment = segmentRepository.findById(campaign.getTargetSegment().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Segment", "id", campaign.getTargetSegment().getId()));
 
-                // 2. Fetch the variants
-                List<MessageVariantEntity> variants = variantRepository.findAllByCampaignId(id);
-                if (variants.isEmpty()) {
-                    log.warn("No variants found for campaign {}. Skipping dispatch.", id);
-                    campaign.setStatus(CampaignStatus.COMPLETED);
-                    campaignRepository.save(campaign);
-                    return null;
-                }
-                
-                // For simplicity, we just use the first active variant
-                MessageVariantEntity variant = variants.get(0);
-                log.info("Using variant {} ({}) for campaign {}", variant.getId(), variant.getSubjectLine(), id);
-
-                // 3. Evaluate Segment to get emails
-                String filterSql = segment.getFilterSql();
-                List<java.util.Map<String, Object>> targetRows;
-                if (filterSql == null || filterSql.isBlank()) {
-                    log.warn("Segment {} has no filter SQL. Fetching all valid emails.", segment.getId());
-                    targetRows = jdbcTemplate.queryForList("SELECT id, email FROM customers WHERE email IS NOT NULL AND is_globally_opted_out = false");
-                } else {
-                    log.info("Evaluating segment SQL: {}", filterSql);
-                    String emailQuery = "SELECT c.id, c.email FROM customers c WHERE c.id IN (" + filterSql + ") AND c.email IS NOT NULL AND c.is_globally_opted_out = false";
-                    targetRows = jdbcTemplate.queryForList(emailQuery);
-                }
-
-                log.info("Found {} target customers for campaign {}", targetRows.size(), id);
-                int sentCount = 0;
-
-                // 4. Dispatch Emails using two-service architecture
-                for (java.util.Map<String, Object> row : targetRows) {
-                    try {
-                        UUID customerId = (UUID) row.get("id");
-                        String email = (String) row.get("email");
-                        CustomerEntity customer = customerRepository.findById(customerId).orElse(null);
-                        if (customer == null) continue;
-
-                        CommunicationEntity comm = CommunicationEntity.builder()
-                                .campaign(campaign)
-                                .variant(variant)
-                                .customer(customer)
-                                .channel(MessageChannel.email)
-                                .status(CommunicationStatus.PENDING)
-                                .recipientAddress(email)
-                                .personalisedSubject(variant.getSubjectLine())
-                                .personalisedBody(variant.getBodyHtml())
-                                .build();
-                        comm = communicationRepository.save(comm);
-
-                        ChannelSendRequestDto req = ChannelSendRequestDto.builder()
-                                .recipientAddress(email)
-                                .communicationId(comm.getId())
-                                .channel(MessageChannel.email)
-                                .subject(variant.getSubjectLine())
-                                .body(variant.getBodyHtml())
-                                .build();
-
-                        ChannelSendResponseDto res = channelDispatchService.dispatchMessage(req);
-                        log.info("DEBUG: Dispatch success for {}: {}", email, res.isSuccess());
-                        if (res.isSuccess()) {
-                            log.info("DEBUG: Inside success block for {}", email);
-                            comm.setChannelMessageId(res.getChannelMessageId());
-                            communicationRepository.save(comm);
-                            variantRepository.incrementMabImpressions(variant.getId());
-                            sentCount++;
-                            
-                            // Send actual email via SMTP for testing
-                            log.info("DEBUG: Checking channel. req.getChannel() = {}", req.getChannel());
-                            if (MessageChannel.email.equals(req.getChannel())) {
-                                log.info("DEBUG: Calling emailDispatchService for {}", email);
-                                try {
-                                    emailDispatchService.sendEmail(email, variant.getSubjectLine(), variant.getBodyHtml());
-                                } catch (Exception mailEx) {
-                                    log.error("Failed to send real email to {}: {}", email, mailEx.getMessage());
-                                }
-                            }
-                        } else {
-                            log.info("DEBUG: Inside failure block for {}. Error: {}", email, res.getErrorMessage());
-                            comm.setStatus(CommunicationStatus.FAILED);
-                            comm.setFailureReason(res.getErrorMessage());
-                            comm.setFailedAt(OffsetDateTime.now());
-                            communicationRepository.save(comm);
-                        }
-                    } catch (Exception e) {
-                        log.error("Error sending message: {}", e.getMessage());
-                    }
-                }
-
+            // 2. Fetch the variants
+            List<MessageVariantEntity> variants = variantRepository.findAllByCampaignId(id);
+            if (variants.isEmpty()) {
+                log.warn("No variants found for campaign {}. Skipping dispatch.", id);
                 campaign.setStatus(CampaignStatus.COMPLETED);
-                campaign.setCompletedAt(OffsetDateTime.now());
                 campaignRepository.save(campaign);
-                
-                for (int k = 0; k < sentCount; k++) {
-                    campaignRepository.incrementTotalSent(id);
-                }
-                
-                log.info("Successfully executed campaign: {}", id);
-
-            } catch (Exception e) {
-                log.error("Failed to execute campaign {}: {}", id, e.getMessage(), e);
-                campaign.setStatus(CampaignStatus.FAILED);
-                campaign.setCompletedAt(OffsetDateTime.now());
-                campaignRepository.save(campaign);
+                return CompletableFuture.completedFuture(null);
             }
-            return null;
-        });
+            
+            // For simplicity, we just use the first active variant
+            MessageVariantEntity variant = variants.get(0);
+            log.info("Using variant {} ({}) for campaign {}", variant.getId(), variant.getSubjectLine(), id);
+
+            // 3. Evaluate Segment to get emails
+            String filterSql = segment.getFilterSql();
+            List<java.util.Map<String, Object>> targetRows;
+            if (filterSql == null || filterSql.isBlank()) {
+                log.warn("Segment {} has no filter SQL. Fetching all valid emails.", segment.getId());
+                targetRows = jdbcTemplate.queryForList("SELECT id, email FROM customers WHERE email IS NOT NULL AND is_globally_opted_out = false");
+            } else {
+                log.info("Evaluating segment SQL: {}", filterSql);
+                String emailQuery = "SELECT c.id, c.email FROM customers c WHERE c.id IN (" + filterSql + ") AND c.email IS NOT NULL AND c.is_globally_opted_out = false";
+                targetRows = jdbcTemplate.queryForList(emailQuery);
+            }
+
+            log.info("Found {} target customers for campaign {}", targetRows.size(), id);
+            int sentCount = 0;
+
+            // 4. Dispatch Emails using two-service architecture
+            for (java.util.Map<String, Object> row : targetRows) {
+                try {
+                    UUID customerId = (UUID) row.get("id");
+                    String email = (String) row.get("email");
+                    CustomerEntity customer = customerRepository.findById(customerId).orElse(null);
+                    if (customer == null) continue;
+
+                    CommunicationEntity comm = CommunicationEntity.builder()
+                            .campaign(campaign)
+                            .variant(variant)
+                            .customer(customer)
+                            .channel(MessageChannel.email)
+                            .status(CommunicationStatus.PENDING)
+                            .recipientAddress(email)
+                            .personalisedSubject(variant.getSubjectLine())
+                            .personalisedBody(variant.getBodyHtml())
+                            .build();
+                    comm = communicationRepository.save(comm);
+
+                    ChannelSendRequestDto req = ChannelSendRequestDto.builder()
+                            .recipientAddress(email)
+                            .communicationId(comm.getId())
+                            .channel(MessageChannel.email)
+                            .subject(variant.getSubjectLine())
+                            .body(variant.getBodyHtml())
+                            .build();
+
+                    ChannelSendResponseDto res = channelDispatchService.dispatchMessage(req);
+                    log.info("DEBUG: Dispatch success for {}: {}", email, res.isSuccess());
+                    if (res.isSuccess()) {
+                        log.info("DEBUG: Inside success block for {}", email);
+                        comm.setChannelMessageId(res.getChannelMessageId());
+                        communicationRepository.save(comm);
+                        variantRepository.incrementMabImpressions(variant.getId());
+                        sentCount++;
+                        
+                        // Send actual email via SMTP for testing
+                        log.info("DEBUG: Checking channel. req.getChannel() = {}", req.getChannel());
+                        if (MessageChannel.email.equals(req.getChannel())) {
+                            log.info("DEBUG: Calling emailDispatchService for {}", email);
+                            try {
+                                emailDispatchService.sendEmail(email, variant.getSubjectLine(), variant.getBodyHtml());
+                            } catch (Exception mailEx) {
+                                log.error("Failed to send real email to {}: {}", email, mailEx.getMessage());
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error("Error sending message: {}", e.getMessage());
+                }
+            }
+
+            campaign.setStatus(CampaignStatus.COMPLETED);
+            campaign.setCompletedAt(OffsetDateTime.now());
+            campaignRepository.save(campaign);
+            
+            for (int k = 0; k < sentCount; k++) {
+                campaignRepository.incrementTotalSent(id);
+            }
+            
+            log.info("Successfully executed campaign: {}", id);
+
+        } catch (Exception e) {
+            log.error("Failed to execute campaign {}: {}", id, e.getMessage(), e);
+            try {
+                CampaignEntity errorCamp = campaignRepository.findById(id).orElse(null);
+                if(errorCamp != null) {
+                    errorCamp.setStatus(CampaignStatus.FAILED);
+                    errorCamp.setCompletedAt(OffsetDateTime.now());
+                    campaignRepository.save(errorCamp);
+                }
+            } catch (Exception innerE) {
+                log.error("Could not save FAILED state for campaign {}: {}", id, innerE.getMessage());
+            }
+        }
+        return CompletableFuture.completedFuture(null);
     }
 }
