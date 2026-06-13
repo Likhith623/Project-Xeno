@@ -1,93 +1,109 @@
 $ErrorActionPreference = "Continue"
 
 Write-Host "=========================================================="
-Write-Host "🚀 XENO CRM - COMPREHENSIVE ENDPOINT INTEGRATION TEST 🚀"
+Write-Host "🚀 XENO CRM - COMPREHENSIVE E2E PRODUCTION INTEGRATION TEST 🚀"
 Write-Host "=========================================================="
 
-$baseUrl = "http://localhost:8080/api/v1"
-$results = @()
+$baseUrl = "https://project-xeno.onrender.com/api/v1"
+$apiKey = "likhit@178926a"
+$headers = @{ "X-API-KEY" = $apiKey; "Content-Type" = "application/json" }
 
 function Test-Endpoint {
     param (
         [string]$Name,
         [string]$Method,
         [string]$Url,
-        [string]$Body = $null
+        [string]$Body = $null,
+        [switch]$ReturnResponse = $false
     )
     
     Write-Host "Testing $Name... " -NoNewline
     try {
-        $headers = @{ "X-API-KEY" = "likhit@178926a" }
-        if ($Method -eq "GET") {
-            $response = Invoke-RestMethod -Uri $Url -Method GET -Headers $headers -ErrorAction Stop
+        if ($Method -eq "GET" -or $Method -eq "DELETE") {
+            $response = Invoke-RestMethod -Uri $Url -Method $Method -Headers $headers -ErrorAction Stop
         } else {
-            $response = Invoke-RestMethod -Uri $Url -Method $Method -Body $Body -ContentType "application/json" -Headers $headers -ErrorAction Stop
+            $response = Invoke-RestMethod -Uri $Url -Method $Method -Body $Body -Headers $headers -ErrorAction Stop
         }
         Write-Host "[SUCCESS]" -ForegroundColor Green
-        $global:results += "$($Name): PASS"
+        if ($ReturnResponse) { return $response }
+        return $true
     } catch {
         Write-Host "[FAILED]" -ForegroundColor Red
         Write-Host "Error: $($_.Exception.Message)"
-        $global:results += "$($Name): FAIL - $($_.Exception.Message)"
+        if ($_.Exception.Response) {
+            $stream = $_.Exception.Response.GetResponseStream()
+            $reader = New-Object System.IO.StreamReader($stream)
+            Write-Host "Response Body: $($reader.ReadToEnd())"
+        }
+        if ($ReturnResponse) { return $null }
+        return $false
     }
 }
 
-# 1. Test Products
-Test-Endpoint -Name "Get All Products" -Method "GET" -Url "$baseUrl/products"
+# ---------------------------------------------------------
+# 1. CUSTOMER LIFECYCLE
+# ---------------------------------------------------------
+$randomStr = (Get-Random).ToString()
+$customerEmail = "testvip_$randomStr@example.com"
+$customerBody = @{
+    name = "Test VIP User"
+    email = $customerEmail
+    phone = "+$randomStr"
+    preferredChannel = "EMAIL"
+    tags = @("VIP")
+} | ConvertTo-Json
 
-# 2. Test Customers
-Test-Endpoint -Name "Get All Customers" -Method "GET" -Url "$baseUrl/customers"
-
-# 3. Test Segments
-Test-Endpoint -Name "Get All Segments" -Method "GET" -Url "$baseUrl/segments"
-
-# 4. Test Campaigns
-Test-Endpoint -Name "Get All Campaigns" -Method "GET" -Url "$baseUrl/campaigns"
-
-# 5. Test AI Proposals
-Test-Endpoint -Name "Get AI Campaign Proposals" -Method "GET" -Url "$baseUrl/campaigns/proposals"
-
-# 6. Test Memory
-Test-Endpoint -Name "Get AI Memory" -Method "GET" -Url "$baseUrl/memory"
-
-# 7. Create a DUMMY Customer
-$customerBody = @"
-{
-    "name": "Test VIP User",
-    "email": "testvip@example.com",
-    "phone": "+919000000000",
-    "preferredChannel": "EMAIL",
-    "tags": ["VIP"]
+$cust = Test-Endpoint -Name "POST /customers" -Method "POST" -Url "$baseUrl/customers" -Body $customerBody -ReturnResponse
+if ($cust -and $cust.data) {
+    $custId = $cust.data.id
+    Test-Endpoint -Name "GET /customers/{id}" -Method "GET" -Url "$baseUrl/customers/$custId"
+    Test-Endpoint -Name "GET /customers/{id}/360" -Method "GET" -Url "$baseUrl/customers/$custId/360"
+    Test-Endpoint -Name "GET /customers/by-email" -Method "GET" -Url "$baseUrl/customers/by-email?email=$customerEmail"
 }
-"@
-Test-Endpoint -Name "Create Customer" -Method "POST" -Url "$baseUrl/customers" -Body $customerBody
 
-# 8. Create a Segment
-$segmentBody = @"
-{
-    "name": "API Test Segment",
-    "description": "Integration Test Segment",
-    "type": "DYNAMIC",
-    "filterSql": "SELECT id FROM customers WHERE email LIKE '%@example.com'"
+Test-Endpoint -Name "GET /customers (Paginated)" -Method "GET" -Url "$baseUrl/customers?size=5"
+
+# ---------------------------------------------------------
+# 2. PRODUCT LIFECYCLE
+# ---------------------------------------------------------
+Test-Endpoint -Name "GET /products" -Method "GET" -Url "$baseUrl/products?size=5"
+Test-Endpoint -Name "GET /products/categories" -Method "GET" -Url "$baseUrl/products/categories"
+
+# ---------------------------------------------------------
+# 3. AUDIENCE SEGMENTS
+# ---------------------------------------------------------
+$segmentBody = @{
+    name = "API Test Segment $randomStr"
+    description = "Integration Test Segment"
+    type = "DYNAMIC"
+    filterSql = "SELECT id FROM customers WHERE email LIKE '%@example.com'"
+} | ConvertTo-Json
+
+$seg = Test-Endpoint -Name "POST /segments" -Method "POST" -Url "$baseUrl/segments" -Body $segmentBody -ReturnResponse
+if ($seg -and $seg.data) {
+    $segId = $seg.data.id
+    Test-Endpoint -Name "GET /segments/{id}" -Method "GET" -Url "$baseUrl/segments/$segId"
 }
-"@
-Test-Endpoint -Name "Create Segment" -Method "POST" -Url "$baseUrl/segments" -Body $segmentBody
 
-# 9. Test The War Room (Multi-Agent Debate)
-$warRoomBody = @"
-{
-    "goal": "Win back churned winter buyers"
-}
-"@
-Test-Endpoint -Name "Trigger The War Room" -Method "POST" -Url "$baseUrl/test/agi/trigger-war-room" -Body $warRoomBody
+Test-Endpoint -Name "GET /segments" -Method "GET" -Url "$baseUrl/segments?size=5"
 
-# 10. Test The Fund Manager
-Test-Endpoint -Name "Trigger The Fund Manager" -Method "POST" -Url "$baseUrl/test/agi/trigger-fund-manager"
+# ---------------------------------------------------------
+# 4. CAMPAIGNS & VARIANTS
+# ---------------------------------------------------------
+Test-Endpoint -Name "GET /campaigns" -Method "GET" -Url "$baseUrl/campaigns?size=5"
+Test-Endpoint -Name "GET /campaigns/proposals" -Method "GET" -Url "$baseUrl/campaigns/proposals"
 
-# 11. Test Omni-Awareness (Sleep Agent & Whisperer)
-Test-Endpoint -Name "Trigger Omni-Awareness" -Method "POST" -Url "$baseUrl/test/agi/trigger-omni-awareness"
+# ---------------------------------------------------------
+# 5. AGI & MEMORY
+# ---------------------------------------------------------
+Test-Endpoint -Name "GET /memory" -Method "GET" -Url "$baseUrl/memory"
+
+# Trigger AGI tests
+$warRoomBody = @{ goal = "Win back churned winter buyers" } | ConvertTo-Json
+Test-Endpoint -Name "POST /test/agi/trigger-war-room" -Method "POST" -Url "$baseUrl/test/agi/trigger-war-room" -Body $warRoomBody
+Test-Endpoint -Name "POST /test/agi/trigger-fund-manager" -Method "POST" -Url "$baseUrl/test/agi/trigger-fund-manager" -Body "{}"
+Test-Endpoint -Name "POST /test/agi/trigger-omni-awareness" -Method "POST" -Url "$baseUrl/test/agi/trigger-omni-awareness" -Body "{}"
 
 Write-Host "=========================================================="
 Write-Host "TEST EXECUTION COMPLETE"
 Write-Host "=========================================================="
-$results | Out-File "C:\Users\Sarishma\Project-Xeno\test_results.txt"
