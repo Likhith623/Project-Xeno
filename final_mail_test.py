@@ -24,9 +24,9 @@ print("=== FINAL DIRECT MAIL TEST ===")
 # 1. Create a Customer for the target email (just in case they don't exist yet)
 print("[1] Ensuring customer exists...")
 customer_payload = {
-    "name": "Likhith Vasireddy Final Test",
-    "email": "kingjames.08623@gmail.com",
-    "phone": "+910000000000",
+    "name": "Another User Final Test",
+    "email": "anotheruser123@gmail.com",
+    "phone": f"+919999{int(time.time() % 1000000)}",
     "tags": ["final-mail-test"],
     "isGloballyOptedOut": False
 }
@@ -37,9 +37,9 @@ print(f"Customer creation/update status: {st}")
 print("\n[2] Creating Segment...")
 seg_payload = {
     "name": f"Final Mail Target {int(time.time())}",
-    "description": "Targeting only kingjames",
+    "description": "Targeting only anotheruser",
     "type": "DYNAMIC",
-    "filterSql": "SELECT id FROM customers WHERE email = 'kingjames.08623@gmail.com'"
+    "filterSql": "SELECT id FROM customers WHERE email = 'anotheruser123@gmail.com'"
 }
 st, res = request("POST", "/segments", seg_payload)
 seg_id = res['data']['id']

@@ -85,15 +85,22 @@ public class AgentOrchestrationService {
                             "Generate a JSON object with the following schema exactly:\n" +
                             "{\n" +
                             "  \"segmentName\": \"string\",\n" +
-                            "  \"segmentSql\": \"string (e.g. SELECT id FROM customers WHERE monetary_total > 500). IMPORTANT: For array columns like 'tags' (text[]), you MUST use the ANY operator (e.g. 'real_time_test' = ANY(tags)). Do NOT use LIKE on arrays!\",\n" +
+                            "  \"filterJson\": { \"conditions\": [ { \"field\": \"string\", \"operator\": \"string\", \"value\": \"any\" } ] },\n" +
                             "  \"campaignName\": \"string\",\n" +
+                            "  \"channelRecommendation\": {\n" +
+                            "      \"recommendedChannel\": \"string (EMAIL, WHATSAPP, SMS)\",\n" +
+                            "      \"reason\": \"string\",\n" +
+                            "      \"estimatedOpenRate\": \"string\",\n" +
+                            "      \"estimatedCtr\": \"string\"\n" +
+                            "  },\n" +
                             "  \"variants\": [\n" +
                             "    { \"channel\": \"EMAIL\", \"subjectLine\": \"string\", \"bodyHtml\": \"string containing FULL inline CSS, vibrant gradients, a modern banner, clean typography, and a very beautiful CTA button\" }\n" +
                             "  ]\n" +
                             "}\n" +
+                            "For filterJson fields, use safe field names (e.g. monetary_total, recency_days, tags). For array columns like tags, use the operator ANY.\n" +
                             "Generate exactly 3 extremely beautiful variants. Respond ONLY with valid JSON. No markdown backticks.";
             
-            saveDecision(sessionId, 2, AgentDecisionType.VARIANT_GENERATION, prompt, "Calling Gemini", "Using Gemini to generate SQL and HTML variants.");
+            saveDecision(sessionId, 2, AgentDecisionType.VARIANT_GENERATION, prompt, "Calling Gemini", "Using Gemini to generate JSON structured query and HTML variants.");
 
             String llmResponse = llmGatewayService.callGemini(prompt);
             
@@ -105,16 +112,22 @@ public class AgentOrchestrationService {
             
             JsonNode jsonNode = objectMapper.readTree(llmResponse);
             
+            JsonNode filterJsonNode = jsonNode.path("filterJson");
+            String segmentName = jsonNode.path("segmentName").asText("AI Segment");
+            
             // 1. Create Segment
             AudienceSegmentEntity segment = AudienceSegmentEntity.builder()
-                .name(jsonNode.get("segmentName").asText())
+                .name(segmentName)
                 .description("AI Generated Segment")
                 .type(SegmentType.DYNAMIC)
-                .filterSql(jsonNode.get("segmentSql").asText())
                 .status(SegmentStatus.DRAFT)
-                .agentGoal(userPrompt != null && userPrompt.length() > 255 ? userPrompt.substring(0, 250) + "..." : userPrompt)
-                .createdByAgent(true)
                 .build();
+            segment.setCreatedByAgent(true);
+            segment.setAgentGoal(userPrompt);
+            segment.setFilterSql(""); // Ensure raw SQL is strictly empty for security
+            if (filterJsonNode != null && !filterJsonNode.isMissingNode()) {
+                segment.setFilterJson(objectMapper.convertValue(filterJsonNode, Map.class));
+            }
             segment = segmentRepository.save(segment);
 
             // 2. Create Campaign
@@ -146,12 +159,20 @@ public class AgentOrchestrationService {
                 variantRepository.save(variant);
             }
 
-            saveDecision(sessionId, 3, AgentDecisionType.SEGMENT_QUERY, "Parsed JSON", "Saved Segment, Campaign, and Variants", "Awaiting human approval to execute.");
+            JsonNode channelRecommendation = jsonNode.path("channelRecommendation");
 
-            // Update session
+            saveDecision(sessionId, 3, AgentDecisionType.SEGMENT_QUERY, "Extracted segment name: " + segmentName, "Creating Segment", "Creating segment from JSON representation.");
+
+            // Append channel recommendation to session plan
+            Map<String, Object> finalPlan = new HashMap<>();
+            finalPlan.put("segmentId", segment.getId());
+            finalPlan.put("campaignId", campaign.getId());
+            finalPlan.put("channelRecommendation", objectMapper.convertValue(channelRecommendation, Map.class));
+            session.setPlan(finalPlan);
+            
+            session.setStatus(AgentSessionStatus.COMPLETED);
             session.setCreatedSegmentId(segment.getId());
             session.setCreatedCampaignId(campaign.getId());
-            session.setStatus(AgentSessionStatus.COMPLETED);
             session.setCompletedAt(OffsetDateTime.now());
             sessionRepository.save(session);
             

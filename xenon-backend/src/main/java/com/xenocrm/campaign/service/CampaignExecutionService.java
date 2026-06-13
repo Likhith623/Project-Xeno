@@ -76,17 +76,12 @@ public class CampaignExecutionService {
             MessageVariantEntity variant = variants.get(0);
             log.info("Using variant {} ({}) for campaign {}", variant.getId(), variant.getSubjectLine(), id);
 
-            // 3. Evaluate Segment to get emails
-            String filterSql = segment.getFilterSql();
-            List<java.util.Map<String, Object>> targetRows;
-            if (filterSql == null || filterSql.isBlank()) {
-                log.warn("Segment {} has no filter SQL. Fetching all valid emails.", segment.getId());
-                targetRows = jdbcTemplate.queryForList("SELECT id, email FROM customers WHERE email IS NOT NULL AND is_globally_opted_out = false");
-            } else {
-                log.info("Evaluating segment SQL: {}", filterSql);
-                String emailQuery = "SELECT c.id, c.email FROM customers c WHERE c.id IN (" + filterSql + ") AND c.email IS NOT NULL AND c.is_globally_opted_out = false";
-                targetRows = jdbcTemplate.queryForList(emailQuery);
-            }
+            // 3. Evaluate Segment to get emails safely
+            com.xenocrm.segment.util.SegmentQueryBuilder.ParameterizedQuery pq = com.xenocrm.segment.util.SegmentQueryBuilder.buildQuery(segment.getFilterJson());
+            log.info("Evaluating segment SQL safely: {} with params: {}", pq.sql, java.util.Arrays.toString(pq.params));
+            
+            // Note: Since we are using PreparedStatement, we use jdbcTemplate.queryForList(sql, params)
+            List<java.util.Map<String, Object>> targetRows = jdbcTemplate.queryForList(pq.sql, pq.params);
 
             log.info("Found {} target customers for campaign {}", targetRows.size(), id);
             int sentCount = 0;
