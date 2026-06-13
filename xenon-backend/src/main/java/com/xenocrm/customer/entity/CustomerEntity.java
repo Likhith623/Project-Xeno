@@ -90,6 +90,9 @@ public class CustomerEntity {
     @Column(name = "is_globally_opted_out", nullable = false)
     private boolean isGloballyOptedOut;         // DEFAULT FALSE -- skip entirely if true
 
+    @Column(name = "channel_cooldown_until")
+    private OffsetDateTime channelCooldownUntil; // nullable -- AI sets this to pause communication
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

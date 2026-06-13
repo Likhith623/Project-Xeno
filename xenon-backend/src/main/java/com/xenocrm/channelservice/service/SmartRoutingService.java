@@ -18,6 +18,12 @@ public class SmartRoutingService {
             return defaultChannel;
         }
 
+        // --- THE SLEEP AGENT: Channel Fatigue Interception ---
+        if (customer.getChannelCooldownUntil() != null && customer.getChannelCooldownUntil().isAfter(java.time.OffsetDateTime.now())) {
+            log.warn("💤 Sleep Agent: Customer {} is fatigued (cooldown until {}). Rerouting aggressively away from Email to SMS to prevent Unsubscribe.", customer.getId(), customer.getChannelCooldownUntil());
+            return MessageChannel.sms;
+        }
+
         double emailOpenRate = customer.getMetrics().getEmailOpenRate().doubleValue();
         double rfmScore = customer.getMetrics().getRfmScore().doubleValue();
 

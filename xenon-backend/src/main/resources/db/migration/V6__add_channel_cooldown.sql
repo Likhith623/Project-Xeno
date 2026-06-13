@@ -1,0 +1,2 @@
+ALTER TABLE customers
+ADD COLUMN IF NOT EXISTS channel_cooldown_until TIMESTAMP WITH TIME ZONE;
