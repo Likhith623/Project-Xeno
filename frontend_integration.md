@@ -1,8 +1,8 @@
-# Project Xeno: Exhaustive Frontend Integration Guide
+﻿# Project Xeno: Exhaustive Frontend Integration Guide
 
 This file contains the **100% rigorous** analysis of every single endpoint and AI feature for frontend implementation.
 
-## 🌍 Base URL & Authentication
+## ðŸŒ Base URL & Authentication
 **Live Production URL:** `https://project-xeno.onrender.com/api/v1`
 **Authentication Header:** `X-API-KEY: <your-api-key>`
 
@@ -3511,7 +3511,7 @@ This file contains the **100% rigorous** analysis of every single endpoint and A
 
 ---
 
-# 🧠 Core AI Features & Frontend Integration Logic
+# ðŸ§  Core AI Features & Frontend Integration Logic
 
 ## 1. The Sovereign AI Agent
 - **Endpoint:** `POST /api/v1/agent/chat` -> Returns `sessionId`.
@@ -3537,3 +3537,99 @@ This file contains the **100% rigorous** analysis of every single endpoint and A
 - **Endpoints:** `POST /api/v1/test/agi/*`
 - **UI:** Create buttons to trigger War Room, Fund Manager, and Omni-Awareness background jobs instantly.
 
+# ðŸ§  Core AI Features & Frontend Integration Logic
+
+This section outlines how the Frontend should build the UI/UX for all **21 Visionary AI Features**.
+
+### ðŸŒŸ Phase 1: Trust & Strategy
+## 1. AI Explainability Layer ðŸ§ 
+- **Endpoint:** `GET /api/v1/agent/sessions/{sessionId}/decisions`
+- **Frontend Flow:** Render an "Agent Audit Trail" drawer that shows the exact ReAct reasoning steps (Input, Reasoning, Output Action) to build trust with the marketer.
+
+## 2. Counterfactual Campaign Simulator ðŸ”®
+- **Endpoint:** `POST /api/v1/simulations/campaigns/{id}/simulate` & `POST /api/v1/campaigns/{id}/counterfactual`
+- **Frontend Flow:** Display a "Simulate" button on campaigns. Before sending, the marketer clicks this to see a modal comparing predicted outcomes of WhatsApp vs Email.
+
+## 3. Natural Language Analytics ðŸ“Š
+- **Endpoint:** `GET /api/v1/campaigns/{id}/analytics/narrative`
+- **Frontend Flow:** Instead of just charts, display a "AI Summary" box at the top of the Campaign Dashboard that explains the performance in plain English.
+
+## 4. Organizational Memory Retrieval ðŸ“š
+- **Endpoint:** `GET /api/v1/memory` and `GET /api/v1/memory/query`
+- **Frontend Flow:** Build a "CRM Brain" search bar. The marketer can type "What works for VIPs?" and the frontend will display historical learnings extracted from the Memory endpoint.
+
+### ðŸŒŸ Phase 2: The Autonomous Layer
+## 5. AI Persona Generator ðŸ‘¤
+- **Endpoint:** `GET /api/v1/segments/{id}/persona`
+- **Frontend Flow:** When viewing a Segment, display a generated "Buyer Persona" avatar and bio (Age, Preferences, Style) generated dynamically by the LLM.
+
+## 6. Campaign Timeline Storytelling ðŸ“–
+- **Endpoint:** `GET /api/v1/campaigns/{id}/timeline`
+- **Frontend Flow:** Render a chronological vertical timeline UI (like a Facebook feed) showing the entire lifecycle of the campaign from creation to execution.
+
+## 7. Automated A/B/n Content Evolution ðŸ§¬
+- **Endpoint:** `GET /api/v1/variants/campaign/{campaignId}`
+- **Frontend Flow:** The backend Cron Job autonomously evolves variants. The frontend simply displays the active variants and their family tree/lineage.
+
+## 8. Budget & ROI Optimization Agent ðŸ’°
+- **Backend Enforced:** Automatically shifts high-engagement users to cheap Email ($0.001) and VIPs to WhatsApp ($0.05).
+- **Frontend Flow:** Display a "Budget Saved" metric on the Campaign Dashboard.
+
+## 9. Hyper-Personalization (Segment of One) ðŸŽ¯
+- **Backend Enforced:** Dynamic send-time rewriting of content.
+- **Frontend Flow:** No direct UI action needed; display examples of rewritten messages in the Audit Log.
+
+## 10. AI Multi-Channel Journey Builder ðŸ›¤ï¸
+- **Backend Enforced:** Automatically drafts fallback SMS if Email is ignored.
+- **Frontend Flow:** Display "Fallback SMS Triggered" metrics in the Campaign Analytics.
+
+## 11. Predictive Churn Interception ðŸ›Ÿ
+- **Backend Enforced:** Nightly Cron Job creates 15% discount campaigns for high-risk users.
+- **Frontend Flow:** Automatically populated in the "AI Proposals" inbox.
+
+## 12. External Trigger Campaigns â›ˆï¸
+- **Backend Enforced:** Weather/Event API triggers.
+- **Frontend Flow:** Automatically populated in the "AI Proposals" inbox.
+
+## 13. Human-in-the-Loop Swipe ðŸ‘ðŸ‘Ž
+- **Endpoint:** `GET /api/v1/campaigns/proposals` and `POST /api/v1/campaigns/{id}/approve`
+- **Frontend Flow:** A Tinder-style "Inbox" UI showing all autonomously generated Draft campaigns. The user clicks "Approve" (thumbs up) to launch them.
+
+### ðŸŒŸ Phase 3: The AGI Frontier
+## 14. Predictive Inventory Clearance ðŸ“¦
+- **Backend Enforced:** Detects dead stock and drafts clearance campaigns.
+- **Frontend Flow:** Appears in the "AI Proposals" inbox.
+
+## 15. Dynamic Pricing Tiers ðŸ“‰
+- **Backend Enforced:** Calculates dynamic 5% vs 25% discount tiers.
+- **Frontend Flow:** Display the variant's "Predicted ROI" calculated by the backend.
+
+## 16. Zero-Party Lookalike Synthesis ðŸ‘»
+- **Backend Enforced:** Synthesizes SQL queries to find "Ghost Audience" lookalikes.
+- **Frontend Flow:** Display "AI Lookalike" badges on segments generated this way.
+
+### ðŸŒŸ Phase 4: The Final Frontier
+## 17. VIP Concierge Escalation (The Butler) ðŸ›Žï¸
+- **Backend Enforced:** Fires Slack API alerts for Whales dropping in frequency.
+- **Frontend Flow:** Display the "VIP Alerts Sent" count in the Customer 360 dashboard.
+
+### ðŸ‘‘ Phase 7: Artificial General Intelligence (AGI)
+## 18. Autonomous Budget Re-Allocation (The Fund Manager) ðŸ’°
+- **Endpoint:** `POST /api/v1/test/agi/trigger-fund-manager`
+- **Frontend Flow:** Build an "AGI Developer Panel" button to manually trigger the Hedge Fund Manager to instantly re-allocate live campaign budgets.
+
+## 19. Multi-Agent Debate (The War Room) âš”ï¸
+- **Endpoint:** `POST /api/v1/test/agi/trigger-war-room`
+- **Frontend Flow:** Build an AGI Test button. When triggered, the backend spins up two LLMs to debate campaign strategy and returns a synthesized compromise strategy.
+
+### ðŸ‘ï¸ Phase 8: Omni-Awareness
+## 20. The Sleep Agent (Channel Fatigue Engine) ðŸ’¤
+- **Endpoint:** `POST /api/v1/test/agi/trigger-omni-awareness`
+- **Frontend Flow:** Backend enforces a 14-day channel cooldown. The frontend displays "Users Suppressed by Fatigue" stats on the Campaign summary to show the AI protecting the user base.
+
+## 21. The Whisperer (Micro-Churn Velocity) ðŸ“‰
+- **Backend Enforced:** Detects 5-day velocity lags in purchases.
+- **Frontend Flow:** Display "Velocity Interventions" metrics in the Customer 360 view.
+
+---
+**End of Ultimate 21-Feature Frontend Guide**
