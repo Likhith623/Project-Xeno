@@ -20,18 +20,18 @@ import java.util.regex.Pattern;
 
 public class ChannelStubServer {
 
-    private static final int PORT = 5001;
-    private static final String CRM_CALLBACK_URL = "http://localhost:8080/api/v1/callbacks/channel";
+    private static final int PORT = System.getenv("PORT") != null ? Integer.parseInt(System.getenv("PORT")) : 5001;
+    private static final String CRM_CALLBACK_URL = System.getenv("CRM_CALLBACK_URL") != null ? System.getenv("CRM_CALLBACK_URL") : "http://localhost:8080/api/v1/callbacks/channel";
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(10);
     private static final Pattern COMM_ID_PATTERN = Pattern.compile("\"communicationId\"\\s*:\\s*\"([a-fA-F0-9\\-]+)\"");
 
     public static void main(String[] args) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", PORT), 0);
         server.createContext("/api/v1/stub/send", new SendHandler());
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
-        System.out.println("Channel Stub Server started on port " + PORT);
+        System.out.println("Channel Stub Server started on port " + PORT + ". Calling back to " + CRM_CALLBACK_URL);
     }
 
     static class SendHandler implements HttpHandler {
