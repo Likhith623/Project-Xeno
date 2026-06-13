@@ -57,6 +57,11 @@ channel:
 security:
   api-key: likhit@178926a
 
+# Resend Mail
+resend:
+  api-key: ${RESEND_API_KEY:re_amconNTw_GM7h9vAKZ4pmteSGevHYAcJ6}
+  from-email: ${RESEND_FROM_EMAIL:onboarding@resend.dev}
+
 # Async thread pool
 async:
   core-pool-size: 10
