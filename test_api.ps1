@@ -73,6 +73,20 @@ $segmentBody = @"
 "@
 Test-Endpoint -Name "Create Segment" -Method "POST" -Url "$baseUrl/segments" -Body $segmentBody
 
+# 9. Test The War Room (Multi-Agent Debate)
+$warRoomBody = @"
+{
+    "goal": "Win back churned winter buyers"
+}
+"@
+Test-Endpoint -Name "Trigger The War Room" -Method "POST" -Url "$baseUrl/test/agi/trigger-war-room" -Body $warRoomBody
+
+# 10. Test The Fund Manager
+Test-Endpoint -Name "Trigger The Fund Manager" -Method "POST" -Url "$baseUrl/test/agi/trigger-fund-manager"
+
+# 11. Test Omni-Awareness (Sleep Agent & Whisperer)
+Test-Endpoint -Name "Trigger Omni-Awareness" -Method "POST" -Url "$baseUrl/test/agi/trigger-omni-awareness"
+
 Write-Host "=========================================================="
 Write-Host "TEST EXECUTION COMPLETE"
 Write-Host "=========================================================="
