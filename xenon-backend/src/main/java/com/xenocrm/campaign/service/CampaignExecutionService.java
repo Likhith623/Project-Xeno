@@ -48,7 +48,6 @@ public class CampaignExecutionService {
     private final EmailDispatchService emailDispatchService;
 
     @Async("taskExecutor")
-    @Transactional
     public CompletableFuture<Void> executeCampaignAsync(UUID id) {
         log.info("Starting async execution for campaign: {}", id);
 
@@ -129,15 +128,17 @@ public class CampaignExecutionService {
                         variantRepository.incrementMabImpressions(variant.getId());
                         sentCount++;
                         
-                        // Send actual email via SMTP for testing
+                        // Send actual email via SMTP asynchronously to avoid blocking the webhook loop
                         log.info("DEBUG: Checking channel. req.getChannel() = {}", req.getChannel());
                         if (MessageChannel.email.equals(req.getChannel())) {
-                            log.info("DEBUG: Calling emailDispatchService for {}", email);
-                            try {
-                                emailDispatchService.sendEmail(email, variant.getSubjectLine(), variant.getBodyHtml());
-                            } catch (Exception mailEx) {
-                                log.error("Failed to send real email to {}: {}", email, mailEx.getMessage());
-                            }
+                            log.info("DEBUG: Calling emailDispatchService asynchronously for {}", email);
+                            CompletableFuture.runAsync(() -> {
+                                try {
+                                    emailDispatchService.sendEmail(email, variant.getSubjectLine(), variant.getBodyHtml());
+                                } catch (Exception mailEx) {
+                                    log.error("Failed to send real email to {}: {}", email, mailEx.getMessage());
+                                }
+                            });
                         }
                     }
                 } catch (Exception e) {
