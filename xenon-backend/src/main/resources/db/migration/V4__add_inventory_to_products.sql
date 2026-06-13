@@ -1,0 +1,3 @@
+ALTER TABLE products
+ADD COLUMN inventory_count INT DEFAULT 0 NOT NULL,
+ADD COLUMN last_restocked_at TIMESTAMP WITH TIME ZONE;

@@ -65,6 +65,12 @@ public class ProductEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;                   // DEFAULT TRUE
 
+    @Column(name = "inventory_count", nullable = false)
+    private int inventoryCount;                 // DEFAULT 0
+
+    @Column(name = "last_restocked_at")
+    private OffsetDateTime lastRestockedAt;     // nullable
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

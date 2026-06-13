@@ -18,4 +18,6 @@ public interface CustomerMetricsRepository extends JpaRepository<CustomerMetrics
     List<CustomerMetricsEntity> findAllByRfmScoreGreaterThanEqual(BigDecimal minimumRfmScore);
     /** Finds all customers with churn probability above the given threshold. */
     List<CustomerMetricsEntity> findAllByChurnProbabilityGreaterThan(BigDecimal threshold);
+    /** Finds the absolute top 100 VIP customers by RFM Score. */
+    List<CustomerMetricsEntity> findTop100ByOrderByRfmScoreDesc();
 }

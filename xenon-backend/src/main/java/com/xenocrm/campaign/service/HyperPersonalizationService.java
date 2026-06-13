@@ -12,18 +12,22 @@ import org.springframework.stereotype.Service;
 public class HyperPersonalizationService {
 
     private final AgentLlmGatewayService llmGatewayService;
+    private final DynamicDiscountService dynamicDiscountService;
 
     public String generatePersonalizedBody(String baseBodyHtml, CustomerEntity customer) {
+        String discountTier = dynamicDiscountService.calculateDiscountTier(customer);
+
         if (customer.getCustomAttributes() == null || customer.getCustomAttributes().isEmpty()) {
-            return baseBodyHtml;
+            return baseBodyHtml.replace("{{discount}}", discountTier);
         }
 
         String prompt = "You are a Hyper-Personalization engine. Here is the base email body:\n" +
                         baseBodyHtml + "\n\n" +
                         "Here is the customer profile:\n" +
                         "Name: " + customer.getName() + "\n" +
-                        "Attributes: " + customer.getCustomAttributes().toString() + "\n\n" +
-                        "Rewrite the base email body to perfectly personalize it for this customer based on their attributes. " +
+                        "Attributes: " + customer.getCustomAttributes().toString() + "\n" +
+                        "Discount To Offer: " + discountTier + "\n\n" +
+                        "Rewrite the base email body to perfectly personalize it for this customer based on their attributes and seamlessly weave in the assigned discount offer. " +
                         "Keep the HTML formatting exactly the same. Respond ONLY with the modified HTML.";
 
         try {
