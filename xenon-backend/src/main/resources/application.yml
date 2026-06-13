@@ -49,9 +49,9 @@ gemini:
 # Channel stub
 channel:
   stub:
-    base-url: http://localhost:5001/api/v1/stub/send
+    base-url: ${CHANNEL_STUB_URL:http://localhost:5001/api/v1/stub/send}
   crm:
-    callback-url: http://localhost:8080/api/v1/callbacks/channel
+    callback-url: ${CRM_CALLBACK_URL:http://localhost:8080/api/v1/callbacks/channel}
 
 # Security
 security:
