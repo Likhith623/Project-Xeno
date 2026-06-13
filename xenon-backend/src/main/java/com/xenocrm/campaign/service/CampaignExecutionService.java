@@ -3,7 +3,7 @@ package com.xenocrm.campaign.service;
 import com.xenocrm.campaign.entity.CampaignEntity;
 import com.xenocrm.campaign.enums.CampaignStatus;
 import com.xenocrm.campaign.repository.CampaignRepository;
-import com.xenocrm.communication.service.EmailDispatchService;
+
 import com.xenocrm.exception.ResourceNotFoundException;
 import com.xenocrm.segment.entity.AudienceSegmentEntity;
 import com.xenocrm.segment.repository.AudienceSegmentRepository;
@@ -45,7 +45,7 @@ public class CampaignExecutionService {
     private final CommunicationRepository communicationRepository;
     private final CustomerRepository customerRepository;
     private final JdbcTemplate jdbcTemplate;
-    private final EmailDispatchService emailDispatchService;
+
 
     @Async("taskExecutor")
     public CompletableFuture<Void> executeCampaignAsync(UUID id) {
@@ -127,19 +127,7 @@ public class CampaignExecutionService {
                         communicationRepository.save(comm);
                         variantRepository.incrementMabImpressions(variant.getId());
                         sentCount++;
-                        
-                        // Send actual email via SMTP asynchronously to avoid blocking the webhook loop
-                        log.info("DEBUG: Checking channel. req.getChannel() = {}", req.getChannel());
-                        if (MessageChannel.email.equals(req.getChannel())) {
-                            log.info("DEBUG: Calling emailDispatchService asynchronously for {}", email);
-                            CompletableFuture.runAsync(() -> {
-                                try {
-                                    emailDispatchService.sendEmail(email, variant.getSubjectLine(), variant.getBodyHtml());
-                                } catch (Exception mailEx) {
-                                    log.error("Failed to send real email to {}: {}", email, mailEx.getMessage());
-                                }
-                            });
-                        }
+
                     }
                 } catch (Exception e) {
                     log.error("Error sending message: {}", e.getMessage());
