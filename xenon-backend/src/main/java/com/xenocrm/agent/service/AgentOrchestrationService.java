@@ -98,7 +98,7 @@ public class AgentOrchestrationService {
                             "  ]\n" +
                             "}\n" +
                             "For filterJson fields, use safe field names (e.g. monetary_total, recency_days, tags). For array columns like tags, use the operator ANY.\n" +
-                            "Generate exactly 3 extremely beautiful variants. Respond ONLY with valid JSON. No markdown backticks.";
+                            "Generate exactly 3 extremely beautiful variants. Respond ONLY with valid JSON. No markdown backticks. CRITICAL: Ensure all HTML inside 'bodyHtml' is properly JSON escaped (e.g., escape double quotes).";
             
             saveDecision(sessionId, 2, AgentDecisionType.VARIANT_GENERATION, prompt, "Calling Gemini", "Using Gemini to generate JSON structured query and HTML variants.");
 
