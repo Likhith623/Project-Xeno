@@ -1,11 +1,10 @@
-# Project Xeno: AI-Native CRM Backend - Ultimate API Contract
+# Project Xeno: Exhaustive Frontend Integration Guide
 
-Welcome to the **100% Exhaustively Generated Frontend Integration Guide**.
-This file guarantees 100% parity with the backend source code.
+This file contains the **100% rigorous** analysis of every single endpoint and AI feature for frontend implementation.
 
 ## 🌍 Base URL & Authentication
 **Live Production URL:** `https://project-xeno.onrender.com/api/v1`
-**Authentication Header:** `X-API-KEY: likhit@178926a`
+**Authentication Header:** `X-API-KEY: <your-api-key>`
 
 ---
 
@@ -14,10 +13,10 @@ This file guarantees 100% parity with the backend source code.
 ### `POST /api/v1/simulations`
 **Summary:** Trigger a new audience simulation
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
-  "campaignId": "string",
+  "campaignId": "123e4567-e89b-12d3-a456-426614174000",
   "syntheticAudienceSize": 0,
   "personaDistribution": {
     "key": {}
@@ -25,8 +24,42 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "status": "PENDING",
+    "syntheticAudienceSize": 0,
+    "predictedOpenRate": 0.0,
+    "predictedCtr": 0.0,
+    "predictedConversionRate": 0.0,
+    "predictedRevenue": 0.0,
+    "confidenceIntervalLow": 0.0,
+    "confidenceIntervalHigh": 0.0,
+    "winningVariantId": "123e4567-e89b-12d3-a456-426614174000",
+    "personaDistribution": {
+      "key": {}
+    },
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/simulations/campaigns/{id}/simulate`
@@ -35,10 +68,10 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
-  "campaignId": "string",
+  "campaignId": "123e4567-e89b-12d3-a456-426614174000",
   "syntheticAudienceSize": 0,
   "personaDistribution": {
     "key": {}
@@ -46,8 +79,42 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "status": "PENDING",
+    "syntheticAudienceSize": 0,
+    "predictedOpenRate": 0.0,
+    "predictedCtr": 0.0,
+    "predictedConversionRate": 0.0,
+    "predictedRevenue": 0.0,
+    "confidenceIntervalLow": 0.0,
+    "confidenceIntervalHigh": 0.0,
+    "winningVariantId": "123e4567-e89b-12d3-a456-426614174000",
+    "personaDistribution": {
+      "key": {}
+    },
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/simulations/campaigns/{id}/counterfactual`
@@ -58,8 +125,32 @@ This file guarantees 100% parity with the backend source code.
 - `channel`* (query): `string`
 - `counterfactualService`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "channel": "string",
+    "predictedOpenRate": 0.0,
+    "predictedCtr": 0.0,
+    "predictedConversionRate": 0.0,
+    "predictedRevenue": 0.0,
+    "reasoning": "string"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/simulations/{id}`
@@ -68,8 +159,42 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "status": "PENDING",
+    "syntheticAudienceSize": 0,
+    "predictedOpenRate": 0.0,
+    "predictedCtr": 0.0,
+    "predictedConversionRate": 0.0,
+    "predictedRevenue": 0.0,
+    "confidenceIntervalLow": 0.0,
+    "confidenceIntervalHigh": 0.0,
+    "winningVariantId": "123e4567-e89b-12d3-a456-426614174000",
+    "personaDistribution": {
+      "key": {}
+    },
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Audit Logs
@@ -81,8 +206,78 @@ This file guarantees 100% parity with the backend source code.
 - `traceId`* (path): `string`
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "content": [
+      {
+        "id": 0,
+        "traceId": "123e4567-e89b-12d3-a456-426614174000",
+        "entityType": "string",
+        "entityId": 0,
+        "action": "string",
+        "actorType": "USER",
+        "actorId": "string",
+        "oldValue": {
+          "key": {}
+        },
+        "newValue": {
+          "key": {}
+        },
+        "description": "string",
+        "createdAt": "2026-06-14T12:00:00Z"
+      }
+    ],
+    "number": 0,
+    "sort": [
+      {
+        "direction": "string",
+        "nullHandling": "string",
+        "ascending": false,
+        "property": "string",
+        "ignoreCase": false
+      }
+    ],
+    "last": false,
+    "numberOfElements": 0,
+    "pageable": {
+      "offset": 0,
+      "sort": [
+        {
+          "direction": "string",
+          "nullHandling": "string",
+          "ascending": false,
+          "property": "string",
+          "ignoreCase": false
+        }
+      ],
+      "unpaged": false,
+      "paged": false,
+      "pageNumber": 0,
+      "pageSize": 0
+    },
+    "first": false,
+    "empty": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/audit-logs/entity/{entityType}/{entityId}`
@@ -93,8 +288,78 @@ This file guarantees 100% parity with the backend source code.
 - `entityId`* (path): `string`
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "content": [
+      {
+        "id": 0,
+        "traceId": "123e4567-e89b-12d3-a456-426614174000",
+        "entityType": "string",
+        "entityId": 0,
+        "action": "string",
+        "actorType": "USER",
+        "actorId": "string",
+        "oldValue": {
+          "key": {}
+        },
+        "newValue": {
+          "key": {}
+        },
+        "description": "string",
+        "createdAt": "2026-06-14T12:00:00Z"
+      }
+    ],
+    "number": 0,
+    "sort": [
+      {
+        "direction": "string",
+        "nullHandling": "string",
+        "ascending": false,
+        "property": "string",
+        "ignoreCase": false
+      }
+    ],
+    "last": false,
+    "numberOfElements": 0,
+    "pageable": {
+      "offset": 0,
+      "sort": [
+        {
+          "direction": "string",
+          "nullHandling": "string",
+          "ascending": false,
+          "property": "string",
+          "ignoreCase": false
+        }
+      ],
+      "unpaged": false,
+      "paged": false,
+      "pageNumber": 0,
+      "pageSize": 0
+    },
+    "first": false,
+    "empty": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/audit-logs/actor/{actorId}`
@@ -104,8 +369,78 @@ This file guarantees 100% parity with the backend source code.
 - `actorId`* (path): `string`
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "content": [
+      {
+        "id": 0,
+        "traceId": "123e4567-e89b-12d3-a456-426614174000",
+        "entityType": "string",
+        "entityId": 0,
+        "action": "string",
+        "actorType": "USER",
+        "actorId": "string",
+        "oldValue": {
+          "key": {}
+        },
+        "newValue": {
+          "key": {}
+        },
+        "description": "string",
+        "createdAt": "2026-06-14T12:00:00Z"
+      }
+    ],
+    "number": 0,
+    "sort": [
+      {
+        "direction": "string",
+        "nullHandling": "string",
+        "ascending": false,
+        "property": "string",
+        "ignoreCase": false
+      }
+    ],
+    "last": false,
+    "numberOfElements": 0,
+    "pageable": {
+      "offset": 0,
+      "sort": [
+        {
+          "direction": "string",
+          "nullHandling": "string",
+          "ascending": false,
+          "property": "string",
+          "ignoreCase": false
+        }
+      ],
+      "unpaged": false,
+      "paged": false,
+      "pageNumber": 0,
+      "pageSize": 0
+    },
+    "first": false,
+    "empty": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Campaign
@@ -117,30 +452,120 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "string",
+      "description": "string",
+      "status": "DRAFT",
+      "goal": "string",
+      "segmentId": "123e4567-e89b-12d3-a456-426614174000",
+      "segmentName": "string",
+      "scheduledAt": "2026-06-14T12:00:00Z",
+      "startedAt": "2026-06-14T12:00:00Z",
+      "completedAt": "2026-06-14T12:00:00Z",
+      "timezone": "string",
+      "maxSendCount": 0,
+      "optOutRateThreshold": 0.0,
+      "createdByAgent": false,
+      "agentSessionId": "string",
+      "parentCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "totalSent": 0,
+      "totalDelivered": 0,
+      "totalFailed": 0,
+      "totalOpened": 0,
+      "totalRead": 0,
+      "totalClicked": 0,
+      "totalConverted": 0,
+      "revenueAttributed": 0.0,
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/campaigns`
 **Summary:** Create a new campaign manually
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "name": "string",
   "description": "string",
-  "segmentId": "string",
+  "segmentId": "123e4567-e89b-12d3-a456-426614174000",
   "status": "DRAFT",
   "goal": "string",
-  "scheduledAt": "2026-06-13T12:00:00Z",
+  "scheduledAt": "2026-06-14T12:00:00Z",
   "timezone": "string",
   "maxSendCount": 0,
   "optOutRateThreshold": 0.0
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "description": "string",
+    "status": "DRAFT",
+    "goal": "string",
+    "segmentId": "123e4567-e89b-12d3-a456-426614174000",
+    "segmentName": "string",
+    "scheduledAt": "2026-06-14T12:00:00Z",
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z",
+    "timezone": "string",
+    "maxSendCount": 0,
+    "optOutRateThreshold": 0.0,
+    "createdByAgent": false,
+    "agentSessionId": "string",
+    "parentCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "totalSent": 0,
+    "totalDelivered": 0,
+    "totalFailed": 0,
+    "totalOpened": 0,
+    "totalRead": 0,
+    "totalClicked": 0,
+    "totalConverted": 0,
+    "revenueAttributed": 0.0,
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/campaigns/{id}/simulate`
@@ -149,10 +574,10 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
-  "campaignId": "string",
+  "campaignId": "123e4567-e89b-12d3-a456-426614174000",
   "syntheticAudienceSize": 0,
   "personaDistribution": {
     "key": {}
@@ -160,8 +585,42 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "status": "PENDING",
+    "syntheticAudienceSize": 0,
+    "predictedOpenRate": 0.0,
+    "predictedCtr": 0.0,
+    "predictedConversionRate": 0.0,
+    "predictedRevenue": 0.0,
+    "confidenceIntervalLow": 0.0,
+    "confidenceIntervalHigh": 0.0,
+    "winningVariantId": "123e4567-e89b-12d3-a456-426614174000",
+    "personaDistribution": {
+      "key": {}
+    },
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/campaigns/{id}/execute`
@@ -170,8 +629,25 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/campaigns/{id}/approve`
@@ -180,8 +656,52 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "description": "string",
+    "status": "DRAFT",
+    "goal": "string",
+    "segmentId": "123e4567-e89b-12d3-a456-426614174000",
+    "segmentName": "string",
+    "scheduledAt": "2026-06-14T12:00:00Z",
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z",
+    "timezone": "string",
+    "maxSendCount": 0,
+    "optOutRateThreshold": 0.0,
+    "createdByAgent": false,
+    "agentSessionId": "string",
+    "parentCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "totalSent": 0,
+    "totalDelivered": 0,
+    "totalFailed": 0,
+    "totalOpened": 0,
+    "totalRead": 0,
+    "totalClicked": 0,
+    "totalConverted": 0,
+    "revenueAttributed": 0.0,
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `PATCH /api/v1/campaigns/{id}/status`
@@ -190,15 +710,59 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "status": "DRAFT"
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "description": "string",
+    "status": "DRAFT",
+    "goal": "string",
+    "segmentId": "123e4567-e89b-12d3-a456-426614174000",
+    "segmentName": "string",
+    "scheduledAt": "2026-06-14T12:00:00Z",
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z",
+    "timezone": "string",
+    "maxSendCount": 0,
+    "optOutRateThreshold": 0.0,
+    "createdByAgent": false,
+    "agentSessionId": "string",
+    "parentCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "totalSent": 0,
+    "totalDelivered": 0,
+    "totalFailed": 0,
+    "totalOpened": 0,
+    "totalRead": 0,
+    "totalClicked": 0,
+    "totalConverted": 0,
+    "revenueAttributed": 0.0,
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/{id}`
@@ -207,8 +771,52 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "description": "string",
+    "status": "DRAFT",
+    "goal": "string",
+    "segmentId": "123e4567-e89b-12d3-a456-426614174000",
+    "segmentName": "string",
+    "scheduledAt": "2026-06-14T12:00:00Z",
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z",
+    "timezone": "string",
+    "maxSendCount": 0,
+    "optOutRateThreshold": 0.0,
+    "createdByAgent": false,
+    "agentSessionId": "string",
+    "parentCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "totalSent": 0,
+    "totalDelivered": 0,
+    "totalFailed": 0,
+    "totalOpened": 0,
+    "totalRead": 0,
+    "totalClicked": 0,
+    "totalConverted": 0,
+    "revenueAttributed": 0.0,
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/{id}/variants/mab-stats`
@@ -217,8 +825,40 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "variantId": "123e4567-e89b-12d3-a456-426614174000",
+      "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "variantName": "string",
+      "channel": "string",
+      "mabAlpha": 0.0,
+      "mabBeta": 0.0,
+      "mabImpressions": 0,
+      "mabConversions": 0,
+      "expectedConversionRate": 0.0,
+      "ciHalfWidth95": 0.0,
+      "mabIsActive": false,
+      "campaignName": "string"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/{id}/timeline`
@@ -228,8 +868,27 @@ This file guarantees 100% parity with the backend source code.
 - `id`* (path): `string`
 - `timelineService`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    "string"
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/{id}/performance`
@@ -238,8 +897,50 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "status": "string",
+    "goal": "string",
+    "scheduledAt": "2026-06-14T12:00:00Z",
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z",
+    "createdByAgent": false,
+    "totalSent": 0,
+    "totalDelivered": 0,
+    "totalFailed": 0,
+    "totalOpened": 0,
+    "totalRead": 0,
+    "totalClicked": 0,
+    "totalConverted": 0,
+    "revenueAttributed": 0.0,
+    "deliveryRatePct": 0.0,
+    "failureRatePct": 0.0,
+    "openRatePct": 0.0,
+    "ctrPct": 0.0,
+    "conversionRatePct": 0.0,
+    "optOutRatePct": 0.0,
+    "segmentName": "string",
+    "segmentSize": 0
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/{id}/corrections`
@@ -250,8 +951,44 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "triggerType": "HIGH_FAILURE_RATE",
+      "triggerThreshold": 0.0,
+      "observedValue": 0.0,
+      "cohortSize": 0,
+      "actionTaken": "SWITCH_CHANNEL",
+      "oldChannel": "email",
+      "newChannel": "email",
+      "oldVariantId": "123e4567-e89b-12d3-a456-426614174000",
+      "newVariantId": "123e4567-e89b-12d3-a456-426614174000",
+      "aiReasoning": "string",
+      "correctionOutcome": "IMPROVED",
+      "outcomeDelta": 0.0,
+      "createdAt": "2026-06-14T12:00:00Z",
+      "evaluatedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/{id}/analytics/narrative`
@@ -261,8 +998,27 @@ This file guarantees 100% parity with the backend source code.
 - `id`* (path): `string`
 - `analyticsService`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    "string"
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/proposals`
@@ -272,15 +1028,86 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "string",
+      "description": "string",
+      "status": "DRAFT",
+      "goal": "string",
+      "segmentId": "123e4567-e89b-12d3-a456-426614174000",
+      "segmentName": "string",
+      "scheduledAt": "2026-06-14T12:00:00Z",
+      "startedAt": "2026-06-14T12:00:00Z",
+      "completedAt": "2026-06-14T12:00:00Z",
+      "timezone": "string",
+      "maxSendCount": 0,
+      "optOutRateThreshold": 0.0,
+      "createdByAgent": false,
+      "agentSessionId": "string",
+      "parentCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "totalSent": 0,
+      "totalDelivered": 0,
+      "totalFailed": 0,
+      "totalOpened": 0,
+      "totalRead": 0,
+      "totalClicked": 0,
+      "totalConverted": 0,
+      "revenueAttributed": 0.0,
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/campaigns/opt-out-alerts`
 **Summary:** Get opt-out alerts for running campaigns exceeding safety thresholds
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "campaignName": "string",
+      "optOutRateThreshold": 0.0,
+      "currentOptOutRatePct": 0.0,
+      "alertLevel": "string"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Channel Callbacks
@@ -288,11 +1115,11 @@ This file guarantees 100% parity with the backend source code.
 ### `POST /api/v1/callbacks/channel`
 **Summary:** Receive channel callback webhook
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "channelMessageId": "string",
-  "communicationId": "string",
+  "communicationId": "123e4567-e89b-12d3-a456-426614174000",
   "eventType": "DELIVERED",
   "payload": {
     "key": {}
@@ -300,8 +1127,25 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Communication
@@ -313,8 +1157,25 @@ This file guarantees 100% parity with the backend source code.
 - `id`* (path): `string`
 - `status`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/communications/customer/{customerId}`
@@ -324,8 +1185,56 @@ This file guarantees 100% parity with the backend source code.
 - `customerId`* (path): `string`
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "variantId": "123e4567-e89b-12d3-a456-426614174000",
+      "customerId": "123e4567-e89b-12d3-a456-426614174000",
+      "channel": "email",
+      "status": "PENDING",
+      "channelMessageId": "string",
+      "recipientAddress": "string",
+      "personalisedSubject": "string",
+      "personalisedBody": "string",
+      "sentAt": "2026-06-14T12:00:00Z",
+      "deliveredAt": "2026-06-14T12:00:00Z",
+      "failedAt": "2026-06-14T12:00:00Z",
+      "openedAt": "2026-06-14T12:00:00Z",
+      "readAt": "2026-06-14T12:00:00Z",
+      "clickedAt": "2026-06-14T12:00:00Z",
+      "convertedAt": "2026-06-14T12:00:00Z",
+      "unsubscribedAt": "2026-06-14T12:00:00Z",
+      "failureReason": "string",
+      "failureCode": "string",
+      "retryCount": 0,
+      "nextRetryAt": "2026-06-14T12:00:00Z",
+      "attributedOrderId": "123e4567-e89b-12d3-a456-426614174000",
+      "attributionWindowHours": 0,
+      "spawnedFollowupId": "123e4567-e89b-12d3-a456-426614174000",
+      "mabSampleValue": 0.0,
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/communications/campaign/{campaignId}`
@@ -335,8 +1244,56 @@ This file guarantees 100% parity with the backend source code.
 - `campaignId`* (path): `string`
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "variantId": "123e4567-e89b-12d3-a456-426614174000",
+      "customerId": "123e4567-e89b-12d3-a456-426614174000",
+      "channel": "email",
+      "status": "PENDING",
+      "channelMessageId": "string",
+      "recipientAddress": "string",
+      "personalisedSubject": "string",
+      "personalisedBody": "string",
+      "sentAt": "2026-06-14T12:00:00Z",
+      "deliveredAt": "2026-06-14T12:00:00Z",
+      "failedAt": "2026-06-14T12:00:00Z",
+      "openedAt": "2026-06-14T12:00:00Z",
+      "readAt": "2026-06-14T12:00:00Z",
+      "clickedAt": "2026-06-14T12:00:00Z",
+      "convertedAt": "2026-06-14T12:00:00Z",
+      "unsubscribedAt": "2026-06-14T12:00:00Z",
+      "failureReason": "string",
+      "failureCode": "string",
+      "retryCount": 0,
+      "nextRetryAt": "2026-06-14T12:00:00Z",
+      "attributedOrderId": "123e4567-e89b-12d3-a456-426614174000",
+      "attributionWindowHours": 0,
+      "spawnedFollowupId": "123e4567-e89b-12d3-a456-426614174000",
+      "mabSampleValue": 0.0,
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Customer
@@ -347,8 +1304,50 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "externalId": "string",
+    "email": "string",
+    "phone": "string",
+    "whatsappNumber": "string",
+    "name": "string",
+    "gender": "MALE",
+    "dateOfBirth": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "tags": [
+      "string"
+    ],
+    "customAttributes": {
+      "key": {}
+    },
+    "preferredChannel": "EMAIL",
+    "optOutChannels": [
+      "string"
+    ],
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "globallyOptedOut": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `PUT /api/v1/customers/{id}`
@@ -357,7 +1356,7 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "email": "string",
@@ -383,8 +1382,50 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "externalId": "string",
+    "email": "string",
+    "phone": "string",
+    "whatsappNumber": "string",
+    "name": "string",
+    "gender": "MALE",
+    "dateOfBirth": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "tags": [
+      "string"
+    ],
+    "customAttributes": {
+      "key": {}
+    },
+    "preferredChannel": "EMAIL",
+    "optOutChannels": [
+      "string"
+    ],
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "globallyOptedOut": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `DELETE /api/v1/customers/{id}`
@@ -393,8 +1434,25 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/customers`
@@ -404,14 +1462,58 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "externalId": "string",
+      "email": "string",
+      "phone": "string",
+      "whatsappNumber": "string",
+      "name": "string",
+      "gender": "MALE",
+      "dateOfBirth": "string",
+      "city": "string",
+      "state": "string",
+      "country": "string",
+      "tags": [
+        "string"
+      ],
+      "customAttributes": {
+        "key": {}
+      },
+      "preferredChannel": "EMAIL",
+      "optOutChannels": [
+        "string"
+      ],
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z",
+      "globallyOptedOut": false
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/customers`
 **Summary:** Create a new customer
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "externalId": "string",
@@ -438,14 +1540,56 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "externalId": "string",
+    "email": "string",
+    "phone": "string",
+    "whatsappNumber": "string",
+    "name": "string",
+    "gender": "MALE",
+    "dateOfBirth": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "tags": [
+      "string"
+    ],
+    "customAttributes": {
+      "key": {}
+    },
+    "preferredChannel": "EMAIL",
+    "optOutChannels": [
+      "string"
+    ],
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "globallyOptedOut": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/customers/bulk`
 **Summary:** Create multiple customers in bulk
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 [
   {
@@ -474,8 +1618,52 @@ This file guarantees 100% parity with the backend source code.
 ]
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "externalId": "string",
+      "email": "string",
+      "phone": "string",
+      "whatsappNumber": "string",
+      "name": "string",
+      "gender": "MALE",
+      "dateOfBirth": "string",
+      "city": "string",
+      "state": "string",
+      "country": "string",
+      "tags": [
+        "string"
+      ],
+      "customAttributes": {
+        "key": {}
+      },
+      "preferredChannel": "EMAIL",
+      "optOutChannels": [
+        "string"
+      ],
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z",
+      "globallyOptedOut": false
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/customers/{id}/orders`
@@ -486,8 +1674,40 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "customerId": "123e4567-e89b-12d3-a456-426614174000",
+      "orderNumber": "string",
+      "status": "PENDING",
+      "channel": "string",
+      "totalAmount": 0.0,
+      "currency": "string",
+      "discountAmount": 0.0,
+      "couponCode": "string",
+      "placedAt": "2026-06-14T12:00:00Z",
+      "deliveredAt": "2026-06-14T12:00:00Z",
+      "createdAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/customers/{id}/360`
@@ -496,8 +1716,67 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "externalId": "string",
+    "email": "string",
+    "phone": "string",
+    "whatsappNumber": "string",
+    "name": "string",
+    "gender": "MALE",
+    "dateOfBirth": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "tags": [
+      "string"
+    ],
+    "customAttributes": {
+      "key": {}
+    },
+    "preferredChannel": "EMAIL",
+    "optOutChannels": [
+      "string"
+    ],
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "recencyDays": 0,
+    "frequency": 0,
+    "monetaryTotal": 0.0,
+    "monetaryAvgOrder": 0.0,
+    "rfmScore": 0.0,
+    "totalOrdersLast30d": 0,
+    "totalOrdersLast90d": 0,
+    "avgDaysBetweenOrders": 0.0,
+    "favouriteCategoryId": "123e4567-e89b-12d3-a456-426614174000",
+    "favouriteChannel": "string",
+    "clvPredicted": 0.0,
+    "churnProbability": 0.0,
+    "emailOpenRate": 0.0,
+    "emailClickRate": 0.0,
+    "whatsappReadRate": 0.0,
+    "smsClickRate": 0.0,
+    "lastComputedAt": "2026-06-14T12:00:00Z",
+    "globallyOptedOut": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/customers/by-tag`
@@ -508,8 +1787,52 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "externalId": "string",
+      "email": "string",
+      "phone": "string",
+      "whatsappNumber": "string",
+      "name": "string",
+      "gender": "MALE",
+      "dateOfBirth": "string",
+      "city": "string",
+      "state": "string",
+      "country": "string",
+      "tags": [
+        "string"
+      ],
+      "customAttributes": {
+        "key": {}
+      },
+      "preferredChannel": "EMAIL",
+      "optOutChannels": [
+        "string"
+      ],
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z",
+      "globallyOptedOut": false
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/customers/by-email`
@@ -518,8 +1841,50 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `email`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "externalId": "string",
+    "email": "string",
+    "phone": "string",
+    "whatsappNumber": "string",
+    "name": "string",
+    "gender": "MALE",
+    "dateOfBirth": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "tags": [
+      "string"
+    ],
+    "customAttributes": {
+      "key": {}
+    },
+    "preferredChannel": "EMAIL",
+    "optOutChannels": [
+      "string"
+    ],
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "globallyOptedOut": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Order
@@ -531,17 +1896,49 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "customerId": "123e4567-e89b-12d3-a456-426614174000",
+      "orderNumber": "string",
+      "status": "PENDING",
+      "channel": "string",
+      "totalAmount": 0.0,
+      "currency": "string",
+      "discountAmount": 0.0,
+      "couponCode": "string",
+      "placedAt": "2026-06-14T12:00:00Z",
+      "deliveredAt": "2026-06-14T12:00:00Z",
+      "createdAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/orders`
 **Summary:** Create a new order
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
-  "customerId": "string",
+  "customerId": "123e4567-e89b-12d3-a456-426614174000",
   "orderNumber": "string",
   "status": "PENDING",
   "channel": "string",
@@ -549,13 +1946,13 @@ This file guarantees 100% parity with the backend source code.
   "currency": "string",
   "discountAmount": 0.0,
   "couponCode": "string",
-  "placedAt": "2026-06-13T12:00:00Z",
+  "placedAt": "2026-06-14T12:00:00Z",
   "metadata": {
     "key": {}
   },
   "items": [
     {
-      "productId": "string",
+      "productId": "123e4567-e89b-12d3-a456-426614174000",
       "productSku": "string",
       "productName": "string",
       "quantity": 0,
@@ -567,18 +1964,14 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
----
-
-### `POST /api/v1/orders/bulk`
-**Summary:** Create multiple orders in bulk
-
-**Payload (`application/json`):**
+**Response:**
+**`200 OK` Payload:**
 ```json
-[
-  {
-    "customerId": "string",
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "customerId": "123e4567-e89b-12d3-a456-426614174000",
     "orderNumber": "string",
     "status": "PENDING",
     "channel": "string",
@@ -586,13 +1979,47 @@ This file guarantees 100% parity with the backend source code.
     "currency": "string",
     "discountAmount": 0.0,
     "couponCode": "string",
-    "placedAt": "2026-06-13T12:00:00Z",
+    "placedAt": "2026-06-14T12:00:00Z",
+    "deliveredAt": "2026-06-14T12:00:00Z",
+    "createdAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
+---
+
+### `POST /api/v1/orders/bulk`
+**Summary:** Create multiple orders in bulk
+
+**Request Payload (`application/json`):**
+```json
+[
+  {
+    "customerId": "123e4567-e89b-12d3-a456-426614174000",
+    "orderNumber": "string",
+    "status": "PENDING",
+    "channel": "string",
+    "totalAmount": 0.0,
+    "currency": "string",
+    "discountAmount": 0.0,
+    "couponCode": "string",
+    "placedAt": "2026-06-14T12:00:00Z",
     "metadata": {
       "key": {}
     },
     "items": [
       {
-        "productId": "string",
+        "productId": "123e4567-e89b-12d3-a456-426614174000",
         "productSku": "string",
         "productName": "string",
         "quantity": 0,
@@ -605,8 +2032,40 @@ This file guarantees 100% parity with the backend source code.
 ]
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "customerId": "123e4567-e89b-12d3-a456-426614174000",
+      "orderNumber": "string",
+      "status": "PENDING",
+      "channel": "string",
+      "totalAmount": 0.0,
+      "currency": "string",
+      "discountAmount": 0.0,
+      "couponCode": "string",
+      "placedAt": "2026-06-14T12:00:00Z",
+      "deliveredAt": "2026-06-14T12:00:00Z",
+      "createdAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/orders/{id}`
@@ -615,8 +2074,38 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "customerId": "123e4567-e89b-12d3-a456-426614174000",
+    "orderNumber": "string",
+    "status": "PENDING",
+    "channel": "string",
+    "totalAmount": 0.0,
+    "currency": "string",
+    "discountAmount": 0.0,
+    "couponCode": "string",
+    "placedAt": "2026-06-14T12:00:00Z",
+    "deliveredAt": "2026-06-14T12:00:00Z",
+    "createdAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Organizational Memory
@@ -627,8 +2116,83 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "content": [
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "segmentTag": "string",
+        "channel": "email",
+        "learningType": "COPY_STYLE",
+        "learningSummary": "string",
+        "confidence": 0.0,
+        "evidenceCount": 0,
+        "avgLift": 0.0,
+        "winningCopySignals": {
+          "key": {}
+        },
+        "dayOfWeek": 0,
+        "timeOfDay": "MORNING",
+        "sourceCampaignIds": [
+          "123e4567-e89b-12d3-a456-426614174000"
+        ],
+        "expiresAt": "2026-06-14T12:00:00Z",
+        "createdAt": "2026-06-14T12:00:00Z",
+        "updatedAt": "2026-06-14T12:00:00Z",
+        "active": false
+      }
+    ],
+    "number": 0,
+    "sort": [
+      {
+        "direction": "string",
+        "nullHandling": "string",
+        "ascending": false,
+        "property": "string",
+        "ignoreCase": false
+      }
+    ],
+    "last": false,
+    "numberOfElements": 0,
+    "pageable": {
+      "offset": 0,
+      "sort": [
+        {
+          "direction": "string",
+          "nullHandling": "string",
+          "ascending": false,
+          "property": "string",
+          "ignoreCase": false
+        }
+      ],
+      "unpaged": false,
+      "paged": false,
+      "pageNumber": 0,
+      "pageSize": 0
+    },
+    "first": false,
+    "empty": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/memory/query`
@@ -639,8 +2203,83 @@ This file guarantees 100% parity with the backend source code.
 - `channel` (query): `string`
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "content": [
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "segmentTag": "string",
+        "channel": "email",
+        "learningType": "COPY_STYLE",
+        "learningSummary": "string",
+        "confidence": 0.0,
+        "evidenceCount": 0,
+        "avgLift": 0.0,
+        "winningCopySignals": {
+          "key": {}
+        },
+        "dayOfWeek": 0,
+        "timeOfDay": "MORNING",
+        "sourceCampaignIds": [
+          "123e4567-e89b-12d3-a456-426614174000"
+        ],
+        "expiresAt": "2026-06-14T12:00:00Z",
+        "createdAt": "2026-06-14T12:00:00Z",
+        "updatedAt": "2026-06-14T12:00:00Z",
+        "active": false
+      }
+    ],
+    "number": 0,
+    "sort": [
+      {
+        "direction": "string",
+        "nullHandling": "string",
+        "ascending": false,
+        "property": "string",
+        "ignoreCase": false
+      }
+    ],
+    "last": false,
+    "numberOfElements": 0,
+    "pageable": {
+      "offset": 0,
+      "sort": [
+        {
+          "direction": "string",
+          "nullHandling": "string",
+          "ascending": false,
+          "property": "string",
+          "ignoreCase": false
+        }
+      ],
+      "unpaged": false,
+      "paged": false,
+      "pageNumber": 0,
+      "pageSize": 0
+    },
+    "first": false,
+    "empty": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/memory/ask`
@@ -650,8 +2289,25 @@ This file guarantees 100% parity with the backend source code.
 - `query`* (query): `string`
 - `llmGatewayService`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": "string",
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Product
@@ -663,19 +2319,55 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "sku": "string",
+      "name": "string",
+      "categoryId": "123e4567-e89b-12d3-a456-426614174000",
+      "categoryName": "string",
+      "price": 0.0,
+      "currency": "string",
+      "brand": "string",
+      "tags": [
+        "string"
+      ],
+      "attributes": {
+        "key": {}
+      },
+      "createdAt": "2026-06-14T12:00:00Z",
+      "active": false
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/products`
 **Summary:** Create a new product
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "sku": "string",
   "name": "string",
-  "categoryId": "string",
+  "categoryId": "123e4567-e89b-12d3-a456-426614174000",
   "price": 0.0,
   "currency": "string",
   "brand": "string",
@@ -689,20 +2381,54 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "sku": "string",
+    "name": "string",
+    "categoryId": "123e4567-e89b-12d3-a456-426614174000",
+    "categoryName": "string",
+    "price": 0.0,
+    "currency": "string",
+    "brand": "string",
+    "tags": [
+      "string"
+    ],
+    "attributes": {
+      "key": {}
+    },
+    "createdAt": "2026-06-14T12:00:00Z",
+    "active": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/products/bulk`
 **Summary:** Create multiple products in bulk
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 [
   {
     "sku": "string",
     "name": "string",
-    "categoryId": "string",
+    "categoryId": "123e4567-e89b-12d3-a456-426614174000",
     "price": 0.0,
     "currency": "string",
     "brand": "string",
@@ -717,8 +2443,44 @@ This file guarantees 100% parity with the backend source code.
 ]
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "sku": "string",
+      "name": "string",
+      "categoryId": "123e4567-e89b-12d3-a456-426614174000",
+      "categoryName": "string",
+      "price": 0.0,
+      "currency": "string",
+      "brand": "string",
+      "tags": [
+        "string"
+      ],
+      "attributes": {
+        "key": {}
+      },
+      "createdAt": "2026-06-14T12:00:00Z",
+      "active": false
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/products/{id}`
@@ -727,15 +2489,76 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "sku": "string",
+    "name": "string",
+    "categoryId": "123e4567-e89b-12d3-a456-426614174000",
+    "categoryName": "string",
+    "price": 0.0,
+    "currency": "string",
+    "brand": "string",
+    "tags": [
+      "string"
+    ],
+    "attributes": {
+      "key": {}
+    },
+    "createdAt": "2026-06-14T12:00:00Z",
+    "active": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/products/categories`
 **Summary:** Get all product categories
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "externalId": "string",
+      "name": "string",
+      "description": "string",
+      "parentCategoryId": "123e4567-e89b-12d3-a456-426614174000",
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Segment
@@ -747,14 +2570,50 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "string",
+      "description": "string",
+      "type": "STATIC",
+      "status": "DRAFT",
+      "filterSql": "string",
+      "filterJson": {
+        "key": {}
+      },
+      "createdByAgent": false,
+      "agentGoal": "string",
+      "customerCount": 0,
+      "lastEvaluatedAt": "2026-06-14T12:00:00Z",
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z",
+      "pinned": false
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/segments`
 **Summary:** Create a new segment
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "name": "string",
@@ -771,8 +2630,42 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "description": "string",
+    "type": "STATIC",
+    "status": "DRAFT",
+    "filterSql": "string",
+    "filterJson": {
+      "key": {}
+    },
+    "createdByAgent": false,
+    "agentGoal": "string",
+    "customerCount": 0,
+    "lastEvaluatedAt": "2026-06-14T12:00:00Z",
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "pinned": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `POST /api/v1/segments/{id}/evaluate`
@@ -781,8 +2674,25 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/segments/{id}`
@@ -791,8 +2701,42 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "description": "string",
+    "type": "STATIC",
+    "status": "DRAFT",
+    "filterSql": "string",
+    "filterJson": {
+      "key": {}
+    },
+    "createdByAgent": false,
+    "agentGoal": "string",
+    "customerCount": 0,
+    "lastEvaluatedAt": "2026-06-14T12:00:00Z",
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "pinned": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `DELETE /api/v1/segments/{id}`
@@ -801,8 +2745,25 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `PATCH /api/v1/segments/{id}`
@@ -811,7 +2772,7 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "name": "string",
@@ -824,8 +2785,42 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "description": "string",
+    "type": "STATIC",
+    "status": "DRAFT",
+    "filterSql": "string",
+    "filterJson": {
+      "key": {}
+    },
+    "createdByAgent": false,
+    "agentGoal": "string",
+    "customerCount": 0,
+    "lastEvaluatedAt": "2026-06-14T12:00:00Z",
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z",
+    "pinned": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/segments/{id}/persona`
@@ -835,8 +2830,27 @@ This file guarantees 100% parity with the backend source code.
 - `id`* (path): `string`
 - `personaGenerationService`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "key": {}
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/segments/{id}/members`
@@ -847,8 +2861,31 @@ This file guarantees 100% parity with the backend source code.
 - `page` (query): `integer`
 - `size` (query): `integer`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "segmentId": "123e4567-e89b-12d3-a456-426614174000",
+      "customerId": "123e4567-e89b-12d3-a456-426614174000",
+      "addedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Self-Correction Engine
@@ -859,8 +2896,79 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `pageable`* (query): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "totalElements": 0,
+    "totalPages": 0,
+    "size": 0,
+    "content": [
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+        "triggerType": "HIGH_FAILURE_RATE",
+        "triggerThreshold": 0.0,
+        "observedValue": 0.0,
+        "cohortSize": 0,
+        "actionTaken": "SWITCH_CHANNEL",
+        "oldChannel": "email",
+        "newChannel": "email",
+        "oldVariantId": "123e4567-e89b-12d3-a456-426614174000",
+        "newVariantId": "123e4567-e89b-12d3-a456-426614174000",
+        "aiReasoning": "string",
+        "correctionOutcome": "IMPROVED",
+        "outcomeDelta": 0.0,
+        "createdAt": "2026-06-14T12:00:00Z",
+        "evaluatedAt": "2026-06-14T12:00:00Z"
+      }
+    ],
+    "number": 0,
+    "sort": [
+      {
+        "direction": "string",
+        "nullHandling": "string",
+        "ascending": false,
+        "property": "string",
+        "ignoreCase": false
+      }
+    ],
+    "last": false,
+    "numberOfElements": 0,
+    "pageable": {
+      "offset": 0,
+      "sort": [
+        {
+          "direction": "string",
+          "nullHandling": "string",
+          "ascending": false,
+          "property": "string",
+          "ignoreCase": false
+        }
+      ],
+      "unpaged": false,
+      "paged": false,
+      "pageNumber": 0,
+      "pageSize": 0
+    },
+    "first": false,
+    "empty": false
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Sovereign Agent
@@ -868,16 +2976,37 @@ This file guarantees 100% parity with the backend source code.
 ### `POST /api/v1/agent/chat`
 **Summary:** Send a prompt to the sovereign agent
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "prompt": "string",
-  "sessionId": "string"
+  "sessionId": "123e4567-e89b-12d3-a456-426614174000"
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "sessionId": "123e4567-e89b-12d3-a456-426614174000",
+    "textReply": "string",
+    "actionTaken": "SEGMENT_QUERY"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/agent/sessions/{id}`
@@ -886,8 +3015,45 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "goal": "string",
+    "status": "RUNNING",
+    "modelUsed": "string",
+    "plan": {
+      "key": {}
+    },
+    "createdSegmentId": "123e4567-e89b-12d3-a456-426614174000",
+    "createdCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "errorMessage": "string",
+    "startedAt": "2026-06-14T12:00:00Z",
+    "completedAt": "2026-06-14T12:00:00Z",
+    "tokensUsedIn": 0,
+    "tokensUsedOut": 0,
+    "conversationLog": [
+      {
+        "key": {}
+      }
+    ]
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/agent/sessions/{id}/decisions`
@@ -896,8 +3062,40 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "sessionId": "123e4567-e89b-12d3-a456-426614174000",
+      "stepNumber": 0,
+      "decisionType": "SEGMENT_QUERY",
+      "inputContext": {
+        "key": {}
+      },
+      "outputAction": {
+        "key": {}
+      },
+      "reasoning": "string",
+      "createdAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## Variant
@@ -905,10 +3103,10 @@ This file guarantees 100% parity with the backend source code.
 ### `POST /api/v1/variants`
 **Summary:** Create a new variant for a campaign
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
-  "campaignId": "string",
+  "campaignId": "123e4567-e89b-12d3-a456-426614174000",
   "name": "string",
   "channel": "email",
   "subjectLine": "string",
@@ -927,8 +3125,50 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "channel": "email",
+    "subjectLine": "string",
+    "previewText": "string",
+    "bodyText": "string",
+    "bodyHtml": "string",
+    "ctaText": "string",
+    "ctaUrl": "string",
+    "mediaUrl": "string",
+    "templateId": "string",
+    "templateParams": {
+      "key": {}
+    },
+    "mabAlpha": 0.0,
+    "mabBeta": 0.0,
+    "mabImpressions": 0,
+    "mabConversions": 0,
+    "mabIsActive": false,
+    "generatedByAi": false,
+    "generationPrompt": "string",
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/variants/{id}`
@@ -937,8 +3177,50 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "channel": "email",
+    "subjectLine": "string",
+    "previewText": "string",
+    "bodyText": "string",
+    "bodyHtml": "string",
+    "ctaText": "string",
+    "ctaUrl": "string",
+    "mediaUrl": "string",
+    "templateId": "string",
+    "templateParams": {
+      "key": {}
+    },
+    "mabAlpha": 0.0,
+    "mabBeta": 0.0,
+    "mabImpressions": 0,
+    "mabConversions": 0,
+    "mabIsActive": false,
+    "generatedByAi": false,
+    "generationPrompt": "string",
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `DELETE /api/v1/variants/{id}`
@@ -947,8 +3229,25 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {},
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `PATCH /api/v1/variants/{id}`
@@ -957,7 +3256,7 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `id`* (path): `string`
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "name": "string",
@@ -977,8 +3276,50 @@ This file guarantees 100% parity with the backend source code.
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+    "name": "string",
+    "channel": "email",
+    "subjectLine": "string",
+    "previewText": "string",
+    "bodyText": "string",
+    "bodyHtml": "string",
+    "ctaText": "string",
+    "ctaUrl": "string",
+    "mediaUrl": "string",
+    "templateId": "string",
+    "templateParams": {
+      "key": {}
+    },
+    "mabAlpha": 0.0,
+    "mabBeta": 0.0,
+    "mabImpressions": 0,
+    "mabConversions": 0,
+    "mabIsActive": false,
+    "generatedByAi": false,
+    "generationPrompt": "string",
+    "createdAt": "2026-06-14T12:00:00Z",
+    "updatedAt": "2026-06-14T12:00:00Z"
+  },
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/variants/{campaignId}/mab-stats`
@@ -987,8 +3328,40 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `campaignId`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "variantId": "123e4567-e89b-12d3-a456-426614174000",
+      "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "variantName": "string",
+      "channel": "string",
+      "mabAlpha": 0.0,
+      "mabBeta": 0.0,
+      "mabImpressions": 0,
+      "mabConversions": 0,
+      "expectedConversionRate": 0.0,
+      "ciHalfWidth95": 0.0,
+      "mabIsActive": false,
+      "campaignName": "string"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ### `GET /api/v1/variants/campaign/{campaignId}`
@@ -997,8 +3370,52 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `campaignId`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+{
+  "success": false,
+  "data": [
+    {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "campaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "string",
+      "channel": "email",
+      "subjectLine": "string",
+      "previewText": "string",
+      "bodyText": "string",
+      "bodyHtml": "string",
+      "ctaText": "string",
+      "ctaUrl": "string",
+      "mediaUrl": "string",
+      "templateId": "string",
+      "templateParams": {
+        "key": {}
+      },
+      "mabAlpha": 0.0,
+      "mabBeta": 0.0,
+      "mabImpressions": 0,
+      "mabConversions": 0,
+      "mabIsActive": false,
+      "generatedByAi": false,
+      "generationPrompt": "string",
+      "createdAt": "2026-06-14T12:00:00Z",
+      "updatedAt": "2026-06-14T12:00:00Z"
+    }
+  ],
+  "message": "string",
+  "errorCode": "string",
+  "errorMessage": "string",
+  "pagination": {
+    "pageNumber": 0,
+    "pageSize": 0,
+    "totalElements": 0,
+    "totalPages": 0,
+    "last": false
+  }
+}
+```
+
 ---
 
 ## agent-decision-controller
@@ -1009,8 +3426,47 @@ This file guarantees 100% parity with the backend source code.
 **Parameters:**
 - `sessionId`* (path): `string`
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "session": {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "goal": "string",
+      "status": "RUNNING",
+      "modelUsed": "string",
+      "conversationLog": [
+        {
+          "key": {}
+        }
+      ],
+      "plan": {
+        "key": {}
+      },
+      "createdSegmentId": "123e4567-e89b-12d3-a456-426614174000",
+      "createdCampaignId": "123e4567-e89b-12d3-a456-426614174000",
+      "errorMessage": "string",
+      "startedAt": "2026-06-14T12:00:00Z",
+      "completedAt": "2026-06-14T12:00:00Z",
+      "tokensUsedIn": 0,
+      "tokensUsedOut": 0
+    },
+    "stepNumber": 0,
+    "decisionType": "SEGMENT_QUERY",
+    "inputContext": {
+      "key": {}
+    },
+    "outputAction": {
+      "key": {}
+    },
+    "reasoning": "string",
+    "createdAt": "2026-06-14T12:00:00Z"
+  }
+]
+```
+
 ---
 
 ## ai-testing-controller
@@ -1018,65 +3474,66 @@ This file guarantees 100% parity with the backend source code.
 ### `POST /api/v1/test/agi/trigger-war-room`
 **Summary:** No summary
 
-**Payload (`application/json`):**
+**Request Payload (`application/json`):**
 ```json
 {
   "key": "string"
 }
 ```
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+"string"
+```
+
 ---
 
 ### `POST /api/v1/test/agi/trigger-omni-awareness`
 **Summary:** No summary
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+"string"
+```
+
 ---
 
 ### `POST /api/v1/test/agi/trigger-fund-manager`
 **Summary:** No summary
 
-**Responses:**
-- `200`: OK
+**Response:**
+**`200 OK` Payload:**
+```json
+"string"
+```
+
 ---
 
+# 🧠 Core AI Features & Frontend Integration Logic
 
----
+## 1. The Sovereign AI Agent
+- **Endpoint:** `POST /api/v1/agent/chat` -> Returns `sessionId`.
+- **Polling:** Use `GET /api/v1/agent/sessions/{sessionId}` to poll until `status == COMPLETED`.
+- **Decisions Audit:** Use `GET /api/v1/agent/sessions/{sessionId}/decisions` to show the Agent's reasoning.
 
-# 🧠 Core AI Features & Business Logic Guide
-*This section provides the conceptual frontend integration logic for all AI Features.*
-
-## 1. The Sovereign AI Agent (`AgentController`)
-The Sovereign Agent allows users to input natural language goals (e.g., "Win back churned VIP users"). 
-- **Endpoint:** `POST /api/v1/agent/chat`
-- **Frontend Flow:** The frontend should display a chat-like interface. When the user submits a goal, call this endpoint. It returns a `sessionId`.
-- **Polling:** Use `GET /api/v1/agent/sessions/{sessionId}` to poll the agent's progress. Display a loading animation. Once `status` becomes `COMPLETED`, display the `plan` JSON which contains the IDs of the newly created Segments and Campaigns.
-
-## 2. Multi-Armed Bandit (MAB) & Thompson Sampling (`CampaignController`)
+## 2. Multi-Armed Bandit (MAB) Dashboards
 - **Endpoint:** `GET /api/v1/campaigns/{id}/variants/mab-stats`
-- **Frontend Flow:** When viewing an active campaign, the frontend should display a dashboard showing real-time variant performance. Use this endpoint to fetch the `conversionRate`, `weight`, and `impressions` of each variant (A/B/C/D). Render this as a dynamic pie chart or bar chart showing the AI dynamically shifting traffic to the winning variant.
+- **UI:** Display real-time variant performance, impressions, and shifting traffic weights.
 
-## 3. Autonomous Campaign Proposals ("Tinder-style UI")
+## 3. Autonomous Campaign Proposals (Tinder-UI)
 - **Endpoint:** `GET /api/v1/campaigns/proposals`
-- **Frontend Flow:** The backend proactively generates highly optimized campaigns at midnight. The frontend should fetch these proposals and display them in a card-stack UI. The user can review the AI's proposal, and click "Approve". 
-- **Action:** Clicking "Approve" calls `POST /api/v1/campaigns/{id}/approve` to instantly activate the campaign.
+- **UI:** Show cards of AI-generated campaigns. Click "Approve" to call `POST /api/v1/campaigns/{id}/approve`.
 
-## 4. The Sleep Agent (Omni-Awareness Fatigue)
-- **Frontend Flow:** When creating a campaign, the frontend doesn't need to manually check if users are fatigued. The backend automatically queries `channel_cooldown_until` in the `CustomerEntity`. The frontend just needs to display a stat on the Campaign Dashboard: "Users Suppressed by Fatigue AI: X". 
+## 4. Omni-Awareness Fatigue (Sleep Agent)
+- **UI:** Automatically enforced by the backend (`channel_cooldown_until`). Display suppressed users in campaign stats.
 
-## 5. Organizational Memory (`MemoryController`)
+## 5. Organizational Memory
 - **Endpoint:** `GET /api/v1/memory`
-- **Frontend Flow:** The backend learns from past campaign failures and successes. The frontend should have a "Brain" or "Learnings" tab. Fetch the memory logs and display them as insights (e.g., "Urgency CTAs perform 22% better on Friday afternoons"). 
+- **UI:** Show actionable insights learned from past campaigns.
 
-## 6. Real-Time AGI Testing Suite (`AITestingController`)
-- **Frontend Flow:** Build a "Developer / Test" panel in the frontend where the user can click buttons to instantly trigger the backend cron jobs:
-  - Trigger War Room (Multi-Agent Debate)
-  - Trigger Fund Manager (Budget Reallocation)
-  - Trigger Omni-Awareness (Fatigue Rules)
-- Use `POST /api/v1/test/agi/*` endpoints for these buttons. 
+## 6. AGI Testing Panel
+- **Endpoints:** `POST /api/v1/test/agi/*`
+- **UI:** Create buttons to trigger War Room, Fund Manager, and Omni-Awareness background jobs instantly.
 
----
-**End of Ultimate Guide**
