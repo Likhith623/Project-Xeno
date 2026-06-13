@@ -60,9 +60,9 @@ public class CampaignExecutionService {
             campaign.setStartedAt(OffsetDateTime.now());
             campaign = campaignRepository.save(campaign);
 
-            // 1. Fetch the segment
-            AudienceSegmentEntity segment = segmentRepository.findById(campaign.getTargetSegment().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Segment", "id", campaign.getTargetSegment().getId()));
+            final UUID segmentId = campaign.getTargetSegment().getId();
+            AudienceSegmentEntity segment = segmentRepository.findById(segmentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Segment", "id", segmentId));
 
             // 2. Fetch the variants
             List<MessageVariantEntity> variants = variantRepository.findAllByCampaignId(id);
