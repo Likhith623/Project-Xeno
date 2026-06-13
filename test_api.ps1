@@ -17,17 +17,18 @@ function Test-Endpoint {
     
     Write-Host "Testing $Name... " -NoNewline
     try {
+        $headers = @{ "X-API-KEY" = "likhit@178926a" }
         if ($Method -eq "GET") {
-            $response = Invoke-RestMethod -Uri $Url -Method GET -ErrorAction Stop
+            $response = Invoke-RestMethod -Uri $Url -Method GET -Headers $headers -ErrorAction Stop
         } else {
-            $response = Invoke-RestMethod -Uri $Url -Method $Method -Body $Body -ContentType "application/json" -ErrorAction Stop
+            $response = Invoke-RestMethod -Uri $Url -Method $Method -Body $Body -ContentType "application/json" -Headers $headers -ErrorAction Stop
         }
         Write-Host "[SUCCESS]" -ForegroundColor Green
-        $global:results += "$Name: PASS"
+        $global:results += "$($Name): PASS"
     } catch {
         Write-Host "[FAILED]" -ForegroundColor Red
         Write-Host "Error: $($_.Exception.Message)"
-        $global:results += "$Name: FAIL - $($_.Exception.Message)"
+        $global:results += "$($Name): FAIL - $($_.Exception.Message)"
     }
 }
 

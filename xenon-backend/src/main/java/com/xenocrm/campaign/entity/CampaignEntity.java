@@ -104,6 +104,12 @@ public class CampaignEntity {
     @Column(name = "revenue_attributed", precision = 14, scale = 2)
     private BigDecimal revenueAttributed;       // NUMERIC(14,2) DEFAULT 0
 
+    @Column(name = "budget_allocated", precision = 12, scale = 2)
+    private BigDecimal budgetAllocated;         // NUMERIC(12,2) DEFAULT 0
+
+    @Column(name = "current_spend", precision = 12, scale = 2)
+    private BigDecimal currentSpend;            // NUMERIC(12,2) DEFAULT 0
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
