@@ -44,6 +44,7 @@ Handles profile creation, tracking, and deep metrics.
 * **`GET /by-tag`**
   * **Purpose:** Retrieves a paginated list of customers that match a specific tag (e.g., "VIP").
   * **Query Params:** `tag`
+
 * **`GET /{id}/orders`**
   * **Purpose:** Retrieves a paginated list of all past orders placed by a specific customer.
 
@@ -96,6 +97,8 @@ Targeting rules and queries.
   * **Output:** Integer (Count of matched members)
 * **`GET /{segmentId}/members`**
   * **Purpose:** Retrieves a paginated list of all customer records that belong to this segment (dynamically computed or statically assigned).
+* **`GET /{id}/persona`**
+  * **Purpose:** Uses the Sovereign AI to analyze the segment criteria and generate an AI Persona (Age, Preferences, Communication Style).
 
 ## 6. Campaigns (`/api/v1/campaigns`)
 Marketing campaign orchestration.
@@ -120,6 +123,15 @@ Marketing campaign orchestration.
   * **Purpose:** Fetches proactive alerts for all active campaigns whose opt-out rate is approaching or exceeding the safety threshold.
 * **`GET /{id}/corrections`**
   * **Purpose:** Retrieves all self-correction events where the AI autonomously modified the campaign while running (e.g., switching channels due to poor performance).
+* **`GET /{id}/analytics/narrative`**
+  * **Purpose:** Uses the Sovereign AI to analyze campaign metrics and generate a natural-language narrative explanation of why it succeeded or failed.
+  * **Output:** `{"analysis": ["Point 1", "Point 2", "Point 3"]}`
+* **`GET /{id}/timeline`**
+  * **Purpose:** Generates a chronological narrative storyline of the campaign's execution.
+* **`GET /proposals`**
+  * **Purpose:** Returns a list of all autonomous AI-generated campaign proposals awaiting human approval (Tinder Swipe UI).
+* **`POST /{id}/approve`**
+  * **Purpose:** Human-in-the-Loop action to approve an AI proposal and immediately execute it.
 * **`POST /{id}/simulate`**
   * **Purpose:** Triggers a dry-run Monte Carlo simulation for this campaign.
 
@@ -162,6 +174,9 @@ Message delivery tracking.
 * **`GET /query`**
   * **Purpose:** Queries organizational memory explicitly filtered by `segmentTag` and `channel`. Returns past insights that apply to those criteria.
   * **Query Params:** `tag`
+* **`GET /ask`**
+  * **Purpose:** Ask the Sovereign AI a natural language question (e.g. "What worked for VIPs?") and get an answer derived directly from organizational memory.
+  * **Query Params:** `query`
 
 ## 11. AI Simulations (`/api/v1/simulations`)
 * **`POST /`**
@@ -170,6 +185,10 @@ Message delivery tracking.
 * **`POST /campaigns/{id}/simulate`**
   * **Purpose:** Triggers a Monte Carlo simulation dry-run for a specific campaign by referencing its ID to predict conversion outcomes before going live.
   * **Input:** `{"audienceSize": int}`
+* **`POST /campaigns/{id}/counterfactual`**
+  * **Purpose:** Spawns a counterfactual AI prediction comparing channels (e.g. "What if I used WhatsApp instead of Email?").
+  * **Query Params:** `channel`
+  * **Output:** `{"predictedOpenRate": 0.8, "predictedRevenue": 5000, "reasoning": "string"}`
 * **`GET /{id}`**
   * **Purpose:** Retrieves the results of a specific simulation run.
   * **Output:** `{"status": "COMPLETED", "projectedOpens": int, "projectedClicks": int}`

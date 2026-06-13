@@ -51,4 +51,19 @@ public class MemoryRetrievalService {
                                 m.getLearningType(), m.getChannel(), m.getLearningSummary(), m.getConfidence()))
                         .collect(Collectors.joining("\n"));
     }
+
+    public String getNaturalLanguageAnswer(String query, com.xenocrm.agent.service.AgentLlmGatewayService llmGatewayService) {
+        List<OrgMemoryEntryEntity> memories = memoryRepository.findAll();
+        
+        String memoryContext = memories.stream()
+                .map(m -> String.format("- Tag: %s, Channel: %s, Type: %s, Summary: %s",
+                        m.getSegmentTag(), m.getChannel(), m.getLearningType(), m.getLearningSummary()))
+                .collect(Collectors.joining("\n"));
+
+        String prompt = "You are the Organizational Memory Retrieval AI. The user asked: " + query + "\n" +
+                        "Here is the database of all historical learnings:\n" + memoryContext + "\n" +
+                        "Answer the user's question concisely based ONLY on these memories.";
+        
+        return llmGatewayService.callGemini(prompt);
+    }
 }

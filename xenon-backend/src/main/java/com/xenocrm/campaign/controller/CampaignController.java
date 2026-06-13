@@ -130,4 +130,45 @@ public class CampaignController {
         com.xenocrm.simulator.entity.SimulationRunEntity run = orchestrationService.triggerSimulation(requestDto);
         return ResponseEntity.ok(ResponseWrapper.success(simulationMapper.toResultDto(run), "Simulation started successfully"));
     }
+
+    @GetMapping("/{id}/analytics/narrative")
+    @Operation(summary = "Get a natural language narrative analysis of the campaign's performance")
+    public ResponseEntity<ResponseWrapper<List<String>>> getCampaignNarrativeAnalytics(
+            @PathVariable UUID id,
+            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.campaign.service.CampaignAnalyticsService analyticsService) {
+        List<String> analysis = analyticsService.getNaturalLanguageAnalytics(id);
+        return ResponseEntity.ok(ResponseWrapper.success(analysis, "Generated narrative analytics"));
+    }
+
+    @GetMapping("/{id}/timeline")
+    @Operation(summary = "Get a chronological narrative timeline of the campaign")
+    public ResponseEntity<ResponseWrapper<List<String>>> getCampaignTimeline(
+            @PathVariable UUID id,
+            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.campaign.service.TimelineStorytellingService timelineService) {
+        List<String> timeline = timelineService.getCampaignTimeline(id);
+        return ResponseEntity.ok(ResponseWrapper.success(timeline, "Generated campaign timeline"));
+    }
+
+    @GetMapping("/proposals")
+    @Operation(summary = "Get all autonomous AI campaign proposals awaiting human approval (Tinder Swipe UI)")
+    public ResponseEntity<ResponseWrapper<List<CampaignResponseDto>>> getCampaignProposals(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        
+        // Let's use CampaignService.getAllCampaigns and filter
+        List<CampaignResponseDto> drafts = campaignService.getAllCampaigns(PageRequest.of(0, 100))
+                .getContent().stream()
+                .filter(c -> "DRAFT".equals(c.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(ResponseWrapper.success(drafts, "Retrieved AI proposals for review"));
+    }
+
+    @PostMapping("/{id}/approve")
+    @Operation(summary = "Approve an AI proposed campaign and execute it")
+    public ResponseEntity<ResponseWrapper<CampaignResponseDto>> approveCampaign(@PathVariable UUID id) {
+        CampaignResponseDto responseDto = campaignService.updateCampaignStatus(id, "APPROVED");
+        campaignExecutionService.executeCampaignAsync(id);
+        return ResponseEntity.ok(ResponseWrapper.success(responseDto, "Campaign approved and execution started"));
+    }
 }

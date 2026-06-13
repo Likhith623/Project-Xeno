@@ -110,4 +110,13 @@ public class SegmentController {
         segmentEvaluationService.evaluateSegmentAsync(id);
         return ResponseEntity.accepted().body(ResponseWrapper.success(null));
     }
+
+    @GetMapping("/{id}/persona")
+    @Operation(summary = "Generate an AI persona for this segment")
+    public ResponseEntity<ResponseWrapper<java.util.Map<String, Object>>> getSegmentPersona(
+            @PathVariable UUID id,
+            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.segment.service.PersonaGenerationService personaGenerationService) {
+        java.util.Map<String, Object> persona = personaGenerationService.generatePersona(id);
+        return ResponseEntity.ok(ResponseWrapper.success(persona, "Persona generated successfully"));
+    }
 }

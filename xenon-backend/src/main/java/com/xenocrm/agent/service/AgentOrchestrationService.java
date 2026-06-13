@@ -80,8 +80,22 @@ public class AgentOrchestrationService {
             // Step 1: Reason and Plan
             saveDecision(sessionId, 1, AgentDecisionType.MEMORY_LOOKUP, "User requested: " + userPrompt, "Querying memory and deciding plan", "Need to create segment, campaign, and 3 beautiful HTML variants.");
 
+            // Read schema from project root
+            String schemaContext = "";
+            try {
+                schemaContext = java.nio.file.Files.readString(java.nio.file.Path.of("C:/Users/Sarishma/Project-Xeno/database.sql"));
+            } catch (Exception e) {
+                try {
+                    schemaContext = java.nio.file.Files.readString(java.nio.file.Path.of("../database.sql"));
+                } catch (Exception e2) {
+                    log.warn("Could not read database.sql for schema context");
+                }
+            }
+
             // Prompt Gemini for JSON output
             String prompt = "You are a Sovereign Marketing AI. The user requested: " + userPrompt + "\n" +
+                            "Here is the FULL database schema of the CRM:\n" +
+                            "```sql\n" + schemaContext + "\n```\n" +
                             "Generate a JSON object with the following schema exactly:\n" +
                             "{\n" +
                             "  \"segmentName\": \"string\",\n" +
@@ -97,7 +111,7 @@ public class AgentOrchestrationService {
                             "    { \"channel\": \"EMAIL\", \"subjectLine\": \"string\", \"bodyHtml\": \"string containing FULL inline CSS, vibrant gradients, a modern banner, clean typography, and a very beautiful CTA button\" }\n" +
                             "  ]\n" +
                             "}\n" +
-                            "For filterJson fields, use safe field names (e.g. monetary_total, recency_days, tags). For array columns like tags, use the operator ANY.\n" +
+                            "CRITICAL: Base your entire response ONLY on the provided schema. Do not hallucinate columns that don't exist. For filterJson fields, strictly use actual column names from the schema. For array columns like tags, use the operator ANY.\n" +
                             "Generate exactly 3 extremely beautiful variants. Respond ONLY with valid JSON. No markdown backticks. CRITICAL: Ensure all HTML inside 'bodyHtml' is properly JSON escaped (e.g., escape double quotes).";
             
             saveDecision(sessionId, 2, AgentDecisionType.VARIANT_GENERATION, prompt, "Calling Gemini", "Using Gemini to generate JSON structured query and HTML variants.");

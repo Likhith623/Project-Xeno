@@ -64,4 +64,14 @@ public class MemoryController {
                 PaginationMetadata.from(memoriesDto)
         ));
     }
+
+    @GetMapping("/ask")
+    @Operation(summary = "Ask the organizational memory a question using natural language")
+    public ResponseEntity<ResponseWrapper<String>> askMemory(
+            @org.springframework.web.bind.annotation.RequestParam String query,
+            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.agent.service.AgentLlmGatewayService llmGatewayService) {
+        
+        String answer = memoryService.getNaturalLanguageAnswer(query, llmGatewayService);
+        return ResponseEntity.ok(ResponseWrapper.success(answer, "Memory retrieved successfully"));
+    }
 }

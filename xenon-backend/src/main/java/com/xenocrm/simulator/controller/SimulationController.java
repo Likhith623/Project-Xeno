@@ -49,4 +49,14 @@ public class SimulationController {
         SimulationRunResultDto resultDto = orchestrationService.getSimulationRun(id);
         return ResponseEntity.ok(ResponseWrapper.success(resultDto, "Retrieved simulation run"));
     }
+
+    @PostMapping("/campaigns/{id}/counterfactual")
+    @Operation(summary = "Run a counterfactual simulation for a campaign")
+    public ResponseEntity<ResponseWrapper<com.xenocrm.simulator.dto.CounterfactualResultDto>> runCounterfactual(
+            @PathVariable UUID id, 
+            @RequestParam String channel, 
+            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.simulator.service.CounterfactualSimulationService counterfactualService) {
+        com.xenocrm.simulator.dto.CounterfactualResultDto result = counterfactualService.runCounterfactual(id, channel);
+        return ResponseEntity.ok(ResponseWrapper.success(result, "Counterfactual simulation completed"));
+    }
 }

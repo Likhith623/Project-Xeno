@@ -45,6 +45,8 @@ public class CampaignExecutionService {
     private final CommunicationRepository communicationRepository;
     private final CustomerRepository customerRepository;
     private final JdbcTemplate jdbcTemplate;
+    private final com.xenocrm.channelservice.service.SmartRoutingService smartRoutingService;
+    private final com.xenocrm.campaign.service.HyperPersonalizationService hyperPersonalizationService;
 
 
     @Async("taskExecutor")
@@ -94,24 +96,30 @@ public class CampaignExecutionService {
                     CustomerEntity customer = customerRepository.findById(customerId).orElse(null);
                     if (customer == null) continue;
 
+                    // Feature 8: Budget & ROI Optimization Agent
+                    MessageChannel optimalChannel = smartRoutingService.determineOptimalChannel(customer, variant.getChannel());
+
+                    // Feature 9: Hyper-Personalization (Segment of One)
+                    String personalizedBody = hyperPersonalizationService.generatePersonalizedBody(variant.getBodyHtml(), customer);
+
                     CommunicationEntity comm = CommunicationEntity.builder()
                             .campaign(campaign)
                             .variant(variant)
                             .customer(customer)
-                            .channel(MessageChannel.email)
+                            .channel(optimalChannel)
                             .status(CommunicationStatus.PENDING)
                             .recipientAddress(email)
                             .personalisedSubject(variant.getSubjectLine())
-                            .personalisedBody(variant.getBodyHtml())
+                            .personalisedBody(personalizedBody)
                             .build();
                     comm = communicationRepository.save(comm);
 
                     ChannelSendRequestDto req = ChannelSendRequestDto.builder()
                             .recipientAddress(email)
                             .communicationId(comm.getId())
-                            .channel(MessageChannel.email)
+                            .channel(optimalChannel)
                             .subject(variant.getSubjectLine())
-                            .body(variant.getBodyHtml())
+                            .body(personalizedBody)
                             .build();
 
                     ChannelSendResponseDto res = channelDispatchService.dispatchMessage(req);
