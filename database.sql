@@ -32,6 +32,7 @@ CREATE TABLE customers (
     preferred_channel   TEXT CHECK (preferred_channel IN ('email','whatsapp','sms','rcs')) DEFAULT 'email',
     opt_out_channels    TEXT[]    DEFAULT '{}',       -- channels this user has opted out from
     is_globally_opted_out BOOLEAN DEFAULT FALSE,
+    channel_cooldown_until TIMESTAMPTZ,               -- forced silence duration for channel fatigue
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -239,6 +240,9 @@ CREATE TABLE campaigns (
     total_clicked       INT DEFAULT 0,
     total_converted     INT DEFAULT 0,      -- orders attributed to this campaign
     revenue_attributed  NUMERIC(14,2) DEFAULT 0,
+    budget_allocated    NUMERIC(12,2) DEFAULT 0.00,
+    current_spend       NUMERIC(12,2) DEFAULT 0.00,
+    roas                NUMERIC(10,4) DEFAULT 0.0000,
 
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
