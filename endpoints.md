@@ -91,8 +91,8 @@ Marketing campaign orchestration.
   * **Purpose:** Retrieves live statistical performance, including delivery rates, open rates, CTRs, conversion rates, and revenue attributed to the campaign from the `v_campaign_performance` view.
 * **`POST /{id}/execute`**
   * **Purpose:** **The Go-Live Trigger.** Executes a fully prepared campaign. It resolves the attached segment, fetches matching customer profiles, applies the message variants, and pushes the jobs to the asynchronous `EmailDispatchService` or WhatsApp API.
-* **`POST /{id}/simulate`**
-  * **Purpose:** Triggers a Monte Carlo simulation dry-run for a specific campaign to predict conversion outcomes before going live.
+* **`GET /{id}/variants/mab-stats`**
+  * **Purpose:** Retrieves Thompson Sampling Multi-Armed Bandit (MAB) statistics for all variants in the campaign directly via the campaign ID.
 * **`GET /opt-out-alerts`**
   * **Purpose:** Fetches proactive alerts for all active campaigns whose opt-out rate is approaching or exceeding the safety threshold.
 * **`GET /{id}/corrections`**
@@ -119,6 +119,8 @@ Message delivery tracking.
   * **Purpose:** Retrieves a log of all messages (sent, delivered, failed) associated with a specific campaign.
 * **`GET /customer/{customerId}`**
   * **Purpose:** Retrieves a log of all messages ever sent to a specific customer profile.
+* **`PATCH /{id}/status`**
+  * **Purpose:** Updates the specific delivery/interaction status (e.g., delivered, opened, clicked) of a single communication message manually or via internal callback routing.
 
 ## 9. AI Memory & Learning (`/api/v1/memory`)
 * **`GET /`**
@@ -133,6 +135,8 @@ Message delivery tracking.
 ## 11. AI Simulations (`/api/v1/simulations`)
 * **`POST /`**
   * **Purpose:** Spawns a dry-run simulation of a campaign to predict CTRs and delivery volumes before live execution.
+* **`POST /campaigns/{id}/simulate`**
+  * **Purpose:** Triggers a Monte Carlo simulation dry-run for a specific campaign by referencing its ID to predict conversion outcomes before going live.
 * **`GET /{id}`**
   * **Purpose:** Retrieves the results of a specific simulation run.
 

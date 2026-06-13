@@ -73,12 +73,13 @@ public class AgentLlmGatewayService {
             )
         );
 
-        // Call Gemini: POST /models/{model}:generateContent?key={apiKey}
-        String endpoint = "/" + geminiModel + ":generateContent?key=" + geminiApiKey;
+        // Call Gemini: POST /models/{model}:generateContent
+        String endpoint = "/" + geminiModel + ":generateContent";
 
         try {
             Map<?,?> responseBody = geminiRestClient.post()
                 .uri(endpoint)
+                .header("x-goog-api-key", geminiApiKey)
                 .body(requestBody)
                 .retrieve()
                 .body(Map.class);
