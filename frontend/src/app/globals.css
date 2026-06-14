@@ -70,8 +70,59 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
-  body {
+
+  html, body {
     @apply bg-background text-foreground antialiased;
+    /* Prevent horizontal scroll on all screen sizes */
+    overflow-x: hidden;
+    /* Fix height on iOS Safari (address bar) */
+    height: 100%;
+  }
+
+  /* Make sure all pages fill available height correctly */
+  #__next {
+    height: 100%;
+  }
+
+  /* Smooth scrolling on touch devices */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Tables: always horizontally scrollable, never break layout */
+  table {
+    width: 100%;
+    table-layout: auto;
+  }
+
+  /* Inputs & selects: prevent iOS zoom on focus (font-size >= 16px) */
+  input, select, textarea {
+    font-size: 16px;
+  }
+
+  /* Undo the font-size fix for small labels that are read-only display */
+  @media (min-width: 640px) {
+    input, select, textarea {
+      font-size: inherit;
+    }
   }
 }
+
+/* Utility: scrollbar hidden but scrollable */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Responsive table wrapper — adds horizontal scroll on small screens */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+

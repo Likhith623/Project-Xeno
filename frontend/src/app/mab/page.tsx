@@ -129,7 +129,7 @@ export default function MABDashboard() {
       )}
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="bg-white border border-border-primary rounded-xl p-4 text-center">
           <div className="text-[22px] font-semibold text-text-primary">{mabArray.length}</div>
           <div className="text-[11px] text-text-secondary mt-1">Active Variants</div>
@@ -150,7 +150,7 @@ export default function MABDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
         <div className="lg:col-span-2">
            <Card className="shadow-minimal border-border-primary h-full">
             <CardHeader className="pb-2 pt-4 px-6">

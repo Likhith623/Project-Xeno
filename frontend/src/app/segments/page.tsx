@@ -219,7 +219,7 @@ export default function SegmentsPage() {
         </Button>
       </>
     }>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 sm:gap-6">
 
         {/* Segments List */}
         <div className="flex flex-col gap-6">

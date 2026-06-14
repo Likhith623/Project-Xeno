@@ -96,7 +96,7 @@ export default function AgentPage() {
 
   return (
     <Shell title="Sovereign AI Agent Workspace">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-140px)]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6" style={{height: 'calc(100dvh - 140px)', minHeight: '500px'}}>
 
         {/* Main Chat Interface */}
         <Card className="col-span-2 shadow-minimal border-border-primary flex flex-col h-full">

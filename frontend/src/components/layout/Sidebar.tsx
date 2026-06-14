@@ -24,7 +24,11 @@ import {
   Activity
 } from "lucide-react";
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
 
   const { data: proposalsData } = useQuery({
@@ -71,27 +75,30 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="w-60 min-w-60 bg-white border-r border-border-primary flex flex-col h-full shrink-0 overflow-y-auto">
-      <div className="p-5 border-b border-border-primary flex items-center gap-3">
-        <div className="w-7 h-7 bg-text-primary rounded-md flex items-center justify-center">
+    <aside className="w-60 min-w-[240px] bg-white border-r border-border-primary flex flex-col h-full shrink-0 overflow-y-auto">
+      {/* Logo */}
+      <div className="p-4 sm:p-5 border-b border-border-primary flex items-center gap-3 shrink-0">
+        <div className="w-7 h-7 bg-text-primary rounded-md flex items-center justify-center shrink-0">
           <Activity className="w-4 h-4 text-white" />
         </div>
-        <span className="font-medium text-[15px] text-text-primary">Project Xeno</span>
+        <span className="font-medium text-[15px] text-text-primary truncate">Project Xeno</span>
       </div>
 
-      <div className="flex-1 py-4 flex flex-col gap-6">
+      {/* Nav groups */}
+      <div className="flex-1 py-3 sm:py-4 flex flex-col gap-5 sm:gap-6 overflow-y-auto">
         {NAV_GROUPS.map((group) => (
-          <div key={group.title} className="px-3">
-            <div className="px-3 mb-2 text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
+          <div key={group.title} className="px-2 sm:px-3">
+            <div className="px-3 mb-1.5 sm:mb-2 text-[11px] font-medium text-text-tertiary uppercase tracking-wider">
               {group.title}
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5 sm:gap-1">
               {group.items.map((item) => {
                 const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
+                    onClick={onClose}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-md text-[13px] transition-colors",
                       isActive
@@ -100,9 +107,9 @@ export function Sidebar() {
                     )}
                   >
                     <item.icon className="w-4 h-4 shrink-0" />
-                    <span>{item.name}</span>
+                    <span className="truncate">{item.name}</span>
                     {item.badge && (
-                      <span className={cn("ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full", item.badgeClass)}>
+                      <span className={cn("ml-auto text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0", item.badgeClass)}>
                         {item.badge}
                       </span>
                     )}
@@ -114,9 +121,11 @@ export function Sidebar() {
         ))}
       </div>
 
-      <div className="p-3 border-t border-border-primary mt-auto">
+      {/* Settings */}
+      <div className="p-2 sm:p-3 border-t border-border-primary mt-auto shrink-0">
         <Link
           href="/settings"
+          onClick={onClose}
           className="flex items-center gap-3 px-3 py-2 rounded-md text-[13px] text-text-secondary hover:bg-bg-secondary hover:text-text-primary transition-colors"
         >
           <Settings className="w-4 h-4 shrink-0" />

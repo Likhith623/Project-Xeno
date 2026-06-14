@@ -115,16 +115,16 @@ export default function Dashboard() {
   return (
     <Shell title="Dashboard">
       {/* KPI Grid — counts from real Supabase data */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <KpiCard title="Total campaigns" value={String(campaignsList.length)} icon={Send} delta={`${activeCount} active`} isPositive />
         <KpiCard title="Active rate" value={campaignsList.length ? `${Math.round(activeCount / campaignsList.length * 100)}%` : "0%"} icon={Eye} delta="from Supabase" isPositive />
         <KpiCard title="Total revenue" value={`$${(ordersList.reduce((s, c) => s + (c.totalAmount || 0), 0) / 1000).toFixed(1)}K`} icon={DollarSign} delta="attributed revenue" isPositive />
         <KpiCard title="Memory insights" value={String(Array.isArray(memoryData) ? memoryData.length : 0)} icon={UserMinus} delta="org learnings stored" isPositive />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
+        <div className="lg:col-span-2 flex flex-col gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Card className="shadow-minimal border-border-primary">
               <CardHeader className="pb-2 pt-4 px-6">
                 <CardTitle className="text-[14px] font-medium">Campaigns Overview</CardTitle>
@@ -272,7 +272,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* AI Agent Activity — real audit log data from Supabase */}
         <Card className="shadow-minimal border-border-primary">
            <CardHeader className="flex flex-row items-center justify-between pb-4">

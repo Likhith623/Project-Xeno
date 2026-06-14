@@ -150,7 +150,7 @@ export default function ProposalsInbox() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4 sm:gap-6">
 
           {/* Main Tinder Swipe UI */}
           <div>
