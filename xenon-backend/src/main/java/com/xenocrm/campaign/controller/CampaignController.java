@@ -42,6 +42,8 @@ public class CampaignController {
     private final CorrectionRetrievalService correctionRetrievalService;
     private final com.xenocrm.simulator.service.AudienceSimulationOrchestrationService orchestrationService;
     private final com.xenocrm.simulator.mapper.SimulationMapper simulationMapper;
+    private final com.xenocrm.campaign.service.TimelineStorytellingService timelineService;
+    private final com.xenocrm.campaign.service.CampaignAnalyticsService analyticsService;
 
     @PostMapping
     @Operation(summary = "Create a new campaign manually")
@@ -134,8 +136,7 @@ public class CampaignController {
     @GetMapping("/{id}/analytics/narrative")
     @Operation(summary = "Get a natural language narrative analysis of the campaign's performance")
     public ResponseEntity<ResponseWrapper<List<String>>> getCampaignNarrativeAnalytics(
-            @PathVariable UUID id,
-            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.campaign.service.CampaignAnalyticsService analyticsService) {
+            @PathVariable UUID id) {
         List<String> analysis = analyticsService.getNaturalLanguageAnalytics(id);
         return ResponseEntity.ok(ResponseWrapper.success(analysis, "Generated narrative analytics"));
     }
@@ -143,8 +144,7 @@ public class CampaignController {
     @GetMapping("/{id}/timeline")
     @Operation(summary = "Get a chronological narrative timeline of the campaign")
     public ResponseEntity<ResponseWrapper<List<String>>> getCampaignTimeline(
-            @PathVariable UUID id,
-            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.campaign.service.TimelineStorytellingService timelineService) {
+            @PathVariable UUID id) {
         List<String> timeline = timelineService.getCampaignTimeline(id);
         return ResponseEntity.ok(ResponseWrapper.success(timeline, "Generated campaign timeline"));
     }

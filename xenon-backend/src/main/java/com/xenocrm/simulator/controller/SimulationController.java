@@ -7,13 +7,16 @@ import com.xenocrm.simulator.entity.SimulationRunEntity;
 import com.xenocrm.simulator.mapper.SimulationMapper;
 import com.xenocrm.simulator.repository.SimulationRunRepository;
 import com.xenocrm.simulator.service.AudienceSimulationOrchestrationService;
+import com.xenocrm.simulator.service.CounterfactualSimulationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * SimulationController — API endpoints for audience simulation.
@@ -27,6 +30,16 @@ public class SimulationController {
     private final AudienceSimulationOrchestrationService orchestrationService;
     private final SimulationRunRepository simulationRunRepository;
     private final SimulationMapper simulationMapper;
+    private final CounterfactualSimulationService counterfactualService;
+
+    @GetMapping
+    @Operation(summary = "List all simulation runs")
+    public ResponseEntity<ResponseWrapper<List<SimulationRunResultDto>>> getAllSimulations() {
+        List<SimulationRunResultDto> runs = simulationRunRepository.findAll().stream()
+                .map(simulationMapper::toResultDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ResponseWrapper.success(runs, "Retrieved all simulation runs"));
+    }
 
     @PostMapping
     @Operation(summary = "Trigger a new audience simulation")
@@ -53,9 +66,8 @@ public class SimulationController {
     @PostMapping("/campaigns/{id}/counterfactual")
     @Operation(summary = "Run a counterfactual simulation for a campaign")
     public ResponseEntity<ResponseWrapper<com.xenocrm.simulator.dto.CounterfactualResultDto>> runCounterfactual(
-            @PathVariable UUID id, 
-            @RequestParam String channel, 
-            @org.springframework.beans.factory.annotation.Autowired com.xenocrm.simulator.service.CounterfactualSimulationService counterfactualService) {
+            @PathVariable UUID id,
+            @RequestParam String channel) {
         com.xenocrm.simulator.dto.CounterfactualResultDto result = counterfactualService.runCounterfactual(id, channel);
         return ResponseEntity.ok(ResponseWrapper.success(result, "Counterfactual simulation completed"));
     }
