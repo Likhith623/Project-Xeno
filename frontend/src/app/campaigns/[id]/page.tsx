@@ -143,7 +143,7 @@ export default function CampaignDetail() {
 
   // Simulation triggers: POST /api/v1/simulations & POST /campaigns/{id}/simulate
   const simGeneralMutation = useMutation({
-    mutationFn: () => api.post(`/simulations`, { campaignId, iterations: 1000 }),
+    mutationFn: () => api.post(`/simulations`, { campaignId, syntheticAudienceSize: 1000 }),
     onSuccess: (data: any) => {
       toast.success("General simulation triggered");
       if (data?.id) setLatestSimulationId(data.id);
@@ -151,7 +151,7 @@ export default function CampaignDetail() {
   });
 
   const simCampaignMutation = useMutation({
-    mutationFn: () => api.post(`/simulations/campaigns/${campaignId}/simulate`, { iterations: 1000 }),
+    mutationFn: () => api.post(`/campaigns/${campaignId}/simulate`, { syntheticAudienceSize: 1000 }),
     onSuccess: (data: any) => {
       toast.success("Campaign simulation triggered");
       if (data?.id) setLatestSimulationId(data.id);
@@ -313,15 +313,15 @@ export default function CampaignDetail() {
                      </div>
                      <div className="bg-white p-2 rounded border border-border-tertiary">
                        <div className="text-text-tertiary">Projected Revenue</div>
-                       <div className="font-medium text-text-primary">${latestSimulationResult.projectedRevenue?.toFixed(2) || '0.00'}</div>
+                       <div className="font-medium text-text-primary">${latestSimulationResult.predictedRevenue?.toFixed(2) || '0.00'}</div>
                      </div>
                      <div className="bg-white p-2 rounded border border-border-tertiary">
                        <div className="text-text-tertiary">Projected Conv.</div>
-                       <div className="font-medium text-text-primary">{((latestSimulationResult.projectedConversionRate || 0) * 100).toFixed(1)}%</div>
+                       <div className="font-medium text-text-primary">{((latestSimulationResult.predictedConversionRate || 0) * 100).toFixed(1)}%</div>
                      </div>
                      <div className="bg-white p-2 rounded border border-border-tertiary">
-                       <div className="text-text-tertiary">Projected Churn</div>
-                       <div className="font-medium text-text-primary">{((latestSimulationResult.projectedChurnRate || 0) * 100).toFixed(1)}%</div>
+                       <div className="text-text-tertiary">CI Low (95%)</div>
+                       <div className="font-medium text-text-primary">{((latestSimulationResult.confidenceIntervalLow || 0) * 100).toFixed(1)}%</div>
                      </div>
                    </div>
                  ) : (

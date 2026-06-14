@@ -28,7 +28,7 @@ export default function AuditLogsPage() {
 
   const { data: traceLogs, isLoading: isLoadingTrace, isError: isErrorTrace } = useQuery({
     queryKey: ['audit-logs', 'trace'],
-    queryFn: () => api.get(`/audit-logs/trace/trace-12345`).then(res => Array.isArray(res) ? res : res?.content || []),
+    queryFn: () => api.get(`/audit-logs/trace/00000000-0000-0000-0000-000000000001`).then(res => Array.isArray(res) ? res : res?.content || []),
     enabled: activeFilter === 'TRACE',
     staleTime: 30_000,
   });

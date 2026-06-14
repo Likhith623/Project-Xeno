@@ -40,7 +40,7 @@ export default function ProductsPage() {
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: () => api.post('/products', { name: "New Product", sku: `SKU-${Date.now()}`, price: 19.99, currency: "INR", brand: "Xeno Demo", isActive: true }),
+    mutationFn: () => api.post('/products', { name: "New Product", sku: `SKU-${Date.now()}`, price: 19.99, currency: "INR", brand: "Xeno Demo", active: true }),
     onSuccess: () => { toast.success("Product created"); queryClient.invalidateQueries({queryKey: ['products']}); }
   });
 
