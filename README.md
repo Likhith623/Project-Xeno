@@ -16,7 +16,7 @@
 
 ---
 
-*Built with Google Gemini 2.5 Flash · Thompson Sampling · ReAct Agents · Multi-Agent Debate · Bayesian Optimisation*
+*Built with Google Gemini · Thompson Sampling · ReAct Agents · Multi-Agent Debate · Bayesian Optimisation*
 
 </div>
 
