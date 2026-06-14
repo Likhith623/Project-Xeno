@@ -257,18 +257,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Revenue by Channel */}
-          <Card className="shadow-minimal border-border-primary flex-1">
-             <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-[14px] font-medium">Delivery by channel (All Time)</CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4 flex flex-col gap-3">
-              {/* Calculating total delivered across all campaigns to estimate channel mix as placeholder since no backend endpoint exists */}
-              <ChannelRow color="bg-brand" name="Email" value={campaignsList.reduce((sum: number, c: any) => sum + (c.totalDelivered || 0), 0)} percent={campaignsList.length > 0 ? 100 : 0} />
-              <ChannelRow color="bg-green-600" name="WhatsApp" value={0} percent={0} />
-              <ChannelRow color="bg-orange-600" name="SMS" value={0} percent={0} />
-            </CardContent>
-          </Card>
+
         </div>
       </div>
 
@@ -344,18 +333,7 @@ function KpiCard({ title, value, icon: Icon, delta, isPositive }: any) {
   );
 }
 
-function ChannelRow({ color, name, value, percent }: any) {
-  return (
-    <div className="flex items-center gap-2 text-[12px]">
-      <div className={`w-2 h-2 rounded-full ${color} shrink-0`} />
-      <span className="flex-1 text-text-secondary">{name}</span>
-      <div className="flex-[2] h-1.5 bg-border-tertiary rounded-full overflow-hidden">
-        <div className={`h-full ${color}`} style={{ width: `${percent}%` }} />
-      </div>
-      <span className="font-medium text-text-primary min-w-[38px] text-right">{value}</span>
-    </div>
-  );
-}
+
 
 function ActivityItem({ icon: Icon, color, text, time }: any) {
   return (
