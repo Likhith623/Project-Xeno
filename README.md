@@ -77,8 +77,8 @@ The result: **marketers become Editors, not Creators.** Xeno does the heavy lift
 
 | Service | URL | Status |
 |---|---|---|
-| **Frontend** | `https://project-xeno-frontend.vercel.app` | Live |
-| **Backend API** | `https://project-xeno.onrender.com/api/v1` | Live (cold-start ~30s) |
+| **Frontend** | `https://project-xeno.vercel.app` | Live |
+
 
 > **Note:** The backend runs on Render's free tier. The first request after inactivity may take ~30 seconds due to a cold start. This is a hosting constraint, not an application issue.
 
