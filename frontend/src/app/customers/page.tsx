@@ -49,8 +49,8 @@ export default function CustomersPage() {
     onSuccess: () => toast.success("Search by tag executed")
   });
 
-  const customers: any[] = Array.isArray(customersData) ? customersData : [];
-  const totalPages: number = (customersData as any)?._pagination?.totalPages || 0;
+  const customers: any[] = Array.isArray(customersData) ? customersData : (customersData?.content || []);
+  const totalPages: number = (customersData as any)?._pagination?.totalPages || (customersData as any)?.totalPages || 0;
 
   return (
     <Shell title="Customers" topbarActions={

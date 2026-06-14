@@ -64,22 +64,24 @@ export default function MABDashboard() {
               </CardTitle>
               <CardDescription className="text-[12px]">Campaign: {firstCampaign?.name || 'Loading...'}</CardDescription>
             </CardHeader>
-            <CardContent className="h-[300px] px-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={performanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `${val}%`} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
-                    labelStyle={{ color: '#0f172a', fontWeight: 500, marginBottom: '4px' }}
-                    itemStyle={{ fontSize: '12px', padding: '2px 0' }}
-                  />
-                  <Area type="monotone" dataKey="variantA" name="Variant A (Control)" stroke="#94a3b8" strokeWidth={2} fillOpacity={0} />
-                  <Area type="monotone" dataKey="variantB" name="Variant B (Aggressive)" stroke="#4f46e5" strokeWidth={2} fillOpacity={0.1} fill="#4f46e5" />
-                  <Area type="monotone" dataKey="variantC" name="Variant C (Conservative)" stroke="#cbd5e1" strokeWidth={2} fillOpacity={0} />
-                </AreaChart>
-              </ResponsiveContainer>
+            <CardContent className="px-2 pb-4">
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={performanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `${val}%`} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                      labelStyle={{ color: '#0f172a', fontWeight: 500, marginBottom: '4px' }}
+                      itemStyle={{ fontSize: '12px', padding: '2px 0' }}
+                    />
+                    <Area type="monotone" dataKey="variantA" name="Variant A (Control)" stroke="#94a3b8" strokeWidth={2} fillOpacity={0} />
+                    <Area type="monotone" dataKey="variantB" name="Variant B (Aggressive)" stroke="#4f46e5" strokeWidth={2} fillOpacity={0.1} fill="#4f46e5" />
+                    <Area type="monotone" dataKey="variantC" name="Variant C (Conservative)" stroke="#cbd5e1" strokeWidth={2} fillOpacity={0} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -89,30 +91,32 @@ export default function MABDashboard() {
             <CardHeader className="pb-2 pt-4 px-6">
               <CardTitle className="text-[14px] font-medium">Live Traffic Allocation</CardTitle>
             </CardHeader>
-            <CardContent className="h-[250px] px-4 pt-6">
+            <CardContent className="px-4 pt-6 pb-4">
               {isLoading ? (
-                <div className="flex h-full items-center justify-center">
+                <div className="flex items-center justify-center" style={{height: 250}}>
                   <Loader2 className="w-6 h-6 animate-spin text-brand" />
                 </div>
               ) : mabArray.length === 0 ? (
-                <div className="flex h-full items-center justify-center text-[12px] text-text-secondary text-center">
+                <div className="flex items-center justify-center text-[12px] text-text-secondary text-center" style={{height: 250}}>
                   No active variants found for this campaign.
                 </div>
               ) : (
                  <>
-                   <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={allocationData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#0f172a' }} width={80} />
-                        <Tooltip
-                          cursor={{fill: 'transparent'}}
-                          contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
-                          itemStyle={{ fontSize: '12px' }}
-                          formatter={(val: any) => [`${val.toFixed(1)}%`, 'Allocation']}
-                        />
-                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} />
-                      </BarChart>
-                   </ResponsiveContainer>
+                   <div style={{ width: '100%', height: 220 }}>
+                     <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={allocationData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                          <XAxis type="number" hide />
+                          <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#0f172a' }} width={80} />
+                          <Tooltip
+                            cursor={{fill: 'transparent'}}
+                            contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                            itemStyle={{ fontSize: '12px' }}
+                            formatter={(val: any) => [`${val.toFixed(1)}%`, 'Allocation']}
+                          />
+                          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} />
+                        </BarChart>
+                     </ResponsiveContainer>
+                   </div>
                    <div className="mt-4 flex items-start gap-2 bg-brand-light/30 p-3 rounded-md text-[12px] text-brand">
                      <TrendingUp className="w-4 h-4 shrink-0 mt-0.5" />
                      <div>AI is actively optimizing traffic based on Bayesian Thompson Sampling. {mabArray.length} variants tracked.</div>
