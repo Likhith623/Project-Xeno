@@ -25,7 +25,7 @@
 ## 📋 Table of Contents
 
 1. [Vision & Philosophy](#-vision--philosophy)
-2. [Live Demo & Deployment](#-live-demo--deployment)
+2. [Deployment](#deployment)
 3. [Full System Architecture](#-full-system-architecture)
 4. [Technology Stack](#-technology-stack)
 5. [Backend Package Architecture](#-backend-package-architecture)
@@ -73,14 +73,12 @@ The result: **marketers become Editors, not Creators.** Xeno does the heavy lift
 
 ---
 
-## 🚀 Live Demo & Deployment
+## 🚀 Deployment
 
 | Service | URL | Status |
 |---|---|---|
 | **Frontend** | `https://project-xeno-frontend.vercel.app` | Live |
 | **Backend API** | `https://project-xeno.onrender.com/api/v1` | Live (cold-start ~30s) |
-| **OpenAPI Spec** | `https://project-xeno.onrender.com/swagger-ui.html` | Live |
-| **Health Check** | `https://project-xeno.onrender.com/actuator/health` | Live |
 
 > **Note:** The backend runs on Render's free tier. The first request after inactivity may take ~30 seconds due to a cold start. This is a hosting constraint, not an application issue.
 
