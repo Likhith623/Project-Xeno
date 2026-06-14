@@ -143,29 +143,26 @@ def main():
 
         # Append AI features
         f.write("# 🧠 Core AI Features & Frontend Integration Logic\n\n")
-        f.write("## 1. The Sovereign AI Agent\n")
-        f.write("- **Endpoint:** `POST /api/v1/agent/chat` -> Returns `sessionId`.\n")
-        f.write("- **Polling:** Use `GET /api/v1/agent/sessions/{sessionId}` to poll until `status == COMPLETED`.\n")
-        f.write("- **Decisions Audit:** Use `GET /api/v1/agent/sessions/{sessionId}/decisions` to show the Agent's reasoning.\n\n")
-        
-        f.write("## 2. Multi-Armed Bandit (MAB) Dashboards\n")
-        f.write("- **Endpoint:** `GET /api/v1/campaigns/{id}/variants/mab-stats`\n")
-        f.write("- **UI:** Display real-time variant performance, impressions, and shifting traffic weights.\n\n")
+        f.write("### 👑 Phase 7: Multi-Agent Architecture\n")
+        f.write("## 18. Autonomous Budget Agent 💰\n")
+        f.write("- **Endpoint:** `POST /api/v1/test/ai/trigger-fund-manager`\n")
+        f.write("- **Frontend Flow:** Build an \"AI Developer Panel\" button to manually trigger the Autonomous Budget Agent to instantly re-allocate live campaign budgets.\n\n")
 
-        f.write("## 3. Autonomous Campaign Proposals (Tinder-UI)\n")
-        f.write("- **Endpoint:** `GET /api/v1/campaigns/proposals`\n")
-        f.write("- **UI:** Show cards of AI-generated campaigns. Click \"Approve\" to call `POST /api/v1/campaigns/{id}/approve`.\n\n")
-        
-        f.write("## 4. Omni-Awareness Fatigue (Sleep Agent)\n")
-        f.write("- **UI:** Automatically enforced by the backend (`channel_cooldown_until`). Display suppressed users in campaign stats.\n\n")
-        
-        f.write("## 5. Organizational Memory\n")
-        f.write("- **Endpoint:** `GET /api/v1/memory`\n")
-        f.write("- **UI:** Show actionable insights learned from past campaigns.\n\n")
+        f.write("## 19. AI War Room (Multi-Agent Debate) ⚔️\n")
+        f.write("- **Endpoint:** `POST /api/v1/test/ai/trigger-war-room`\n")
+        f.write("- **Frontend Flow:** Build an AI Test button. When triggered, the backend spins up two LLMs to debate campaign strategy and returns a synthesized compromise strategy.\n\n")
 
-        f.write("## 6. AGI Testing Panel\n")
-        f.write("- **Endpoints:** `POST /api/v1/test/agi/*`\n")
-        f.write("- **UI:** Create buttons to trigger War Room, Fund Manager, and Omni-Awareness background jobs instantly.\n\n")
+        f.write("### 👁️ Phase 8: Omni-Awareness\n")
+        f.write("## 20. Fatigue Engine 💤\n")
+        f.write("- **Endpoint:** `POST /api/v1/test/ai/trigger-omni-awareness`\n")
+        f.write("- **Frontend Flow:** Backend enforces a 14-day channel cooldown. The frontend displays \"Users Suppressed by Fatigue\" stats on the Campaign summary to show the AI protecting the user base.\n\n")
+
+        f.write("## 21. Micro-Churn Velocity (The Whisperer) 📉\n")
+        f.write("- **Backend Enforced:** Detects 5-day velocity lags in purchases.\n")
+        f.write("- **Frontend Flow:** Display \"Velocity Interventions\" metrics in the Customer 360 view.\n\n")
+
+        f.write("---\n")
+        f.write("**End of Ultimate 21-Feature Frontend Guide**\n")
 
     print(f"Generated successfully to {OUTPUT_FILE}")
 

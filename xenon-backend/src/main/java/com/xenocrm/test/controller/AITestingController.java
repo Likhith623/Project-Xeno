@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 /**
- * Controller strictly for AGI Real-Time Testing and Verification.
- * Manually triggers the nightly/hourly cron jobs.
+ * Controller strictly for AI Real-Time Testing and Verification.
+ * These endpoints instantly trigger the backend Cron Jobs that would otherwise run asynchronously.
  */
 @RestController
-@RequestMapping("/api/v1/test/agi")
+@RequestMapping("/api/v1/test/ai")
 @RequiredArgsConstructor
 @Slf4j
 public class AITestingController {

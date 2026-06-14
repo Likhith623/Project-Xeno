@@ -3471,7 +3471,7 @@ This file contains the **100% rigorous** analysis of every single endpoint and A
 
 ## ai-testing-controller
 
-### `POST /api/v1/test/agi/trigger-war-room`
+### `POST /api/v1/test/AI/trigger-war-room`
 **Summary:** No summary
 
 **Request Payload (`application/json`):**
@@ -3489,7 +3489,7 @@ This file contains the **100% rigorous** analysis of every single endpoint and A
 
 ---
 
-### `POST /api/v1/test/agi/trigger-omni-awareness`
+### `POST /api/v1/test/AI/trigger-omni-awareness`
 **Summary:** No summary
 
 **Response:**
@@ -3500,7 +3500,7 @@ This file contains the **100% rigorous** analysis of every single endpoint and A
 
 ---
 
-### `POST /api/v1/test/agi/trigger-fund-manager`
+### `POST /api/v1/test/AI/trigger-fund-manager`
 **Summary:** No summary
 
 **Response:**
@@ -3533,8 +3533,8 @@ This file contains the **100% rigorous** analysis of every single endpoint and A
 - **Endpoint:** `GET /api/v1/memory`
 - **UI:** Show actionable insights learned from past campaigns.
 
-## 6. AGI Testing Panel
-- **Endpoints:** `POST /api/v1/test/agi/*`
+## 6. AI Testing Panel
+- **Endpoints:** `POST /api/v1/test/AI/*`
 - **UI:** Create buttons to trigger War Room, Fund Manager, and Omni-Awareness background jobs instantly.
 
 # ðŸ§  Core AI Features & Frontend Integration Logic
@@ -3595,7 +3595,7 @@ This section outlines how the Frontend should build the UI/UX for all **21 Visio
 - **Endpoint:** `GET /api/v1/campaigns/proposals` and `POST /api/v1/campaigns/{id}/approve`
 - **Frontend Flow:** A Tinder-style "Inbox" UI showing all autonomously generated Draft campaigns. The user clicks "Approve" (thumbs up) to launch them.
 
-### ðŸŒŸ Phase 3: The AGI Frontier
+### ðŸŒŸ Phase 3: The AI Frontier
 ## 14. Predictive Inventory Clearance ðŸ“¦
 - **Backend Enforced:** Detects dead stock and drafts clearance campaigns.
 - **Frontend Flow:** Appears in the "AI Proposals" inbox.
@@ -3613,18 +3613,18 @@ This section outlines how the Frontend should build the UI/UX for all **21 Visio
 - **Backend Enforced:** Fires Slack API alerts for Whales dropping in frequency.
 - **Frontend Flow:** Display the "VIP Alerts Sent" count in the Customer 360 dashboard.
 
-### ðŸ‘‘ Phase 7: Artificial General Intelligence (AGI)
-## 18. Autonomous Budget Re-Allocation (The Fund Manager) ðŸ’°
-- **Endpoint:** `POST /api/v1/test/agi/trigger-fund-manager`
-- **Frontend Flow:** Build an "AGI Developer Panel" button to manually trigger the Hedge Fund Manager to instantly re-allocate live campaign budgets.
+### ðŸ‘‘ Phase 7: Multi-Agent Architecture
+## 18. Autonomous Budget Re-Allocation (Autonomous Budget Agent) ðŸ’°
+- **Endpoint:** `POST /api/v1/test/AI/trigger-fund-manager`
+- **Frontend Flow:** Build an "AI Developer Panel" button to manually trigger the Hedge Fund Manager to instantly re-allocate live campaign budgets.
 
-## 19. Multi-Agent Debate (The War Room) âš”ï¸
-- **Endpoint:** `POST /api/v1/test/agi/trigger-war-room`
-- **Frontend Flow:** Build an AGI Test button. When triggered, the backend spins up two LLMs to debate campaign strategy and returns a synthesized compromise strategy.
+## 19. Multi-Agent Debate (AI War Room) âš”ï¸
+- **Endpoint:** `POST /api/v1/test/AI/trigger-war-room`
+- **Frontend Flow:** Build an AI Test button. When triggered, the backend spins up two LLMs to debate campaign strategy and returns a synthesized compromise strategy.
 
 ### ðŸ‘ï¸ Phase 8: Omni-Awareness
-## 20. The Sleep Agent (Channel Fatigue Engine) ðŸ’¤
-- **Endpoint:** `POST /api/v1/test/agi/trigger-omni-awareness`
+## 20. Fatigue Engine (Channel Fatigue Engine) ðŸ’¤
+- **Endpoint:** `POST /api/v1/test/AI/trigger-omni-awareness`
 - **Frontend Flow:** Backend enforces a 14-day channel cooldown. The frontend displays "Users Suppressed by Fatigue" stats on the Campaign summary to show the AI protecting the user base.
 
 ## 21. The Whisperer (Micro-Churn Velocity) ðŸ“‰
@@ -3633,3 +3633,4 @@ This section outlines how the Frontend should build the UI/UX for all **21 Visio
 
 ---
 **End of Ultimate 21-Feature Frontend Guide**
+
