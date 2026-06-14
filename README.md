@@ -1604,7 +1604,7 @@ cd frontend && npm run build
 
 ## 👨‍💻 Author
 
-**Lalith Chowdary** — [@LalithChowdary](https://github.com/LalithChowdary)
+**Likhith Chowdary** — [@LikhithChowdary](https://github.com/Likhith623)
 
 Built with ❤️, Java, TypeScript, and the belief that AI should make marketers superhuman, not redundant.
 
