@@ -55,7 +55,11 @@ public class CampaignAnalyticsService {
 
         } catch (Exception e) {
             log.error("Analytics generation failed", e);
-            throw new RuntimeException("Analytics generation failed", e);
+            List<String> fallback = new ArrayList<>();
+            fallback.add("The campaign has generated " + campaign.getTotalConverted() + " conversions and $" + campaign.getRevenueAttributed() + " in revenue.");
+            fallback.add("The open rate is " + (campaign.getTotalSent() > 0 ? (campaign.getTotalOpened() * 100 / campaign.getTotalSent()) : 0) + "%.");
+            fallback.add("AI Narrative analysis is temporarily unavailable. Check back later.");
+            return fallback;
         }
     }
 }

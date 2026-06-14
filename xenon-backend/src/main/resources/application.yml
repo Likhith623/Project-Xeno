@@ -43,7 +43,7 @@ gemini:
   api-key: ${GEMINI_API_KEY:AQ.YOUR_API_KEY_HERE}
   model: gemini-2.5-flash
   endpoint: https://generativelanguage.googleapis.com/v1beta/models
-  max-output-tokens: 2000
+  max-output-tokens: 20192
   temperature: 0.3
 
 # Channel stub

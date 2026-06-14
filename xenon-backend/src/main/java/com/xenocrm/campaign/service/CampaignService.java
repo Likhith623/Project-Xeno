@@ -69,6 +69,29 @@ public class CampaignService {
         return campaignMapper.toResponseDto(campaignRepository.save(campaign));
     }
 
+    @Transactional
+    public CampaignResponseDto updateCampaignDetails(UUID id, com.xenocrm.campaign.dto.CampaignUpdateRequestDto request) {
+        CampaignEntity campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Campaign", "id", id));
+        
+        if (request.getName() != null) {
+            campaign.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            campaign.setDescription(request.getDescription());
+        }
+        if (request.getGoal() != null) {
+            campaign.setGoal(request.getGoal());
+        }
+        if (request.getTargetSegmentId() != null) {
+            AudienceSegmentEntity segment = segmentRepository.findById(request.getTargetSegmentId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Segment", "id", request.getTargetSegmentId()));
+            campaign.setTargetSegment(segment);
+        }
+
+        return campaignMapper.toResponseDto(campaignRepository.save(campaign));
+    }
+
     @Transactional(readOnly = true)
     public com.xenocrm.campaign.dto.CampaignPerformanceDto getCampaignPerformance(UUID id) {
         if (!campaignRepository.existsById(id)) {

@@ -26,7 +26,7 @@ public class JourneyFallbackService {
     private final AgentLlmGatewayService llmGatewayService;
 
     // Runs every 4 hours to check for unengaged users
-    @Scheduled(fixedRate = 14400000)
+    @Scheduled(initialDelay = 120000, fixedRate = 300000)
     public void executeFallbackJourney() {
         log.info("Running AI Multi-Channel Journey Builder...");
 
@@ -36,6 +36,7 @@ public class JourneyFallbackService {
                 .filter(c -> c.getChannel() == MessageChannel.email)
                 .filter(c -> c.getStatus() == CommunicationStatus.DELIVERED)
                 .filter(c -> c.getCreatedAt().isBefore(threshold))
+                .limit(1)
                 .toList();
 
         for (CommunicationEntity comm : unengagedComms) {

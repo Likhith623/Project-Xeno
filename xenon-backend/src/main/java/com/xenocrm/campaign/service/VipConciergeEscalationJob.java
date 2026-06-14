@@ -32,7 +32,9 @@ public class VipConciergeEscalationJob {
         BigDecimal minLtv = new BigDecimal("5000.00");
         Integer minRecencyDays = 180;
 
-        List<CustomerMetricsEntity> slippingWhales = metricsRepository.findByMonetaryTotalGreaterThanAndRecencyDaysGreaterThan(minLtv, minRecencyDays);
+        List<CustomerMetricsEntity> slippingWhales = metricsRepository.findByMonetaryTotalGreaterThanAndRecencyDaysGreaterThan(minLtv, minRecencyDays).stream()
+                .limit(1)
+                .toList();
 
         if (slippingWhales.isEmpty()) {
             log.info("No slipping VIPs detected tonight.");

@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { Shell } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 export default function CampaignDetail() {
   const params = useParams();
@@ -18,6 +21,16 @@ export default function CampaignDetail() {
   const [showSim, setShowSim] = useState(false);
   const [latestSimulationId, setLatestSimulationId] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  
+  const [isEditCampaignModalOpen, setIsEditCampaignModalOpen] = useState(false);
+  const [editCampaignName, setEditCampaignName] = useState("");
+  const [editCampaignGoal, setEditCampaignGoal] = useState("");
+
+  const [isEditVariantModalOpen, setIsEditVariantModalOpen] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<any>(null);
+  const [editVariantSubject, setEditVariantSubject] = useState("");
+  const [editVariantBody, setEditVariantBody] = useState("");
+
   const queryClient = useQueryClient();
 
   // ─── CORE DATA ───────────────────────────────────────────────────────────────
@@ -113,16 +126,19 @@ export default function CampaignDetail() {
     onError: () => toast.error("Failed to update status")
   });
 
-  // Pause/Update status: PATCH /api/v1/campaigns/{id}/status (no PUT endpoint exists)
-  const updateMutation = useMutation({
-    mutationFn: () => api.patch(`/campaigns/${campaignId}/status`, { status: 'PAUSED' }),
-    onSuccess: () => { toast.success("Campaign paused"); queryClient.invalidateQueries({queryKey: ['campaign', campaignId]}); }
-  });
-
   // Approve Campaign: POST /api/v1/campaigns/{id}/approve
   const approveMutation = useMutation({
     mutationFn: () => api.post(`/campaigns/${campaignId}/approve`),
     onSuccess: () => { toast.success("Campaign approved and launched!"); queryClient.invalidateQueries({queryKey: ['campaign', campaignId]}); }
+  });
+
+  const updateCampaignMutation = useMutation({
+    mutationFn: () => api.patch(`/campaigns/${campaignId}`, { name: editCampaignName, goal: editCampaignGoal }),
+    onSuccess: () => { 
+      toast.success("Campaign details updated"); 
+      queryClient.invalidateQueries({queryKey: ['campaign', campaignId]}); 
+      setIsEditCampaignModalOpen(false);
+    }
   });
 
   // Variant mutations using real data from variantsList
@@ -131,9 +147,13 @@ export default function CampaignDetail() {
     onSuccess: () => { toast.success("Variant created"); queryClient.invalidateQueries({queryKey: ['variants', 'campaign', campaignId]}); }
   });
 
-  const patchVariantMutation = useMutation({
-    mutationFn: (variantId: string) => api.patch(`/variants/${variantId}`, { subjectLine: "Updated subject line", bodyText: "Updated email body content." }),
-    onSuccess: () => { toast.success("Variant updated"); queryClient.invalidateQueries({queryKey: ['variants', 'campaign', campaignId]}); }
+  const updateVariantMutation = useMutation({
+    mutationFn: (variantId: string) => api.patch(`/variants/${variantId}`, { subjectLine: editVariantSubject, bodyText: editVariantBody }),
+    onSuccess: () => { 
+      toast.success("Variant updated"); 
+      queryClient.invalidateQueries({queryKey: ['variants', 'campaign', campaignId]}); 
+      setIsEditVariantModalOpen(false);
+    }
   });
 
   const deleteVariantMutation = useMutation({
@@ -202,7 +222,11 @@ export default function CampaignDetail() {
           <ArrowLeft className="w-4 h-4" /> Back
         </Button>
       </Link>
-      <Button variant="outline" size="sm" className="h-8 text-[13px] gap-2" onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending}>
+      <Button variant="outline" size="sm" className="h-8 text-[13px] gap-2" onClick={() => {
+        setEditCampaignName(campaign.name || "");
+        setEditCampaignGoal(campaign.goal || "");
+        setIsEditCampaignModalOpen(true);
+      }}>
         <Edit className="w-4 h-4" /> Edit
       </Button>
       <Button variant="outline" size="sm" className="h-8 text-[13px] gap-2" onClick={() => executeMutation.mutate()} disabled={executeMutation.isPending}>
@@ -412,8 +436,8 @@ export default function CampaignDetail() {
                     </thead>
                     <tbody className="divide-y divide-border-tertiary">
                       {variantsList.map((v: any) => (
-                        <>
-                          <tr key={v.id}
+                        <React.Fragment key={v.id}>
+                          <tr
                             className={`hover:bg-bg-secondary/50 cursor-pointer ${selectedVariantId === v.id ? 'bg-brand-light/20' : ''}`}
                             onClick={() => setSelectedVariantId(selectedVariantId === v.id ? null : v.id)}
                           >
@@ -422,7 +446,13 @@ export default function CampaignDetail() {
                             </td>
                             <td className="px-3 py-2 text-text-secondary truncate max-w-[200px]">{v.subjectLine || v.bodyText || v.name || 'No content'}</td>
                             <td className="px-3 py-2 text-right flex gap-1 justify-end">
-                              <Button variant="outline" size="sm" className="h-6 text-[10px] px-2" onClick={(e) => { e.stopPropagation(); patchVariantMutation.mutate(v.id); }} disabled={patchVariantMutation.isPending}>Edit</Button>
+                              <Button variant="outline" size="sm" className="h-6 text-[10px] px-2" onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setEditingVariant(v);
+                                setEditVariantSubject(v.subjectLine || "");
+                                setEditVariantBody(v.bodyText || v.bodyHtml || "");
+                                setIsEditVariantModalOpen(true);
+                              }}>Edit</Button>
                               <Button variant="outline" size="sm" className="h-6 text-[10px] px-2 text-red-600 border-red-200" onClick={(e) => { e.stopPropagation(); deleteVariantMutation.mutate(v.id); }} disabled={deleteVariantMutation.isPending}>Del</Button>
                             </td>
                           </tr>
@@ -444,7 +474,7 @@ export default function CampaignDetail() {
                               </td>
                             </tr>
                           )}
-                        </>
+                        </React.Fragment>
                       ))}
                     </tbody>
                   </table>
@@ -601,6 +631,62 @@ export default function CampaignDetail() {
           </Card>
         </div>
       </div>
+
+      <Dialog open={isEditCampaignModalOpen} onOpenChange={setIsEditCampaignModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-[13px] font-medium">Campaign Name</label>
+              <Input value={editCampaignName} onChange={e => setEditCampaignName(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-[13px] font-medium">Goal</label>
+              <textarea 
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" 
+                value={editCampaignGoal} 
+                onChange={e => setEditCampaignGoal(e.target.value)} 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => updateCampaignMutation.mutate()} disabled={!editCampaignName || updateCampaignMutation.isPending} className="w-full">
+              {updateCampaignMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditVariantModalOpen} onOpenChange={setIsEditVariantModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Variant</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-[13px] font-medium">Subject Line</label>
+              <Input value={editVariantSubject} onChange={e => setEditVariantSubject(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-[13px] font-medium">Body / Content</label>
+              <textarea 
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" 
+                value={editVariantBody} 
+                onChange={e => setEditVariantBody(e.target.value)} 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => { if(editingVariant) updateVariantMutation.mutate(editingVariant.id); }} disabled={!editVariantSubject || updateVariantMutation.isPending} className="w-full">
+              {updateVariantMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Save Variant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Shell>
   );
 }

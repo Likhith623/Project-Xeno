@@ -52,7 +52,7 @@ public class AgentOrchestrationService {
         AgentSessionEntity session = AgentSessionEntity.builder()
                 .goal(requestDto.getPrompt())
                 .status(AgentSessionStatus.RUNNING)
-                .modelUsed("gemini-2.5-pro")
+                .modelUsed("gemini-2.5-flash")
                 .conversationLog(new ArrayList<>())
                 .plan(new HashMap<>())
                 .startedAt(OffsetDateTime.now())
@@ -118,10 +118,12 @@ public class AgentOrchestrationService {
 
             String llmResponse = llmGatewayService.callGemini(prompt);
             
-            // Clean up backticks if any
-            if (llmResponse.startsWith("```json")) llmResponse = llmResponse.substring(7);
-            if (llmResponse.startsWith("```")) llmResponse = llmResponse.substring(3);
-            if (llmResponse.endsWith("```")) llmResponse = llmResponse.substring(0, llmResponse.length() - 3);
+            // Extract JSON block in case LLM added conversational text
+            int startIndex = llmResponse.indexOf('{');
+            int endIndex = llmResponse.lastIndexOf('}');
+            if (startIndex >= 0 && endIndex >= startIndex) {
+                llmResponse = llmResponse.substring(startIndex, endIndex + 1);
+            }
             llmResponse = llmResponse.trim();
             
             JsonNode jsonNode = objectMapper.readTree(llmResponse);

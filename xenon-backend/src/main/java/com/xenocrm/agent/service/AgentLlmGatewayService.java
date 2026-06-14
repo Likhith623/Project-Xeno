@@ -19,14 +19,14 @@ import java.util.Map;
  * Direct Gemini calls anywhere else are forbidden.
  *
  * Gemini endpoint format:
- *   POST {gemini.endpoint}/{gemini.model}:generateContent?key={gemini.api-key}
+ * POST {gemini.endpoint}/{gemini.model}:generateContent?key={gemini.api-key}
  *
  * Request body:
- *   { "contents": [{ "role": "user", "parts": [{ "text": "..." }] }],
- *     "generationConfig": { "temperature": 0.3, "maxOutputTokens": 2000 } }
+ * { "contents": [{ "role": "user", "parts": [{ "text": "..." }] }],
+ * "generationConfig": { "temperature": 0.3, "maxOutputTokens": 2000 } }
  *
  * Response parsing:
- *   response.candidates[0].content.parts[0].text
+ * response.candidates[0].content.parts[0].text
  */
 @Service
 @RequiredArgsConstructor
@@ -44,94 +44,59 @@ public class AgentLlmGatewayService {
     @Value("${gemini.model}")
     private String geminiModel;
 
-    @Value("${gemini.max-output-tokens:2000}")
+    @Value("${gemini.max-output-tokens:8192}")
     private int maxOutputTokens;
 
     @Value("${gemini.temperature:0.3}")
     private double temperature;
 
-    @Value("${groq.api-key}")
-    private String groqApiKey;
+
 
     /**
      * Sends a text prompt to Gemini and returns the raw text response.
      *
      * @param prompt the complete prompt string to send
      * @return the LLM's text response
-     * @throws ExternalServiceException if Gemini returns an error or the response cannot be parsed
+     * @throws ExternalServiceException if Gemini returns an error or the response
+     *                                  cannot be parsed
      */
     public String callGemini(String prompt) {
         // Build request body as a Map (Jackson will serialize it)
-        Map<String,Object> requestBody = Map.of(
-            "contents", List.of(
-                Map.of("role", "user",
-                       "parts", List.of(Map.of("text", prompt)))
-            ),
-            "generationConfig", Map.of(
-                "temperature", temperature,
-                "maxOutputTokens", maxOutputTokens
-            )
-        );
+        Map<String, Object> requestBody = Map.of(
+                "contents", List.of(
+                        Map.of("role", "user",
+                                "parts", List.of(Map.of("text", prompt)))),
+                "generationConfig", Map.of(
+                        "temperature", temperature,
+                        "maxOutputTokens", maxOutputTokens));
 
         // Call Gemini: POST /models/{model}:generateContent
         String endpoint = "/" + geminiModel + ":generateContent";
 
         try {
-            Map<?,?> responseBody = geminiRestClient.post()
-                .uri(endpoint)
-                .header("x-goog-api-key", geminiApiKey)
-                .body(requestBody)
-                .retrieve()
-                .body(Map.class);
-
-            // Parse: response.candidates[0].content.parts[0].text
-            List<?> candidates = (List<?>) responseBody.get("candidates");
-            Map<?,?> firstCandidate = (Map<?,?>) candidates.get(0);
-            Map<?,?> content = (Map<?,?>) firstCandidate.get("content");
-            List<?> parts = (List<?>) content.get("parts");
-            Map<?,?> firstPart = (Map<?,?>) parts.get(0);
-            return (String) firstPart.get("text");
-
-        } catch (Exception geminiCallException) {
-            log.error("Gemini API call failed, falling back to Groq: {}", geminiCallException.getMessage());
-            
-            try {
-                Map<String,Object> groqBody = Map.of(
-                    "model", "llama-3.3-70b-versatile",
-                    "messages", List.of(
-                        Map.of("role", "user", "content", prompt)
-                    ),
-                    "temperature", temperature,
-                    "max_tokens", maxOutputTokens
-                );
-
-                Map<?,?> groqResponse = RestClient.create().post()
-                    .uri("https://api.groq.com/openai/v1/chat/completions")
-                    .header("Authorization", "Bearer " + groqApiKey)
-                    .header("Content-Type", "application/json")
-                    .body(groqBody)
+            Map<?, ?> responseBody = geminiRestClient.post()
+                    .uri(endpoint)
+                    .header("x-goog-api-key", geminiApiKey)
+                    .body(requestBody)
                     .retrieve()
                     .body(Map.class);
 
-                List<?> choices = (List<?>) groqResponse.get("choices");
-                Map<?,?> firstChoice = (Map<?,?>) choices.get(0);
-                Map<?,?> message = (Map<?,?>) firstChoice.get("message");
-                return (String) message.get("content");
-            } catch (Exception groqCallException) {
-                log.error("Groq API fallback also failed: {}", groqCallException.getMessage(), groqCallException);
-                throw new RuntimeException("Both Gemini and Groq API calls failed. Gemini error: " + geminiCallException.getMessage() + ". Groq error: " + groqCallException.getMessage(), groqCallException);
-            }
+            // Parse: response.candidates[0].content.parts[0].text
+            List<?> candidates = (List<?>) responseBody.get("candidates");
+            Map<?, ?> firstCandidate = (Map<?, ?>) candidates.get(0);
+            Map<?, ?> content = (Map<?, ?>) firstCandidate.get("content");
+            List<?> parts = (List<?>) content.get("parts");
+            Map<?, ?> firstPart = (Map<?, ?>) parts.get(0);
+            return (String) firstPart.get("text");
+
+        } catch (Exception geminiCallException) {
+            log.error("Gemini API call failed: {}", geminiCallException.getMessage());
+            throw new ExternalServiceException("Gemini",
+                    "Failed to call Gemini API: " + geminiCallException.getMessage());
         }
     }
 
-    /**
-     * Calls Gemini and parses the response as JSON into the given class.
-     * The prompt must instruct Gemini to respond ONLY with valid JSON.
-     *
-     * @param prompt the prompt — must instruct Gemini: "Respond ONLY with JSON. No preamble."
-     * @param responseClass the class to deserialize the JSON into
-     * @return the deserialized object
-     */
+
     public <T> T callGemini(String prompt, Class<T> responseClass) {
         String jsonText = callGemini(prompt);
         try {
@@ -147,7 +112,8 @@ public class AgentLlmGatewayService {
             }
             return objectMapper.readValue(jsonText.trim(), responseClass);
         } catch (Exception e) {
-            log.error("Failed to parse Gemini JSON response into {}: {}", responseClass.getSimpleName(), e.getMessage());
+            log.error("Failed to parse Gemini JSON response into {}: {}", responseClass.getSimpleName(),
+                    e.getMessage());
             throw new ExternalServiceException("Gemini", "Failed to parse JSON: " + e.getMessage());
         }
     }

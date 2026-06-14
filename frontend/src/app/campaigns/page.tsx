@@ -11,9 +11,17 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Campaign, OptOutAlert } from "@/types";
+
+import { useCampaignStore } from "@/store/useCampaignStore";
 
 export default function CampaignsPage() {
   const queryClient = useQueryClient();
+  const { isCampaignModalOpen, setCampaignModalOpen } = useCampaignStore();
+  const [newCampaignName, setNewCampaignName] = useState("");
+  const [newCampaignGoal, setNewCampaignGoal] = useState("");
+  const [newCampaignSegmentId, setNewCampaignSegmentId] = useState("");
 
   const { data: campaignsData, isLoading, isError } = useQuery({
     queryKey: ['campaigns'],
@@ -24,7 +32,7 @@ export default function CampaignsPage() {
   // Fetch segments to get a valid segmentId for campaign creation
   const { data: segmentsForCreate } = useQuery({
     queryKey: ['segments-minimal'],
-    queryFn: () => api.get('/segments?page=0&size=1').then(res => Array.isArray(res) ? res : res?.content || []),
+    queryFn: () => api.get('/segments?page=0&size=100').then(res => Array.isArray(res) ? res : res?.content || []),
     staleTime: 60_000,
   });
 
@@ -32,10 +40,17 @@ export default function CampaignsPage() {
 
   const createMutation = useMutation({
     mutationFn: () => {
-      if (!firstSegmentId) { toast.error("No segment available — create a segment first"); return Promise.reject("No segment"); }
-      return api.post('/campaigns', { name: "New Autopilot Campaign", goal: "Drive conversions via autonomous AI optimisation", segmentId: firstSegmentId });
+      if (!newCampaignSegmentId) { toast.error("Please select a segment"); return Promise.reject("No segment"); }
+      return api.post('/campaigns', { name: newCampaignName, goal: newCampaignGoal, segmentId: newCampaignSegmentId });
     },
-    onSuccess: () => { toast.success("Campaign created"); queryClient.invalidateQueries({queryKey: ['campaigns']}); }
+    onSuccess: () => { 
+        toast.success("Campaign created"); 
+        queryClient.invalidateQueries({queryKey: ['campaigns']}); 
+        setCampaignModalOpen(false);
+        setNewCampaignName("");
+        setNewCampaignGoal("");
+        setNewCampaignSegmentId("");
+    }
   });
 
   // GET /api/v1/campaigns/opt-out-alerts — Safety threshold breach alerts
@@ -46,8 +61,9 @@ export default function CampaignsPage() {
   });
 
   // Campaigns may be a plain array or a paginated { content: [...] }
-  const campaigns: any[] = Array.isArray(campaignsData) ? campaignsData : (campaignsData?.content || []);
-  const alerts: any[] = Array.isArray(optOutAlerts) ? optOutAlerts : [];
+  const campaignsList = Array.isArray(campaignsData) ? campaignsData : (campaignsData?.content || []);
+  const campaigns: Campaign[] = campaignsList;
+  const alerts: OptOutAlert[] = Array.isArray(optOutAlerts) ? optOutAlerts : [];
 
   return (
     <Shell title="All Campaigns">
@@ -61,9 +77,54 @@ export default function CampaignsPage() {
             <Filter className="w-4 h-4" /> Filter
           </Button>
         </div>
-        <Button size="sm" className="h-9 text-[13px] gap-2 bg-text-primary text-white hover:bg-text-secondary" onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
-          <Plus className="w-4 h-4" /> New campaign
-        </Button>
+        <Dialog open={isCampaignModalOpen} onOpenChange={setCampaignModalOpen}>
+          <DialogTrigger
+            render={
+              <Button size="sm" className="h-9 text-[13px] gap-2 bg-text-primary text-white hover:bg-text-secondary" onClick={() => setCampaignModalOpen(true)}>
+                <Plus className="w-4 h-4" /> New campaign
+              </Button>
+            }
+          />
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Create New Campaign</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-medium">Campaign Name</label>
+                <Input value={newCampaignName} onChange={e => setNewCampaignName(e.target.value)} placeholder="e.g. Summer Clearance Sale" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-medium">Goal</label>
+                <textarea 
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" 
+                  value={newCampaignGoal} 
+                  onChange={e => setNewCampaignGoal(e.target.value)} 
+                  placeholder="e.g. Clear out electronics dead stock and drive 5% conversion."
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-medium">Target Segment</label>
+                <select 
+                  className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  value={newCampaignSegmentId} 
+                  onChange={e => setNewCampaignSegmentId(e.target.value)}
+                >
+                  <option value="" disabled>Select a segment...</option>
+                  {(Array.isArray(segmentsForCreate) ? segmentsForCreate : []).map((seg: any) => (
+                    <option key={seg.id} value={seg.id}>{seg.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => createMutation.mutate()} disabled={!newCampaignName || !newCampaignSegmentId || createMutation.isPending} className="w-full">
+                {createMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Create Campaign
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Opt-Out Alerts: GET /campaigns/opt-out-alerts */}

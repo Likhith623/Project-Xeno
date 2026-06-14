@@ -47,7 +47,7 @@ public class CampaignExecutionService {
     private final JdbcTemplate jdbcTemplate;
     private final com.xenocrm.channelservice.service.SmartRoutingService smartRoutingService;
     private final com.xenocrm.campaign.service.HyperPersonalizationService hyperPersonalizationService;
-
+    private final com.xenocrm.variant.service.MultiArmedBanditService multiArmedBanditService;
 
     @Async("taskExecutor")
     public CompletableFuture<Void> executeCampaignAsync(UUID id) {
@@ -74,9 +74,10 @@ public class CampaignExecutionService {
                 return CompletableFuture.completedFuture(null);
             }
             
-            // For simplicity, we just use the first active variant
-            MessageVariantEntity variant = variants.get(0);
-            log.info("Using variant {} ({}) for campaign {}", variant.getId(), variant.getSubjectLine(), id);
+            // For each dispatch, we should ideally pick the best variant using MAB.
+            // But since we want to evaluate once per run or per email, we'll select the best variant for the batch.
+            MessageVariantEntity variant = multiArmedBanditService.selectBestVariant(id);
+            log.info("Using variant {} ({}) for campaign {} via Thompson Sampling", variant.getId(), variant.getSubjectLine(), id);
 
             // 3. Evaluate Segment to get emails safely
             com.xenocrm.segment.util.SegmentQueryBuilder.ParameterizedQuery pq = com.xenocrm.segment.util.SegmentQueryBuilder.buildQuery(segment.getFilterJson());

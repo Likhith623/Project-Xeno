@@ -50,8 +50,13 @@ public class SegmentController {
     @Operation(summary = "Get all segments with pagination")
     public ResponseEntity<ResponseWrapper<List<SegmentResponseDto>>> getAllSegments(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        String[] sortParams = sort.split(",");
+        org.springframework.data.domain.Sort.Direction direction = org.springframework.data.domain.Sort.Direction.fromString(sortParams.length > 1 ? sortParams[1] : "desc");
+        String property = sortParams[0];
+        
+        Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by(direction, property));
         Page<SegmentResponseDto> pagedResult = segmentEvaluationService.getAllSegments(pageable);
         return ResponseEntity.ok(ResponseWrapper.success(
                 pagedResult.getContent(),

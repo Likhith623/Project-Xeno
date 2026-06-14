@@ -56,8 +56,13 @@ public class CampaignController {
     @Operation(summary = "Get all campaigns with pagination")
     public ResponseEntity<ResponseWrapper<List<CampaignResponseDto>>> getAllCampaigns(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+        String[] sortParams = sort.split(",");
+        org.springframework.data.domain.Sort.Direction direction = org.springframework.data.domain.Sort.Direction.fromString(sortParams.length > 1 ? sortParams[1] : "desc");
+        String property = sortParams[0];
+        
+        Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by(direction, property));
         Page<CampaignResponseDto> pagedResult = campaignService.getAllCampaigns(pageable);
         return ResponseEntity.ok(ResponseWrapper.success(
                 pagedResult.getContent(),
@@ -86,6 +91,15 @@ public class CampaignController {
             @Valid @RequestBody CampaignStatusUpdateRequestDto request) {
         CampaignResponseDto responseDto = campaignService.updateCampaignStatus(id, request.getStatus().name());
         return ResponseEntity.ok(ResponseWrapper.success(responseDto, "Campaign status updated successfully"));
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update campaign details")
+    public ResponseEntity<ResponseWrapper<CampaignResponseDto>> updateCampaign(
+            @PathVariable UUID id,
+            @Valid @RequestBody com.xenocrm.campaign.dto.CampaignUpdateRequestDto request) {
+        CampaignResponseDto responseDto = campaignService.updateCampaignDetails(id, request);
+        return ResponseEntity.ok(ResponseWrapper.success(responseDto, "Campaign details updated successfully"));
     }
 
     @GetMapping("/{id}/performance")
@@ -158,7 +172,7 @@ public class CampaignController {
         // Let's use CampaignService.getAllCampaigns and filter
         List<CampaignResponseDto> drafts = campaignService.getAllCampaigns(PageRequest.of(0, 100))
                 .getContent().stream()
-                .filter(c -> "DRAFT".equals(c.getStatus()))
+                .filter(c -> com.xenocrm.campaign.enums.CampaignStatus.DRAFT.equals(c.getStatus()))
                 .collect(java.util.stream.Collectors.toList());
 
         return ResponseEntity.ok(ResponseWrapper.success(drafts, "Retrieved AI proposals for review"));
@@ -167,7 +181,7 @@ public class CampaignController {
     @PostMapping("/{id}/approve")
     @Operation(summary = "Approve an AI proposed campaign and execute it")
     public ResponseEntity<ResponseWrapper<CampaignResponseDto>> approveCampaign(@PathVariable UUID id) {
-        CampaignResponseDto responseDto = campaignService.updateCampaignStatus(id, "APPROVED");
+        CampaignResponseDto responseDto = campaignService.updateCampaignStatus(id, "SCHEDULED");
         campaignExecutionService.executeCampaignAsync(id);
         return ResponseEntity.ok(ResponseWrapper.success(responseDto, "Campaign approved and execution started"));
     }

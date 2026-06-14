@@ -10,6 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useMemo } from "react";
+import { Campaign, MemoryInsight, OptOutAlert, AuditLog } from "@/types";
 
 export default function Dashboard() {
   const { data: campaigns } = useQuery({
@@ -24,45 +25,85 @@ export default function Dashboard() {
     staleTime: 30_000,
   });
 
-  const { data: auditLogsData } = useQuery({
-    queryKey: ['audit-logs', 'AI_AGENT'],
+  const { data: auditLogs } = useQuery({
+    queryKey: ['audit-logs', 'actor', 'AI_AGENT'],
     queryFn: () => api.get(`/audit-logs/actor/AI_AGENT`).then(res => Array.isArray(res) ? res : res?.content || []),
     staleTime: 30_000,
   });
 
-  // Derive stable values from real data (no Math.random)
-  const activeCampaigns = Array.isArray(campaigns) ? campaigns.filter((c: any) => c.status === 'RUNNING' || c.status === 'SCHEDULED').slice(0, 3) : [];
-  const memories = Array.isArray(memoryData) ? memoryData.slice(0, 4) : [];
-  const aiLogs = Array.isArray(auditLogsData) ? auditLogsData.slice(0, 4) : [];
+  const { data: optOutAlertsData } = useQuery({
+    queryKey: ['opt-out-alerts'],
+    queryFn: () => api.get('/campaigns/opt-out-alerts').then(res => Array.isArray(res) ? res : res?.data || []),
+    staleTime: 30_000,
+  });
 
-  const campaignsArr = Array.isArray(campaigns) ? campaigns : [];
-  const activeCount = campaignsArr.filter((c: any) => c.status === 'RUNNING' || c.status === 'SCHEDULED').length;
-  const draftCount  = campaignsArr.filter((c: any) => c.status === 'DRAFT').length;
+  const { data: orders } = useQuery({
+    queryKey: ['orders'],
+    queryFn: () => api.get('/orders?size=5000').then(res => Array.isArray(res) ? res : res?.content || []),
+    staleTime: 30_000,
+  });
+
+  // Derive stable values from real data
+  const campaignsList: Campaign[] = Array.isArray(campaigns) ? campaigns : [];
+  const ordersList: any[] = Array.isArray(orders) ? orders : [];
+  const activeCampaigns = campaignsList.filter(c => c.status === 'RUNNING' || c.status === 'SCHEDULED' || c.status === 'APPROVED').slice(0, 3);
+  const memories: MemoryInsight[] = Array.isArray(memoryData) ? memoryData.slice(0, 4) : [];
+  const agentLogs: AuditLog[] = Array.isArray(auditLogs) ? auditLogs.slice(0, 4) : [];
+  const optOutAlerts: OptOutAlert[] = Array.isArray(optOutAlertsData) ? optOutAlertsData : [];
+
+  const activeCount = campaignsList.filter(c => c.status === 'RUNNING' || c.status === 'SCHEDULED' || c.status === 'APPROVED').length;
+  const draftCount  = campaignsList.filter(c => c.status === 'DRAFT').length;
+  const completedCount = campaignsList.filter(c => c.status === 'COMPLETED').length;
+  const otherCount = campaignsList.length - activeCount - draftCount - completedCount;
 
   const pieData = [
     { name: 'Active', value: activeCount, color: '#0ea5e9' },
     { name: 'Draft',  value: draftCount,  color: '#f43f5e' },
-  ];
+    { name: 'Completed', value: completedCount, color: '#10b981' },
+    ...(otherCount > 0 ? [{ name: 'Other', value: otherCount, color: '#94a3b8' }] : [])
+  ].filter(d => d.value > 0);
 
-  // Build chart from real campaign budget data if available, else static placeholder
+  // Build chart from real order data aggregated by date
   const chartData = useMemo(() => {
-    if (campaignsArr.length === 0) {
+    if (ordersList.length === 0) {
       return [
-        { name: 'Mon', revenue: 4000, cashFlow: 2400 },
-        { name: 'Tue', revenue: 3000, cashFlow: 1398 },
-        { name: 'Wed', revenue: 2000, cashFlow: 9800 },
-        { name: 'Thu', revenue: 2780, cashFlow: 3908 },
-        { name: 'Fri', revenue: 1890, cashFlow: 4800 },
-        { name: 'Sat', revenue: 2390, cashFlow: 3800 },
-        { name: 'Sun', revenue: 3490, cashFlow: 4300 },
+        { name: 'Mon', revenue: 0, cashFlow: 0 },
+        { name: 'Tue', revenue: 0, cashFlow: 0 },
+        { name: 'Wed', revenue: 0, cashFlow: 0 },
+        { name: 'Thu', revenue: 0, cashFlow: 0 },
+        { name: 'Fri', revenue: 0, cashFlow: 0 },
+        { name: 'Sat', revenue: 0, cashFlow: 0 },
+        { name: 'Sun', revenue: 0, cashFlow: 0 },
       ];
     }
-    return campaignsArr.slice(0, 7).map((c: any, i: number) => ({
-      name: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i] || `Day ${i+1}`,
-      revenue: Math.round((c.revenueAttributed || 0) * 1000) || (i + 1) * 500,
-      cashFlow: Math.round((c.totalConverted || 0) * 100) || (i + 1) * 300,
+    
+    // Group by day name (short)
+    const aggregated: Record<string, { revenue: number, cashFlow: number }> = {
+      'Mon': { revenue: 0, cashFlow: 0 },
+      'Tue': { revenue: 0, cashFlow: 0 },
+      'Wed': { revenue: 0, cashFlow: 0 },
+      'Thu': { revenue: 0, cashFlow: 0 },
+      'Fri': { revenue: 0, cashFlow: 0 },
+      'Sat': { revenue: 0, cashFlow: 0 },
+      'Sun': { revenue: 0, cashFlow: 0 },
+    };
+
+    ordersList.forEach((o: any) => {
+      const date = new Date(o.createdAt || o.placedAt);
+      if (isNaN(date.getTime())) return;
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      if (aggregated[dayName]) {
+        aggregated[dayName].revenue += (o.totalAmount || 0);
+        aggregated[dayName].cashFlow += 1;
+      }
+    });
+
+    return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
+      name: day,
+      revenue: Math.round(aggregated[day].revenue),
+      cashFlow: Math.round(aggregated[day].cashFlow * 100) // scale up for visual proxy
     }));
-  }, [campaignsArr]);
+  }, [ordersList]);
 
   // Compute stable progress from id hash (not random)
   const stableProgress = (id: string) => {
@@ -75,9 +116,9 @@ export default function Dashboard() {
     <Shell title="Dashboard">
       {/* KPI Grid — counts from real Supabase data */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <KpiCard title="Total campaigns" value={String(campaignsArr.length)} icon={Send} delta={`${activeCount} active`} isPositive />
-        <KpiCard title="Active rate" value={campaignsArr.length ? `${Math.round(activeCount / campaignsArr.length * 100)}%` : "0%"} icon={Eye} delta="from Supabase" isPositive />
-        <KpiCard title="Total revenue" value={`$${(campaignsArr.reduce((s: number, c: any) => s + (c.revenueAttributed || 0), 0) / 1000).toFixed(1)}K`} icon={DollarSign} delta="attributed revenue" isPositive />
+        <KpiCard title="Total campaigns" value={String(campaignsList.length)} icon={Send} delta={`${activeCount} active`} isPositive />
+        <KpiCard title="Active rate" value={campaignsList.length ? `${Math.round(activeCount / campaignsList.length * 100)}%` : "0%"} icon={Eye} delta="from Supabase" isPositive />
+        <KpiCard title="Total revenue" value={`$${(ordersList.reduce((s, c) => s + (c.totalAmount || 0), 0) / 1000).toFixed(1)}K`} icon={DollarSign} delta="attributed revenue" isPositive />
         <KpiCard title="Memory insights" value={String(Array.isArray(memoryData) ? memoryData.length : 0)} icon={UserMinus} delta="org learnings stored" isPositive />
       </div>
 
@@ -93,7 +134,7 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={pieData.some(d => d.value > 0) ? pieData : [{ name: 'None', value: 1, color: '#e2e8f0' }]}
+                        data={pieData.length > 0 ? pieData : [{ name: 'None', value: 1, color: '#e2e8f0' }]}
                         cx="50%"
                         cy="50%"
                         innerRadius={55}
@@ -101,7 +142,7 @@ export default function Dashboard() {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {(pieData.some(d => d.value > 0) ? pieData : [{ name: 'None', value: 1, color: '#e2e8f0' }]).map((entry, index) => (
+                        {(pieData.length > 0 ? pieData : [{ name: 'None', value: 1, color: '#e2e8f0' }]).map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -112,13 +153,14 @@ export default function Dashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                    <span className="text-2xl font-medium text-text-primary">{campaignsArr.length}</span>
+                    <span className="text-2xl font-medium text-text-primary">{campaignsList.length}</span>
                     <span className="text-xs text-text-tertiary">Campaigns</span>
                   </div>
                 </div>
-                <div className="flex gap-4 justify-center mt-2 text-[12px]">
-                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-sky-500 inline-block"/>{activeCount} Active</span>
-                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block"/>{draftCount} Draft</span>
+                <div className="flex flex-wrap gap-4 justify-center mt-2 text-[12px]">
+                  {pieData.map(d => (
+                    <span key={d.name} className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: d.color }}/>{d.value} {d.name}</span>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -198,26 +240,33 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4 flex flex-col gap-2">
-              <div className="flex items-center gap-2.5 p-2.5 bg-red-50 border border-red-100 rounded-md">
-                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
-                <div className="flex-1">
-                  <div className="text-[12px] font-semibold text-red-700">Loyalty Tier Upgrade</div>
-                  <div className="text-[11px] text-red-600">Opt-out rate exceeded threshold</div>
-                </div>
-                <span className="text-[13px] font-medium text-red-700">3.8%</span>
-              </div>
+              {optOutAlerts.length === 0 ? (
+                <div className="text-[12px] text-text-secondary text-center py-4">No opt-out alerts.</div>
+              ) : (
+                optOutAlerts.map((alert: any) => (
+                  <div key={alert.campaignId} className="flex items-center gap-2.5 p-2.5 bg-red-50 border border-red-100 rounded-md">
+                    <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                    <div className="flex-1">
+                      <div className="text-[12px] font-semibold text-red-700">{alert.campaignName || 'Campaign Alert'}</div>
+                      <div className="text-[11px] text-red-600">Opt-out rate exceeded threshold</div>
+                    </div>
+                    <span className="text-[13px] font-medium text-red-700">{Math.round((alert.optOutRate || 0) * 1000) / 10}%</span>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 
           {/* Revenue by Channel */}
           <Card className="shadow-minimal border-border-primary flex-1">
              <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-[14px] font-medium">Revenue by channel (30d)</CardTitle>
+              <CardTitle className="text-[14px] font-medium">Delivery by channel (All Time)</CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4 flex flex-col gap-3">
-              <ChannelRow color="bg-brand" name="Email" value="$96K" percent={72} />
-              <ChannelRow color="bg-green-600" name="WhatsApp" value="$38K" percent={28} />
-              <ChannelRow color="bg-orange-600" name="SMS" value="$8K" percent={13} />
+              {/* Calculating total delivered across all campaigns to estimate channel mix as placeholder since no backend endpoint exists */}
+              <ChannelRow color="bg-brand" name="Email" value={campaignsList.reduce((sum: number, c: any) => sum + (c.totalDelivered || 0), 0)} percent={campaignsList.length > 0 ? 100 : 0} />
+              <ChannelRow color="bg-green-600" name="WhatsApp" value={0} percent={0} />
+              <ChannelRow color="bg-orange-600" name="SMS" value={0} percent={0} />
             </CardContent>
           </Card>
         </div>
@@ -234,21 +283,20 @@ export default function Dashboard() {
             <Link href="/audit-logs" className="text-[12px] text-text-secondary hover:text-text-primary">View all</Link>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
-            {aiLogs.length === 0 ? (
-               <div className="text-[12px] text-text-secondary text-center py-4">No recent AI activity.</div>
+            {agentLogs.length === 0 ? (
+              <div className="text-center py-4 text-text-tertiary">No recent agent activity</div>
             ) : (
-              aiLogs.map((log: any) => (
+              agentLogs.map((log: AuditLog) => (
                 <ActivityItem
                   key={log.id}
                   icon={Bot} color="text-brand bg-brand-light"
-                  text={log.description || `${log.action} on ${log.entityType}`}
+                  text={log.details || `${log.action} on ${log.target}`}
                   time={new Date(log.createdAt).toLocaleString()}
                 />
               ))
             )}
           </CardContent>
         </Card>
-
         {/* Org Memory — real Supabase memory data */}
         <Card className="shadow-minimal border-border-primary">
            <CardHeader className="flex flex-row items-center justify-between pb-4">

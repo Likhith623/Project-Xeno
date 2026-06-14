@@ -25,13 +25,18 @@ public class VariantEvolutionJob {
     private final ObjectMapper objectMapper;
 
     // Runs every hour
-    @Scheduled(fixedRate = 3600000)
-    public void evolveWinningVariants() {
+    @Scheduled(initialDelay = 120000, fixedRate = 3600000)
+    public void executeThompsonSamplingEvolution() {
         log.info("Running Automated A/B/n Content Evolution Job...");
         List<CampaignEntity> activeCampaigns = campaignRepository.findAll();
 
         for (CampaignEntity campaign : activeCampaigns) {
             if (!"RUNNING".equals(campaign.getStatus().name())) continue;
+
+            List<MessageVariantEntity> activeVariants = variantRepository.findAll().stream()
+                .filter(MessageVariantEntity::isMabIsActive)
+                .limit(1)
+                .toList();
 
             List<MessageVariantEntity> variants = variantRepository.findAllByCampaignId(campaign.getId());
             MessageVariantEntity winner = null;

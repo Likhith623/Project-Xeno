@@ -11,8 +11,10 @@ function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
-function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props & { asChild?: boolean }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { asChild: _asChild, ...rest } = props as any
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...rest} />
 }
 
 function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {

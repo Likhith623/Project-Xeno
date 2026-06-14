@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import {
   LayoutDashboard,
   Bot,
@@ -22,43 +24,51 @@ import {
   Activity
 } from "lucide-react";
 
-const NAV_GROUPS = [
-  {
-    title: "Overview",
-    items: [
-      { name: "Dashboard", href: "/", icon: LayoutDashboard },
-      { name: "AI Agent", href: "/agent", icon: Bot, badge: "Live", badgeClass: "bg-brand-light text-brand" },
-      { name: "Proposals", href: "/proposals", icon: HeartHandshake, badge: "4", badgeClass: "bg-red-100 text-red-700" },
-    ]
-  },
-  {
-    title: "Campaigns",
-    items: [
-      { name: "All Campaigns", href: "/campaigns", icon: Megaphone },
-      { name: "MAB Dashboard", href: "/mab", icon: LineChart },
-    ]
-  },
-  {
-    title: "Data",
-    items: [
-      { name: "Customers", href: "/customers", icon: Users },
-      { name: "Segments", href: "/segments", icon: Box },
-      { name: "Orders", href: "/orders", icon: Receipt },
-      { name: "Products", href: "/products", icon: ShoppingBag },
-    ]
-  },
-  {
-    title: "Intelligence",
-    items: [
-      { name: "Org Memory", href: "/memory", icon: Brain },
-      { name: "Audit Logs", href: "/audit-logs", icon: FileSearch },
-      { name: "Corrections", href: "/corrections", icon: Wrench },
-    ]
-  }
-];
-
 export function Sidebar() {
   const pathname = usePathname();
+
+  const { data: proposalsData } = useQuery({
+    queryKey: ['campaigns', 'proposals'],
+    queryFn: () => api.get('/campaigns/proposals').then(res => Array.isArray(res) ? res : res?.content || []),
+    staleTime: 30_000,
+  });
+
+  const proposalsCount = Array.isArray(proposalsData) ? proposalsData.length : 0;
+
+  const NAV_GROUPS = [
+    {
+      title: "Overview",
+      items: [
+        { name: "Dashboard", href: "/", icon: LayoutDashboard },
+        { name: "AI Agent", href: "/agent", icon: Bot, badge: "Live", badgeClass: "bg-brand-light text-brand" },
+        { name: "Proposals", href: "/proposals", icon: HeartHandshake, badge: proposalsCount > 0 ? String(proposalsCount) : undefined, badgeClass: "bg-red-100 text-red-700" },
+      ]
+    },
+    {
+      title: "Campaigns",
+      items: [
+        { name: "All Campaigns", href: "/campaigns", icon: Megaphone },
+        { name: "MAB Dashboard", href: "/mab", icon: LineChart },
+      ]
+    },
+    {
+      title: "Data",
+      items: [
+        { name: "Customers", href: "/customers", icon: Users },
+        { name: "Segments", href: "/segments", icon: Box },
+        { name: "Orders", href: "/orders", icon: Receipt },
+        { name: "Products", href: "/products", icon: ShoppingBag },
+      ]
+    },
+    {
+      title: "Intelligence",
+      items: [
+        { name: "Org Memory", href: "/memory", icon: Brain },
+        { name: "Audit Logs", href: "/audit-logs", icon: FileSearch },
+        { name: "Corrections", href: "/corrections", icon: Wrench },
+      ]
+    }
+  ];
 
   return (
     <aside className="w-60 min-w-60 bg-white border-r border-border-primary flex flex-col h-full shrink-0 overflow-y-auto">
