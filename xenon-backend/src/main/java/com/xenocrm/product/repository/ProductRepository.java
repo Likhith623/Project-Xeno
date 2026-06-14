@@ -18,5 +18,7 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID> {
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT p.category FROM ProductEntity p WHERE p.category IS NOT NULL")
     java.util.List<String> findDistinctCategories();
 
+    java.util.List<ProductEntity> findByCategory_Id(UUID categoryId);
+
     java.util.List<ProductEntity> findByInventoryCountGreaterThanAndCreatedAtBefore(int inventoryCount, java.time.OffsetDateTime date);
 }

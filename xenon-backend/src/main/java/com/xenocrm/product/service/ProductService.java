@@ -71,4 +71,31 @@ public class ProductService {
         }
         return responses;
     }
+
+    @Transactional
+    public ProductResponseDto updateProduct(UUID id, java.util.Map<String, Object> updates) {
+        ProductEntity product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
+        if (updates.containsKey("name")) product.setName((String) updates.get("name"));
+        if (updates.containsKey("price")) product.setPrice(new java.math.BigDecimal(updates.get("price").toString()));
+        if (updates.containsKey("currency")) product.setCurrency((String) updates.get("currency"));
+        if (updates.containsKey("brand")) product.setBrand((String) updates.get("brand"));
+        if (updates.containsKey("active")) product.setActive((Boolean) updates.get("active"));
+        if (updates.containsKey("isActive")) product.setActive((Boolean) updates.get("isActive"));
+        return productMapper.toResponseDto(productRepository.save(product));
+    }
+
+    @Transactional
+    public void deleteProduct(UUID id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product", "id", id);
+        }
+        productRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<ProductResponseDto> getProductsByCategory(UUID categoryId) {
+        return productRepository.findByCategory_Id(categoryId).stream()
+                .map(productMapper::toResponseDto).toList();
+    }
 }

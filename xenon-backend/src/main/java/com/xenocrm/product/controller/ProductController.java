@@ -70,4 +70,28 @@ public class ProductController {
         List<com.xenocrm.product.dto.ProductCategoryResponseDto> responseDtos = productService.getAllCategories();
         return ResponseEntity.ok(ResponseWrapper.success(responseDtos));
     }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update a product")
+    public ResponseEntity<ResponseWrapper<ProductResponseDto>> updateProduct(
+            @PathVariable UUID id,
+            @RequestBody java.util.Map<String, Object> updates) {
+        ProductResponseDto responseDto = productService.updateProduct(id, updates);
+        return ResponseEntity.ok(ResponseWrapper.success(responseDto, "Product updated successfully"));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a product")
+    public ResponseEntity<ResponseWrapper<Void>> deleteProduct(@PathVariable UUID id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.ok(ResponseWrapper.success(null, "Product deleted successfully"));
+    }
+
+    @GetMapping("/by-category")
+    @Operation(summary = "Get products by category ID")
+    public ResponseEntity<ResponseWrapper<List<ProductResponseDto>>> getProductsByCategory(
+            @RequestParam UUID categoryId) {
+        List<ProductResponseDto> responseDtos = productService.getProductsByCategory(categoryId);
+        return ResponseEntity.ok(ResponseWrapper.success(responseDtos));
+    }
 }
